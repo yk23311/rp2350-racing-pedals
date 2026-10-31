@@ -1,6 +1,6 @@
 # RP2350 双踏板：接手入口
 
-更新：2026-10-31，Asia/Shanghai。工作目录：`D:\练习项目\RP2350a`。本文件是最新状态摘要，优先于旧报告中的阶段性结论。
+更新：2026-10-31，Asia/Shanghai。工作目录：`D:\练习项目\RP2350a`。已建立Git仓库；软件桥接核心已完成并通过PC测试，Host USB栈、能力查询和硬件改动尚未开始。最新阶段报告：[11 软件桥接核心](docs/reports/11-software-bridge-core.md)。本文件是最新状态摘要，优先于旧报告中的阶段性结论。
 
 ## 1. 用户当前目标与授权边界
 
@@ -11,8 +11,9 @@
 - 开发板必须通过USB原生识别为手柄。
 - **不要Steam Input、虚拟手柄、电脑端第三方输入转换。** 串口GUI仅用于校准和调参，可以保留。
 - 每阶段需要步骤报告和交接报告。
-- 最近针对“踏板和真实手柄互相抢输入”，用户明确说：**“先给出解决方案，不修改代码”。** 随后仅补充真实手柄使用“2.4G USB接收器”，没有授权实施新桥接固件。
-- 本次请求只做交接报告。因此 **USB Host/输入合并仍停留在方案阶段**。后续先承接方案审查，依据用户下一条明确实施指令开工；不要把这个交接当成已完成桥接或已获修改硬件授权。
+- 用户已批准**先从软件开始**：先建Git仓库、实现并测试板端合并软件；**明确暂不修改硬件**（R13、15k下拉、VBUS等均未动）。
+- 当前仍禁止Steam Input、电脑端虚拟手柄和电脑端第三方输入转换；接收器最终必须从电脑移到开发板USB-A。
+- 本轮已进入实施，不再是纯交接；每阶段继续更新步骤报告和交接报告。
 
 ## 2. 已完成、已上板验证的部分
 
@@ -25,6 +26,8 @@
 - Flash版本/CRC/双槽保存，末尾两个4KiB扇区保留；显式SAVE，未校准中立、切换模式回零重新使能。
 - CDC命令行与Tkinter调参GUI；`.venv`已安装pyserial3.5。
 - **原生USB XInput**，不依赖电脑映射器；独立键盘HID、CDC保留。
+- **Git仓库**：2026-10-31初始化，基线提交`6fa0512`；此后按阶段提交，不再“没有Git历史”。
+- **软件桥接核心（未接线）**：`src/core/xinput_pad.c`严格解析20字节XInput Host报文；`src/core/bridge.c`实现Host状态机、250ms超时、回中容差4000、踏板优先OVERRIDE/MAX和20字节合并构造；PC测试29项CTest通过。尚未接入固件，接收器仍不能读取。
 
 当前已烧录版本：**0.2.0-xinput**。
 
@@ -110,7 +113,10 @@ GP27刹车 ----------------┤ LT
 | `firmware/main.c` | 当前单核主循环，ADC/按钮/CDC调度 |
 | `firmware/hal.c`、`hal.h` | 两路ADC、GP14按键；踏板接线不因桥接而改变 |
 | `src/core/pedal.c`、`include/pedal.h` | 滤波、校准、死区、曲线和逻辑模式 |
-| `src/core/xinput_protocol.c` | 20字节报文、原生USB配置、OS字符串和XUSB10兼容描述符；目前只填LT/RT，按钮/摇杆为0 |
+| `src/core/xinput_protocol.c` | 20字节报文、原生USB配置、OS字符串和XUSB10兼容描述符；目前只填LT/RT，按钮/摇杆为0；新增`xinput_axis_quantize()` |
+| `src/core/xinput_pad.c`、`include/xinput_pad.h` | 新增：严格解析Xbox360有线20字节Host报告；短包/错误报告ID拒绝；中立谓词 |
+| `src/core/bridge.c`、`include/bridge.h` | 新增：Host状态机、超时/重连、OVERRIDE/MAX合并、20字节输出；尚未被`usb.c`调用 |
+| `tests/test_xinput_pad.c`、`tests/test_bridge.c` | 新增11项CTest，覆盖解析、回中、握手、超时、断连、OVERRIDE/MAX |
 | `firmware/xinput_device.c` | TinyUSB自定义Device类、IN81/OUT01、能力/LED/GET_REPORT、稳定SRAM缓冲；不是Host驱动 |
 | `firmware/usb.c` | 原生与旧HID分支、报告调度、中立屏障、键盘实例0映射到逻辑gate1 |
 | `src/core/report_gate.c` | 模式/配置变化时等待手柄与键盘中立完成；注意XInput包头byte1=20不能当非中立输入 |
@@ -122,7 +128,7 @@ GP27刹车 ----------------┤ LT
 
 ## 7. 构建、测试和产物
 
-环境：Windows PowerShell，Python3.11，CMake、Ninja、Visual Studio Build Tools的Clang/LLD。目录**没有Git仓库**，没有提交、分支或PR；不要虚构历史。用户当前要求交接，未重跑测试，下面是最近已完成的验证。
+环境：Windows PowerShell，Python3.11，CMake、Ninja、Visual Studio Build Tools的Clang/LLD。**Git仓库已建立**（`main`分支，基线`6fa0512`）；按阶段提交，不要声称没有历史。
 
 ```powershell
 Set-Location -LiteralPath 'D:\练习项目\RP2350a'
@@ -133,7 +139,7 @@ powershell -ExecutionPolicy Bypass -File tools/start_gui.ps1
 .\.venv\Scripts\python.exe tools/check_xinput.py --seconds 30
 ```
 
-- 最新测试 **18项C CTest + 19项Python全部通过**。日志：`docs/reports/logs/native-xinput-host.txt`。
+- 最新测试 **29项C CTest + 19项Python全部通过**。桥接核心日志：`docs/reports/logs/software-bridge-core.txt`；基线日志：`docs/reports/logs/software-baseline-host.txt`。
 - 原生固件：`dist/xinput/pedals-xinput.uf2`，已烧录，80,384字节。
 - SHA256：`4aca95a4a7f06559d88b5d80a71aa5f64bf3b46e1f6c39ec361deb4843641f70`。
 - HID回退：`dist/hid/pedals-hid.uf2`。`dist/pedals.uf2`是更早的HID版本，**不要把它误当当前原生固件**。
@@ -158,7 +164,7 @@ powershell -ExecutionPolicy Bypass -File tools/start_gui.ps1
 
 1. 核实R13/Host硬件和接收器供电，确定是否需要用户物理改板；在未确认前不声称接收器可直接插用。
 2. 仅接收器Host枚举，记录VID/PID、速度、接口/端点及原始输入，确认摇杆和所有按键。
-3. 定义独立于USB的合并状态结构与超时策略，先写测试：转向+油门+刹车同时保留，按钮不丢失；RT/LT覆盖策略确定。
+3. 已完成的纯软件部分：`xinput_pad`解析、`bridge`状态/超时/OVERRIDE/MAX合并、回中容差4000、29项CTest。注意这些模块**尚未接入**`usb.c`，不能据此宣称桥接可用。
 4. 连接原生Device端输出，保持现有校准/CDC/Flash协议；复核多核安全与吞吐/延迟。
 5. **电脑端只保留开发板一只游戏手柄，接收器插在开发板而非电脑。** 在同一个XInput槽位实测：LX非零同时RT非零、LX非零同时LT非零、双踏板与按钮同时输入。
 6. 接收器拔插、无线手柄关机/重连、保存Flash、长时稳定性验证后再验收FH6。
@@ -178,4 +184,4 @@ powershell -ExecutionPolicy Bypass -File tools/start_gui.ps1
 
 ## 给下一位agent的任务摘要（可直接复制）
 
-> 先阅读本项目根目录HANDOFF.md。当前原生XInput踏板已成功上板，GP26→RT、GP27→LT，但它与真实北通BTP-KP20的2.4G USB接收器是两只独立控制器，FH6出现输入切换。用户拒绝Steam及PC第三方转换，已讨论在RP2350板端通过USB-A Host读取20BC:5128接收器，合并摇杆/按键与踏板，经Type-C只输出一只完整XInput手柄。桥接尚未实现，R13和供电尚未核实。用户最近仅要求方案不修改代码，本次是交接，先确认下一条实施指令。不要重做已验证的原生Device驱动，不要用电脑映射冒充硬件合并。
+> 先阅读本项目根目录HANDOFF.md。当前原生XInput踏板已上板，GP26→RT、GP27→LT；真实北通BTP-KP20的2.4G USB接收器是另一只控制器，FH6出现输入切换。用户拒绝Steam及PC第三方转换，已批准**软件优先**：Git仓库已建，`xinput_pad`/`bridge`纯C解析合并核心及29项CTest已完成，但**尚未接入固件，USB-A Host栈也未实现**。用户明确暂不修改硬件（R13未拆）。下一步是做Host-only探针：vendor Pico-PIO-USB、TinyUSB双rhport、自定义XInput Host类、XUSB10/GIP握手A/B、CDC原始报文；先验证20BC:5128在现有硬件上能否读取。不要重做已验证的Device驱动，不要用电脑映射冒充硬件合并，不要把纯C测试当成桥接/游戏验收。

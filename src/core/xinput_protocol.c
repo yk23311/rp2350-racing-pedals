@@ -30,11 +30,15 @@ const uint8_t xinput_compatible_id[40]={
     0,1,'X','U','S','B','1','0',0,0,
     0,0,0,0,0,0,0,0,0,0,0,0,0,0
 };
+uint8_t xinput_axis_quantize(uint16_t value) {
+    uint32_t scaled=((uint32_t)value+128u)/257u;
+    return (uint8_t)(scaled>255u?255u:scaled);
+}
 void xinput_report_build(const pedal_t *p,bool neutral,uint8_t out[20]) {
     memset(out,0,20); out[1]=20;
     if(neutral || !p->armed || !p->sample_valid || p->calibration_axis>=0 || p->mode!=PEDAL_JOYSTICK) return;
-    if(p->config.axis[0].calibrated) out[5]=(uint8_t)(((uint32_t)p->output[0]+128u)/257u);
-    if(p->config.axis[1].calibrated) out[4]=(uint8_t)(((uint32_t)p->output[1]+128u)/257u);
+    if(p->config.axis[0].calibrated) out[5]=xinput_axis_quantize(p->output[0]);
+    if(p->config.axis[1].calibrated) out[4]=xinput_axis_quantize(p->output[1]);
 }
 int xinput_control_response(uint8_t t,uint8_t r,uint16_t v,uint16_t i,uint8_t out[64]) {
     if(t==0xc0 && r==0x20 && v==0 && i==4) { memcpy(out,xinput_compatible_id,40);return 40; }
