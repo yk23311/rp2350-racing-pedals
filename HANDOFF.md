@@ -2,6 +2,8 @@
 
 更新：2026-10-31（Asia/Shanghai），工作目录`D:\练习项目\RP2350a`。**最新版0.4.0-control-center：板端桥接+曲线/映射/配置迁移、Qt可视化GUI已实现并构建；本次新固件尚未烧录或实机验收。** 最新[步骤/交接报告](docs/reports/14-control-center.md)，[一步步使用](docs/control-center.md)。历史探针报告不是当前状态。
 
+已公开发布[v0.4.0预发布版](https://github.com/yk23311/rp2350-racing-pedals/releases/tag/v0.4.0)，普通/诊断UF2与含GUI源码包等7附件已下载核验，见[Release交接](docs/reports/16-github-release.md)。Tag固定340b33f，后续文档提交不改变产物。新固件仍未实机验收。
+
 ## 用户目标与授权
 
 - Steam版《极限竞速：地平线6》真实2.4G手柄转向/按键，GP26油门RT、GP27刹车LT同时工作。

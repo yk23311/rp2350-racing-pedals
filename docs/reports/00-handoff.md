@@ -1,5 +1,7 @@
 # 总交接报告
 
+最新发布：[v0.4.0 Release上传与交接](16-github-release.md)，7附件已核验并公开发布为预发布版。
+
 公开仓库已推送：[GitHub上传交接](15-github-publication.md)；[仓库地址](https://github.com/yk23311/rp2350-racing-pedals)。
 
 **最新交接入口：[HANDOFF.md](../../HANDOFF.md)；最新阶段：[14 驾驶控制中心](14-control-center.md)。** 已实现Qt GUI、板端曲线/按键映射、遥测和PDL1→PDL2迁移；43项C与61项Python通过。0.4.0普通/诊断UF2已构建，尚未烧录或实机验收。以下均为历史阶段记录。
