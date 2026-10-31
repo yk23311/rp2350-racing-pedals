@@ -1,0 +1,14 @@
+PICO_SDK_PATH is R:/deps/pico-sdk-2.2.0
+Target board (PICO_BOARD) is 'waveshare_rp2350_usb_a'.
+Using board configuration from R:/deps/pico-sdk-2.2.0/src/boards/include/boards/waveshare_rp2350_usb_a.h
+Pico Platform (PICO_PLATFORM) is 'rp2350-arm-s'.
+Build type is Release
+TinyUSB available at R:/deps/pico-sdk-2.2.0/lib/tinyusb/hw/bsp/rp2040; enabling build support for USB.
+-- Configuring done (0.6s)
+-- Generating done (0.2s)
+-- Build files have been written to: R:/build/firmware-xinput-R
+[1/2] Building C object firmware/CMakeFiles/pedals.dir/xinput_device.c.obj
+[2/2] Linking CXX executable firmware\pedals.elf
+Created dist\xinput\pedals-xinput.uf2 (RP2350 ARM-S, not flashed)
+   text	   data	    bss	    dec	    hex	filename
+  44268	      0	   5192	  49460	   c134	dist/xinput/pedals-xinput.elf

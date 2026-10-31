@@ -1,0 +1,30 @@
+PASS: 152 UF2 blocks; BIN roundtrip identical; all payloads below configuration area
+FLASH 0x10000000..0x10009708; configuration starts 0x101fe000
+PASS: write_slot, flash_range_erase, flash_range_program located in SRAM
+{
+  "verified_date": "2026-10-31",
+  "board": "waveshare_rp2350_usb_a",
+  "platform": "rp2350-arm-s",
+  "hardware_tested": false,
+  "files": {
+    "pedals.uf2": {
+      "bytes": 77824,
+      "sha256": "655547cece9cafdc4038dc6d174bd192bf10be684dd88370603bc484b3d8fc79"
+    },
+    "pedals.bin": {
+      "bytes": 38664,
+      "sha256": "eb297fe607448421141bb40c6abe1ad955e453c331eba9d67f7c70b41049f840"
+    },
+    "pedals.elf": {
+      "bytes": 726940,
+      "sha256": "04f8141ecbd306c42e05a9c4aa929ea3ad670bfc2f4cb77e52ae63c27c845081"
+    },
+    "pedals.elf.map": {
+      "bytes": 498047,
+      "sha256": "dc9d988e69498273dd0e1c0b4e76f2de31ab91a63afaafbf390b69aa63e5f5c3"
+    }
+  },
+  "flash_start": "0x10000000",
+  "flash_end": "0x10009708",
+  "configuration_start": "0x101fe000"
+}

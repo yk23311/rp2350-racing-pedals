@@ -1,0 +1,59 @@
+**********************************************************************
+** Visual Studio 2022 Developer Command Prompt v17.14.40
+** Copyright (c) 2025 Microsoft Corporation
+**********************************************************************
+[vcvarsall.bat] Environment initialized for: 'x64'
+-- Configuring done (0.2s)
+-- Generating done (0.1s)
+-- Build files have been written to: D:/练习项目/RP2350a/build/clang
+ninja: no work to do.
+Test project D:/练习项目/RP2350a/build/clang
+      Start  1: core_defaults
+ 1/13 Test  #1: core_defaults ....................   Passed    0.05 sec
+      Start  2: core_mapping
+ 2/13 Test  #2: core_mapping .....................   Passed    0.05 sec
+      Start  3: core_filtering
+ 3/13 Test  #3: core_filtering ...................   Passed    0.05 sec
+      Start  4: core_hysteresis
+ 4/13 Test  #4: core_hysteresis ..................   Passed    0.05 sec
+      Start  5: core_curve
+ 5/13 Test  #5: core_curve .......................   Passed    0.05 sec
+      Start  6: core_calibration
+ 6/13 Test  #6: core_calibration .................   Passed    0.05 sec
+      Start  7: core_modes
+ 7/13 Test  #7: core_modes .......................   Passed    0.05 sec
+      Start  8: core_invalid
+ 8/13 Test  #8: core_invalid .....................   Passed    0.05 sec
+      Start  9: core_button
+ 9/13 Test  #9: core_button ......................   Passed    0.05 sec
+      Start 10: config_records
+10/13 Test #10: config_records ...................   Passed    0.05 sec
+      Start 11: console_protocol
+11/13 Test #11: console_protocol .................   Passed    0.06 sec
+      Start 12: usb_contract
+12/13 Test #12: usb_contract .....................   Passed    0.05 sec
+      Start 13: flash_power_loss
+13/13 Test #13: flash_power_loss .................   Passed    0.06 sec
+
+100% tests passed out of 13
+
+Total Test time (real) =   0.71 sec
+test_initial_window_fits_content (test_gui.GuiLayoutTests.test_initial_window_fits_content) ... ok
+test_device_error (test_pedalctl.ClientTests.test_device_error) ... ok
+test_get (test_pedalctl.ClientTests.test_get) ... ok
+test_ok (test_pedalctl.ClientTests.test_ok) ... ok
+test_protocol_version (test_pedalctl.ClientTests.test_protocol_version) ... ok
+test_reject_injection (test_pedalctl.ClientTests.test_reject_injection) ... ok
+test_set_validation (test_pedalctl.ClientTests.test_set_validation) ... ok
+test_synchronize_discards_stale_responses (test_pedalctl.ClientTests.test_synchronize_discards_stale_responses) ... ok
+test_synchronize_handles_inflight_prefix_without_newline (test_pedalctl.ClientTests.test_synchronize_handles_inflight_prefix_without_newline) ... ok
+test_synchronize_timeout (test_pedalctl.ClientTests.test_synchronize_timeout) ... ok
+test_timeout (test_pedalctl.ClientTests.test_timeout) ... ok
+test_truncated_and_bad_response (test_pedalctl.ClientTests.test_truncated_and_bad_response) ... ok
+test_reject_empty_and_configuration_overlap (test_uf2.UF2Tests.test_reject_empty_and_configuration_overlap) ... ok
+test_roundtrip_headers_and_flash_reservation (test_uf2.UF2Tests.test_roundtrip_headers_and_flash_reservation) ... ok
+
+----------------------------------------------------------------------
+Ran 14 tests in 0.234s
+
+OK

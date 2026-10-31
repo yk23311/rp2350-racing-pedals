@@ -1,0 +1,33 @@
+PASS: 157 UF2 blocks reconstruct BIN; all flash addresses precede configuration
+PASS: flash callbacks in SRAM; flash end 0x10009cec
+{
+  "date": "2026-10-31",
+  "version": "0.2.0-xinput",
+  "vid_pid": "CAFE:4012",
+  "interface0_compatible_id": "XUSB10",
+  "gp26": "RT",
+  "gp27": "LT",
+  "board": "waveshare_rp2350_usb_a",
+  "flashed": false,
+  "windows_xinput_verified": false,
+  "flash_end": "0x10009cec",
+  "configuration_start": "0x101fe000",
+  "files": {
+    "pedals-xinput.bin": {
+      "bytes": 40172,
+      "sha256": "3d44e21445b004d293a2b503bb33f3dbfa225a5853801ad5eb06295d8420ad9a"
+    },
+    "pedals-xinput.elf": {
+      "bytes": 742820,
+      "sha256": "93cb12fb1e44860ce63ef7632ccc29a326fbaa638fee32e792af6dc1de840a73"
+    },
+    "pedals-xinput.elf.map": {
+      "bytes": 503741,
+      "sha256": "236632ef10029991b47fbd27d52e2558e30ee47e2f3b4f35480415cef00c2699"
+    },
+    "pedals-xinput.uf2": {
+      "bytes": 80384,
+      "sha256": "4aca95a4a7f06559d88b5d80a71aa5f64bf3b46e1f6c39ec361deb4843641f70"
+    }
+  }
+}

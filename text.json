@@ -1,0 +1,38 @@
+{
+  "protocol": 1,
+  "mode": "JOYSTICK",
+  "armed": true,
+  "calibration_axis": -1,
+  "raw": [
+    544,
+    543
+  ],
+  "filtered": [
+    539,
+    539
+  ],
+  "output": [
+    0,
+    0
+  ],
+  "axes": [
+    {
+      "released": 535,
+      "pressed": 2615,
+      "on": 300,
+      "off": 100,
+      "gamma": 100,
+      "window": 4,
+      "calibrated": true
+    },
+    {
+      "released": 543,
+      "pressed": 2636,
+      "on": 300,
+      "off": 100,
+      "gamma": 200,
+      "window": 4,
+      "calibrated": true
+    }
+  ]
+}
