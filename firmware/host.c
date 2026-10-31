@@ -301,6 +301,9 @@ void tuh_event_hook_cb(uint8_t rhport, uint32_t eventid, bool in_isr) {
 void host_init(void) {
     bridge_config_t config;
     bridge_defaults(&config);
+    /* The merged controller must keep the real pad's RT/LT usable while
+     * also accepting the pedals: use max(pedal, pad) instead of hard override. */
+    config.merge_mode = BRIDGE_MERGE_MAX;
     bridge_init(&host_state, &config, host_now_ms());
     memset(&host_itf, 0, sizeof(host_itf));
     handshake_state = HOST_HS_IDLE;
