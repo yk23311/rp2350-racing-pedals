@@ -12,7 +12,13 @@ typedef struct { uint8_t bmRequestType,bRequest;uint16_t wValue,wIndex,wLength; 
 bool tud_ready(void);
 bool tud_control_xfer(uint8_t port,const tusb_control_request_t *request,void *buffer,uint16_t length);
 typedef enum { HID_REPORT_TYPE_INPUT=1,HID_REPORT_TYPE_OUTPUT=2 } hid_report_type_t;
+#if PEDAL_USB_HOST
+enum { TUSB_ROLE_DEVICE=1, TUSB_SPEED_FULL=2 };
+typedef struct { uint8_t role,speed; } tusb_rhport_init_t;
+bool tusb_init(uint8_t rhport,const tusb_rhport_init_t *init);
+#else
 bool tusb_init(void);
+#endif
 void tud_task(void);
 bool tud_mounted(void);
 bool tud_suspended(void);

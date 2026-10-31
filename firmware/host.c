@@ -58,6 +58,10 @@ static uint32_t host_now_ms(void) {
 }
 
 static void host_log(const char *format, ...) {
+#if !PEDAL_HOST_DIAGNOSTICS
+    (void)format;
+    return;
+#endif
     if (!tud_cdc_connected()) return;
     char line[HOST_LOG_SIZE];
     va_list args;
@@ -335,7 +339,7 @@ void host_task(void) {
     bridge_tick(&host_state, now);
     if (!host_banner_logged && tud_cdc_connected()) {
         host_banner_logged = true;
-        host_log("[HOST] probe boot init=%d pin=12", host_init_ok ? 1 : 0);
+        host_log("[HOST] bridge boot init=%d pin=12", host_init_ok ? 1 : 0);
     }
     if ((uint32_t)(now - host_last_status_ms) >= 500u) {
         host_last_status_ms = now;

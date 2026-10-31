@@ -1,17 +1,22 @@
 #include "usb.h"
 #include "usb_layout.h"
 #include "report_gate.h"
+#ifndef PEDAL_USB_HOST
+#define PEDAL_USB_HOST 0
+#endif
 #if PEDAL_USB_XINPUT
 #include "xinput_device.h"
 #include "xinput_protocol.h"
 #endif
 #if PEDAL_USB_HOST
 #include "host.h"
+#include "control_profile.h"
 #endif
 #include "tusb.h"
 #include "pico/unique_id.h"
 #include "pico/time.h"
 #include <string.h>
+#include <stdio.h>
 static pedal_t *state;
 static report_gate_t gate;
 static uint32_t generation;
@@ -21,6 +26,7 @@ static bridge_host_state_t last_host_state;
 static bool last_host_seen;
 static bool last_xinput_controlled_neutral;
 static bool pending_xinput_controlled_neutral;
+static bool host_controls_released;
 #endif
 static void restart(void) {
     pedal_reset(state); generation=state->generation;
@@ -29,6 +35,7 @@ static void restart(void) {
 #if PEDAL_USB_HOST
     last_xinput_controlled_neutral=false;
     pending_xinput_controlled_neutral=false;
+    host_controls_released=false;
 #endif
 }
 void pedal_usb_init(pedal_t *pedal) {
@@ -47,8 +54,12 @@ void pedal_usb_init(pedal_t *pedal) {
 }
 bool pedal_usb_quiet(void) {
 #if PEDAL_USB_HOST
+    uint8_t current[20];
+    bridge_build_report(host_bridge(),state,false,current);
+    bool current_quiet=!current[2] && !current[3] && !current[4] && !current[5];
     bool gate_quiet=!report_gate_blocked(&gate) && !gate.busy[0] && !gate.busy[1] &&
-                    gate.last_neutral[1] && last_xinput_controlled_neutral;
+                    gate.last_neutral[1] && last_xinput_controlled_neutral && current_quiet;
+    if(host_bridge()->pad_valid && !xinput_pad_buttons_triggers_neutral(&host_bridge()->pad)) gate_quiet=false;
     return tud_mounted() && !tud_suspended() && generation==state->generation && gate_quiet;
 #else
     return tud_mounted() && !tud_suspended() && generation==state->generation && report_gate_quiet(&gate);
@@ -57,6 +68,9 @@ bool pedal_usb_quiet(void) {
 static void make_report(unsigned itf,uint8_t data[20]) {
     memset(data,0,20);
     bool blocked=report_gate_blocked(&gate) || generation!=state->generation;
+#if PEDAL_USB_HOST
+    blocked=blocked || !host_controls_released;
+#endif
 #if PEDAL_USB_XINPUT
 #if PEDAL_USB_HOST
     if(itf==0) { bridge_build_report(host_bridge(),state,blocked,data);return; }
@@ -68,7 +82,55 @@ static void make_report(unsigned itf,uint8_t data[20]) {
     if(itf==0 && state->mode==PEDAL_JOYSTICK) {
         data[0]=(uint8_t)state->output[0]; data[1]=(uint8_t)(state->output[0]>>8);
         data[2]=(uint8_t)state->output[1]; data[3]=(uint8_t)(state->output[1]>>8);
-    } else if(itf==1) pedal_keyboard(state,data);
+    } else if(itf==1) {
+        pedal_keyboard(state,data);
+#if PEDAL_USB_HOST
+        if(state->mode==PEDAL_JOYSTICK && state->sample_valid && bridge_host_ready(host_bridge())) {
+            xinput_pad_t processed;
+            control_transform(control_current(),&host_bridge()->pad,&processed,data);
+        }
+#endif
+    }
+}
+bool pedal_usb_console(const char *line,char response[CONSOLE_RESPONSE_SIZE]) {
+    if(!strcmp(line,"CAPS")) {
+        snprintf(response,CONSOLE_RESPONSE_SIZE,
+            "OK {\"control_center\":1,\"profile\":%d,\"telemetry\":%d,\"bridge\":%d,\"version\":\"%s\",\"persist_format\":%d}\n",
+            PEDAL_USB_HOST?1:0,PEDAL_USB_HOST?1:0,PEDAL_USB_HOST?1:0,
+            PEDAL_USB_HOST?"0.4.0":(PEDAL_USB_XINPUT?"0.2.0":"0.1.0"),PEDAL_USB_HOST?2:1);
+        return true;
+    }
+#if PEDAL_USB_HOST
+    if(!strcmp(line,"TELEMETRY")) {
+        const bridge_t *host=host_bridge();
+        xinput_pad_t raw=host->pad,processed={0}; uint8_t ignored[8],keys[20],output[20];
+        if(!host->pad_valid) xinput_pad_clear(&raw);
+        control_transform(control_current(),&raw,&processed,ignored);
+        make_report(0,output);make_report(1,keys);
+        char a[100],b[100];
+        snprintf(a,sizeof(a),"[%u,%u,%u,%d,%d,%d,%d]",raw.buttons,raw.lt,raw.rt,raw.lx,raw.ly,raw.rx,raw.ry);
+        snprintf(b,sizeof(b),"[%u,%u,%u,%d,%d,%d,%d]",processed.buttons,processed.lt,processed.rt,processed.lx,processed.ly,processed.rx,processed.ry);
+        xinput_pad_t out; (void)xinput_pad_parse_wired(output,20,&out);
+        bool blocked=report_gate_blocked(&gate) || generation!=state->generation || !host_controls_released;
+        snprintf(response,CONSOLE_RESPONSE_SIZE,
+            "OK {\"raw\":%s,\"processed\":%s,\"output\":[%u,%u,%u,%d,%d,%d,%d],"
+            "\"keys\":[%u,%u,%u,%u,%u,%u,%u,%u],\"state\":%d,\"age\":%lu,\"reports\":%lu,\"timeouts\":%lu,"
+            "\"blocked\":%s,\"keyboard_rollover\":%s,\"fresh\":%s}\n",
+            a,b,out.buttons,out.lt,out.rt,out.lx,out.ly,out.rx,out.ry,
+            keys[0],keys[1],keys[2],keys[3],keys[4],keys[5],keys[6],keys[7],(int)host->state,
+            (unsigned long)(host->pad_valid?(uint32_t)(time_us_64()/1000)-host->last_report_ms:0),
+            (unsigned long)host->valid_reports,(unsigned long)host->timeouts,
+            blocked?"true":"false",keys[2]==1?"true":"false",bridge_host_ready(host)?"true":"false");
+        return true;
+    }
+#endif
+    return false;
+}
+bool pedal_usb_feed(console_input_t *input,char ch,pedal_t *pedal,console_save_fn save,void *context,char response[CONSOLE_RESPONSE_SIZE]) {
+    if(!console_feed(input,ch,pedal,save,context,response)) return false;
+    if(!strcmp(response,"ERR COMMAND\n") || !strcmp(response,"ERR STATE_OR_VALUE\n"))
+        (void)pedal_usb_console(input->line,response);
+    return true;
 }
 void pedal_usb_task(void) {
 #if PEDAL_USB_HOST
@@ -78,7 +140,16 @@ void pedal_usb_task(void) {
     }
 #endif
     tud_task();
-    if(generation!=state->generation) { generation=state->generation; report_gate_reset(&gate); }
+    if(generation!=state->generation) {
+        generation=state->generation; report_gate_reset(&gate);
+#if PEDAL_USB_HOST
+        host_controls_released=false;
+#endif
+    }
+#if PEDAL_USB_HOST
+    if(!host->host_seen || (bridge_host_ready(host) && xinput_pad_is_neutral(&host->pad,BRIDGE_STICK_TOLERANCE)))
+        host_controls_released=true;
+#endif
     if(!tud_mounted() || tud_suspended()) return;
 #if PEDAL_USB_XINPUT
     xinput_device_task();
@@ -178,7 +249,7 @@ const uint16_t *tud_descriptor_string_cb(uint8_t index,uint16_t langid) {
     (void)langid; static uint16_t out[33]; char serial[2*PICO_UNIQUE_BOARD_ID_SIZE_BYTES+1];
 #if PEDAL_USB_HOST
     if(index==0xee)return xinput_os_string;
-    const char *strings[]={"","DIY Pedals","RP2350 Host Probe",serial};
+    const char *strings[]={"","DIY Pedals","RP2350 XInput Bridge",serial};
 #elif PEDAL_USB_XINPUT
     if(index==0xee)return xinput_os_string;
     const char *strings[]={"","DIY Pedals","RP2350 Native XInput Pedals",serial};

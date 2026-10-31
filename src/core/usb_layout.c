@@ -15,7 +15,7 @@ const uint8_t usb_keyboard_descriptor[]={
     0x95,1,0x75,8,0x81,1, /* reserved */
     0x95,5,0x75,1,0x05,8,0x19,1,0x29,5,0x91,2,
     0x95,1,0x75,3,0x91,1, /* LED padding */
-    0x95,6,0x75,8,0x15,0,0x25,0x65,0x05,7,0x19,0,0x29,0x65,0x81,0,0xc0
+    0x95,6,0x75,8,0x15,0,0x26,0xdf,0,0x05,7,0x19,0,0x29,0xdf,0x81,0,0xc0
 };
 const uint8_t usb_configuration_descriptor[125]={
     9,2,125,0,4,1,0,0x80,50, /* bus powered, max 100 mA */
@@ -38,4 +38,4 @@ const uint8_t usb_configuration_descriptor[125]={
 };
 const size_t usb_joystick_descriptor_size=sizeof(usb_joystick_descriptor);
 const size_t usb_keyboard_descriptor_size=sizeof(usb_keyboard_descriptor);
-_Static_assert(sizeof(usb_keyboard_descriptor)==63,"Keep native keyboard descriptor length in sync");
+_Static_assert(sizeof(usb_keyboard_descriptor)==64,"Keep native keyboard descriptor length in sync");

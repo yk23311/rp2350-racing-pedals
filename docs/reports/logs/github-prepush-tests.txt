@@ -1,0 +1,166 @@
+**********************************************************************
+** Visual Studio 2022 Developer Command Prompt v17.14.40
+** Copyright (c) 2025 Microsoft Corporation
+**********************************************************************
+[vcvarsall.bat] Environment initialized for: 'x64'
+-- Configuring done (0.1s)
+-- Generating done (0.1s)
+-- Build files have been written to: D:/练习项目/RP2350a/build/clang
+ninja: no work to do.
+Test project D:/练习项目/RP2350a/build/clang
+      Start  1: control_profile
+ 1/43 Test  #1: control_profile ..................   Passed    0.03 sec
+      Start  2: control_console
+ 2/43 Test  #2: control_console ..................   Passed    0.03 sec
+      Start  3: control_storage
+ 3/43 Test  #3: control_storage ..................   Passed    0.04 sec
+      Start  4: core_defaults
+ 4/43 Test  #4: core_defaults ....................   Passed    0.03 sec
+      Start  5: core_mapping
+ 5/43 Test  #5: core_mapping .....................   Passed    0.03 sec
+      Start  6: core_filtering
+ 6/43 Test  #6: core_filtering ...................   Passed    0.03 sec
+      Start  7: core_hysteresis
+ 7/43 Test  #7: core_hysteresis ..................   Passed    0.03 sec
+      Start  8: core_curve
+ 8/43 Test  #8: core_curve .......................   Passed    0.03 sec
+      Start  9: core_calibration
+ 9/43 Test  #9: core_calibration .................   Passed    0.03 sec
+      Start 10: core_modes
+10/43 Test #10: core_modes .......................   Passed    0.03 sec
+      Start 11: core_invalid
+11/43 Test #11: core_invalid .....................   Passed    0.03 sec
+      Start 12: core_button
+12/43 Test #12: core_button ......................   Passed    0.03 sec
+      Start 13: config_records
+13/43 Test #13: config_records ...................   Passed    0.03 sec
+      Start 14: console_protocol
+14/43 Test #14: console_protocol .................   Passed    0.03 sec
+      Start 15: usb_contract
+15/43 Test #15: usb_contract .....................   Passed    0.03 sec
+      Start 16: flash_power_loss
+16/43 Test #16: flash_power_loss .................   Passed    0.03 sec
+      Start 17: xinput_packet
+17/43 Test #17: xinput_packet ....................   Passed    0.03 sec
+      Start 18: xinput_layout
+18/43 Test #18: xinput_layout ....................   Passed    0.03 sec
+      Start 19: xinput_control
+19/43 Test #19: xinput_control ...................   Passed    0.03 sec
+      Start 20: xinput_capabilities
+20/43 Test #20: xinput_capabilities ..............   Passed    0.03 sec
+      Start 21: xinput_pad_parse
+21/43 Test #21: xinput_pad_parse .................   Passed    0.03 sec
+      Start 22: xinput_pad_neutral
+22/43 Test #22: xinput_pad_neutral ...............   Passed    0.03 sec
+      Start 23: xinput_pad_predicates
+23/43 Test #23: xinput_pad_predicates ............   Passed    0.03 sec
+      Start 24: bridge_pedal_only
+24/43 Test #24: bridge_pedal_only ................   Passed    0.03 sec
+      Start 25: bridge_handshake
+25/43 Test #25: bridge_handshake .................   Passed    0.03 sec
+      Start 26: bridge_override
+26/43 Test #26: bridge_override ..................   Passed    0.03 sec
+      Start 27: bridge_max
+27/43 Test #27: bridge_max .......................   Passed    0.03 sec
+      Start 28: bridge_timeout
+28/43 Test #28: bridge_timeout ...................   Passed    0.03 sec
+      Start 29: bridge_unmount
+29/43 Test #29: bridge_unmount ...................   Passed    0.03 sec
+      Start 30: bridge_blocked
+30/43 Test #30: bridge_blocked ...................   Passed    0.03 sec
+      Start 31: bridge_quantize
+31/43 Test #31: bridge_quantize ..................   Passed    0.03 sec
+      Start 32: xinput_driver
+32/43 Test #32: xinput_driver ....................   Passed    0.03 sec
+      Start 33: xinput_usb_integration
+33/43 Test #33: xinput_usb_integration ...........   Passed    0.03 sec
+      Start 34: bridge_usb_combined
+34/43 Test #34: bridge_usb_combined ..............   Passed    0.03 sec
+      Start 35: bridge_usb_barrier
+35/43 Test #35: bridge_usb_barrier ...............   Passed    0.03 sec
+      Start 36: bridge_usb_faults
+36/43 Test #36: bridge_usb_faults ................   Passed    0.03 sec
+      Start 37: bridge_usb_save_sticks
+37/43 Test #37: bridge_usb_save_sticks ...........   Passed    0.03 sec
+      Start 38: bridge_usb_save_button
+38/43 Test #38: bridge_usb_save_button ...........   Passed    0.03 sec
+      Start 39: bridge_usb_save_trigger
+39/43 Test #39: bridge_usb_save_trigger ..........   Passed    0.03 sec
+      Start 40: bridge_usb_mapped
+40/43 Test #40: bridge_usb_mapped ................   Passed    0.03 sec
+      Start 41: bridge_usb_save_source
+41/43 Test #41: bridge_usb_save_source ...........   Passed    0.03 sec
+      Start 42: bridge_usb_telemetry
+42/43 Test #42: bridge_usb_telemetry .............   Passed    0.03 sec
+      Start 43: bridge_usb_mapped_release
+43/43 Test #43: bridge_usb_mapped_release ........   Passed    0.03 sec
+
+100% tests passed out of 43
+
+Total Test time (real) =   1.34 sec
+test_native_windows_abi (test_check_xinput.XInputReaderTests.test_native_windows_abi) ... ok
+test_reads_independent_triggers_and_ignores_empty_slots (test_check_xinput.XInputReaderTests.test_reads_independent_triggers_and_ignores_empty_slots) ... ok
+test_apply_ack_preserves_edits_made_while_waiting (test_control_gui.ControlGuiTests.test_apply_ack_preserves_edits_made_while_waiting) ... ok
+test_apply_generates_board_commands_and_waits_for_ack (test_control_gui.ControlGuiTests.test_apply_generates_board_commands_and_waits_for_ack) ... ok
+test_blocked_controller_is_visible_in_main_status (test_control_gui.ControlGuiTests.test_blocked_controller_is_visible_in_main_status) ... ok
+test_calibration_after_save_marks_ram_unsaved_without_local_edits (test_control_gui.ControlGuiTests.test_calibration_after_save_marks_ram_unsaved_without_local_edits) ... ok
+test_calibration_and_invalid_hysteresis (test_control_gui.ControlGuiTests.test_calibration_and_invalid_hysteresis) ... ok
+test_connected_signal_alone_resets_previous_session (test_control_gui.ControlGuiTests.test_connected_signal_alone_resets_previous_session) ... ok
+test_discovery_displays_serial_suffix_and_full_tooltip (test_control_gui.ControlGuiTests.test_discovery_displays_serial_suffix_and_full_tooltip) ... ok
+test_host_age_includes_time_waiting_in_ui (test_control_gui.ControlGuiTests.test_host_age_includes_time_waiting_in_ui) ... ok
+test_keyboard_modifier_binding_and_disable_commands (test_control_gui.ControlGuiTests.test_keyboard_modifier_binding_and_disable_commands) ... ok
+test_legacy_and_disconnect_disable_board_actions (test_control_gui.ControlGuiTests.test_legacy_and_disconnect_disable_board_actions) ... ok
+test_mapping_highlights_use_raw_sources_and_clear_when_not_fresh (test_control_gui.ControlGuiTests.test_mapping_highlights_use_raw_sources_and_clear_when_not_fresh) ... ok
+test_mode_selector_explains_ram_only_lifetime (test_control_gui.ControlGuiTests.test_mode_selector_explains_ram_only_lifetime) ... ok
+test_output_shows_pedal_only_without_host_but_raw_stays_inactive (test_control_gui.ControlGuiTests.test_output_shows_pedal_only_without_host_but_raw_stays_inactive) ... ok
+test_pc_snapshot_watchdog_greys_data_and_blocks_writes_then_recovers (test_control_gui.ControlGuiTests.test_pc_snapshot_watchdog_greys_data_and_blocks_writes_then_recovers) ... ok
+test_polling_preserves_unsent_edits (test_control_gui.ControlGuiTests.test_polling_preserves_unsent_edits) ... ok
+test_reconnect_discards_draft_and_waits_for_new_device_config (test_control_gui.ControlGuiTests.test_reconnect_discards_draft_and_waits_for_new_device_config) ... ok
+test_revert_restores_applied_values (test_control_gui.ControlGuiTests.test_revert_restores_applied_values) ... ok
+test_save_needs_board_ack (test_control_gui.ControlGuiTests.test_save_needs_board_ack) ... ok
+test_small_window_keeps_footer_and_scrollable_controls (test_control_gui.ControlGuiTests.test_small_window_keeps_footer_and_scrollable_controls) ... ok
+test_stale_clean_config_cannot_save_until_next_snapshot (test_control_gui.ControlGuiTests.test_stale_clean_config_cannot_save_until_next_snapshot) ... ok
+test_unlabelled_legal_hid_binding_is_preserved_on_other_edits (test_control_gui.ControlGuiTests.test_unlabelled_legal_hid_binding_is_preserved_on_other_edits) ... ok
+test_widgets_clamp_and_render_at_target_size (test_control_gui.ControlGuiTests.test_widgets_clamp_and_render_at_target_size) ... ok
+test_advertised_unsupported_telemetry_is_disabled_without_losing_link (test_control_session.SessionTests.test_advertised_unsupported_telemetry_is_disabled_without_losing_link) ... ok
+test_auto_discovery_opens_only_unique_known_identity (test_control_session.SessionTests.test_auto_discovery_opens_only_unique_known_identity) ... ok
+test_capabilities_and_profile_refresh_only_on_connect_and_batch (test_control_session.SessionTests.test_capabilities_and_profile_refresh_only_on_connect_and_batch) ... ok
+test_close_cancels_remaining_batch_after_inflight_request_returns (test_control_session.SessionTests.test_close_cancels_remaining_batch_after_inflight_request_returns) ... ok
+test_close_is_idempotent_and_closes_link_on_worker (test_control_session.SessionTests.test_close_is_idempotent_and_closes_link_on_worker) ... ok
+test_disconnect_drops_pending_commands_and_stale_inflight_snapshot (test_control_session.SessionTests.test_disconnect_drops_pending_commands_and_stale_inflight_snapshot) ... ok
+test_later_apply_cancels_pending_save_indication (test_control_session.SessionTests.test_later_apply_cancels_pending_save_indication) ... ok
+test_legacy_caps_rejection_produces_no_invented_telemetry (test_control_session.SessionTests.test_legacy_caps_rejection_produces_no_invented_telemetry) ... ok
+test_multiple_candidates_require_selection_and_unknown_port_is_rejected (test_control_session.SessionTests.test_multiple_candidates_require_selection_and_unknown_port_is_rejected) ... ok
+test_polling_is_bounded_and_does_not_queue_snapshots (test_control_session.SessionTests.test_polling_is_bounded_and_does_not_queue_snapshots) ... ok
+test_rejected_batch_keeps_connection_and_refreshes_actual_config (test_control_session.SessionTests.test_rejected_batch_keeps_connection_and_refreshes_actual_config) ... ok
+test_save_acknowledgement_is_explicit_and_survives_busy_ui (test_control_session.SessionTests.test_save_acknowledgement_is_explicit_and_survives_busy_ui) ... ok
+test_signal_callback_disconnect_cannot_deliver_stale_snapshot (test_control_session.SessionTests.test_signal_callback_disconnect_cannot_deliver_stale_snapshot) ... ok
+test_transport_failure_reconnects_same_serial_only (test_control_session.SessionTests.test_transport_failure_reconnects_same_serial_only) ... ok
+test_validation_and_offline_submit_do_not_open_or_replay_commands (test_control_session.SessionTests.test_validation_and_offline_submit_do_not_open_or_replay_commands) ... ok
+test_initial_window_fits_content (test_gui.GuiLayoutTests.test_initial_window_fits_content) ... ok
+test_host_logs_allow_get_and_save_without_disconnect (test_gui_worker.GuiWorkerTests.test_host_logs_allow_get_and_save_without_disconnect) ... ok
+test_rejected_calibration_can_retry_without_reconnect (test_gui_worker.GuiWorkerTests.test_rejected_calibration_can_retry_without_reconnect) ... ok
+test_rejected_save_can_retry_without_reconnect (test_gui_worker.GuiWorkerTests.test_rejected_save_can_retry_without_reconnect) ... ok
+test_timeout_still_closes_connection (test_gui_worker.GuiWorkerTests.test_timeout_still_closes_connection) ... ok
+test_device_error (test_pedalctl.ClientTests.test_device_error) ... ok
+test_get (test_pedalctl.ClientTests.test_get) ... ok
+test_host_log_flood_has_bounded_wait (test_pedalctl.ClientTests.test_host_log_flood_has_bounded_wait) ... ok
+test_host_logs_do_not_consume_command_reply (test_pedalctl.ClientTests.test_host_logs_do_not_consume_command_reply) ... ok
+test_late_reply_is_not_accepted_after_deadline (test_pedalctl.ClientTests.test_late_reply_is_not_accepted_after_deadline) ... ok
+test_ok (test_pedalctl.ClientTests.test_ok) ... ok
+test_protocol_version (test_pedalctl.ClientTests.test_protocol_version) ... ok
+test_reject_injection (test_pedalctl.ClientTests.test_reject_injection) ... ok
+test_set_validation (test_pedalctl.ClientTests.test_set_validation) ... ok
+test_synchronize_discards_stale_responses (test_pedalctl.ClientTests.test_synchronize_discards_stale_responses) ... ok
+test_synchronize_handles_inflight_prefix_without_newline (test_pedalctl.ClientTests.test_synchronize_handles_inflight_prefix_without_newline) ... ok
+test_synchronize_timeout (test_pedalctl.ClientTests.test_synchronize_timeout) ... ok
+test_timeout (test_pedalctl.ClientTests.test_timeout) ... ok
+test_truncated_and_bad_response (test_pedalctl.ClientTests.test_truncated_and_bad_response) ... ok
+test_truncated_host_log_is_still_protocol_error (test_pedalctl.ClientTests.test_truncated_host_log_is_still_protocol_error) ... ok
+test_reject_empty_and_configuration_overlap (test_uf2.UF2Tests.test_reject_empty_and_configuration_overlap) ... ok
+test_roundtrip_headers_and_flash_reservation (test_uf2.UF2Tests.test_roundtrip_headers_and_flash_reservation) ... ok
+
+----------------------------------------------------------------------
+Ran 61 tests in 3.119s
+
+OK

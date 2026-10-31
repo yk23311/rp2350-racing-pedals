@@ -1,5 +1,6 @@
 #include "bridge.h"
 #include "xinput_protocol.h"
+#include "control_profile.h"
 #include <string.h>
 
 static void put_u16(uint8_t *data, uint16_t value) {
@@ -129,12 +130,15 @@ void bridge_build_report(const bridge_t *bridge, const pedal_t *pedal, bool bloc
     bool host_live = bridge != NULL && bridge->state == BRIDGE_HOST_STREAMING && bridge->pad_valid;
     if (!host_live && bridge_requires_full_neutral(bridge)) return;
 
+    xinput_pad_t processed={0}; uint8_t keyboard[8];
+    if(host_live) control_transform(control_current(),&bridge->pad,&processed,keyboard);
+
     if (host_live) {
-        put_u16(report + 2, bridge->pad.buttons);
-        put_i16(report + 6, bridge->pad.lx);
-        put_i16(report + 8, bridge->pad.ly);
-        put_i16(report + 10, bridge->pad.rx);
-        put_i16(report + 12, bridge->pad.ry);
+        put_u16(report + 2, processed.buttons);
+        put_i16(report + 6, processed.lx);
+        put_i16(report + 8, processed.ly);
+        put_i16(report + 10, processed.rx);
+        put_i16(report + 12, processed.ry);
     }
 
     bool throttle_owned = pedal->config.axis[0].calibrated;
@@ -143,14 +147,14 @@ void bridge_build_report(const bridge_t *bridge, const pedal_t *pedal, bool bloc
     uint8_t lt = brake_owned ? xinput_axis_quantize(pedal->output[1]) : 0;
     if (host_live) {
         if (!throttle_owned) {
-            rt = bridge->pad.rt;
-        } else if (bridge->config.merge_mode == BRIDGE_MERGE_MAX && bridge->pad.rt > rt) {
-            rt = bridge->pad.rt;
+            rt = processed.rt;
+        } else if (bridge->config.merge_mode == BRIDGE_MERGE_MAX && processed.rt > rt) {
+            rt = processed.rt;
         }
         if (!brake_owned) {
-            lt = bridge->pad.lt;
-        } else if (bridge->config.merge_mode == BRIDGE_MERGE_MAX && bridge->pad.lt > lt) {
-            lt = bridge->pad.lt;
+            lt = processed.lt;
+        } else if (bridge->config.merge_mode == BRIDGE_MERGE_MAX && processed.lt > lt) {
+            lt = processed.lt;
         }
     }
     report[4] = lt;

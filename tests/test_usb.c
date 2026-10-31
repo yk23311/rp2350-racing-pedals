@@ -32,6 +32,7 @@ static void layout(void) {
             switch(tag&0xfc) { case 0x24:max=v;break; case 0x74:size=v;break;case 0x94:count=v;break;case 0x80:bits+=count*size;break; }
         }
         CHECK(bits==(k?64u:32u)); if(k==0) CHECK(max==65535);
+        else CHECK(max>=0xdf); /* All configured non-modifier usages must fit HID logical range. */
     }
 }
 static void gate(void) {

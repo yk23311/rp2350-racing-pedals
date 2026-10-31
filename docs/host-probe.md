@@ -1,44 +1,47 @@
-# Host 探针使用说明
+# USB-A Host 桥接使用与诊断
 
-本固件只用于验证 RP2350 的 USB-A 是否能读取 20BC:5128 接收器，**不合并输入、不改硬件、不替代最终桥接固件**。设备端仍只输出原来的踏板 XInput 手柄；电脑上仍应只看到 `CAFE:4012`。
+更新：2026-10-31。`-UsbMode host`现在构建完整桥接，已经合并摇杆、按键和踏板，**不是旧Host-only探针**。最新修复版0.3.1尚未烧录或实机验收。见[步骤/交接报告](reports/13-bridge-review-fixes.md)。
 
-## 构建产物
+## 日常使用
 
-- `dist/host/pedals-host.uf2`：Host 探针固件，未烧录。
-- `dist/host/pedals-host.elf`、`.bin`、`.elf.map`：调试/校验用。
-- 当前探针使用 Pico-PIO-USB **0.7.2 tag**，Pico SDK 2.2.0，TinyUSB 0.18.0；未拆 R13、未改任何硬件。
+1. 关闭GUI，断开板卡Type-C；按住BOOT连接电脑，出现BOOTSEL磁盘后释放。
+2. 将`dist/host/pedals-host.uf2`复制进去，等待自动重启。普通更新应保留Flash校准，不要整片擦除。
+3. Type-C接电脑，真实手柄2.4G接收器插开发板USB-A，接收器不要另插电脑。GP26/27踏板接线不变。
+4. 松开踏板、手柄扳机和按键，摇杆回中，等待恢复。默认MAX：RT/LT各取踏板和手柄较大值，松开某一输入不会抵消另一输入。
+5. 双击根目录`启动调参GUI.bat`，选择实际串口（可能是COM8），连接、校准、应用参数。释放踏板及真实手柄按钮/扳机，等待回零后保存。摇杆轻微漂移不会阻止SAVE。
+6. 由用户确认FH6的Steam Input关闭；游戏不需要GUI或脚本常驻。
 
-## 烧录
+硬件改动状态及电流预算仍待确认。微雪官方对R13的要求见[Wiki](https://www.waveshare.com/wiki/RP2350-USB-A)。本次修复没有拆焊或修改电气接线；短时收包不替代热插拔、电气验收。
 
-1. 断开开发板 Type-C。
-2. 按住 BOOT，连接 Type-C，释放 BOOT；出现 `RP2350` 或 `RPI-RP2` 磁盘。
-3. 把 `dist/host/pedals-host.uf2` 复制到该磁盘，等待自动重启。
-4. 若探针导致板子无响应：断开 Type-C，按住 BOOT 重新进入 BOOTSEL，刷回 `dist/xinput/pedals-xinput.uf2`。
-
-## 接线与测试
-
-1. Type-C 继续接电脑；**不要**把接收器插在电脑上。
-2. 把北通 2.4G 接收器插入开发板 USB-A（当前 R13 未拆，可能无法枚举；这正是要验证的）。
-3. 手柄开机并切到 2.4G/接收器模式。
-4. 打开串口（通常仍是 COM8，可能在设备管理器变化），运行：
+## 构建
 
 ```powershell
-Set-Location -LiteralPath 'D:\练习项目\RP2350a'
-.\.venv\Scripts\python.exe tools/host_probe.py --list
-.\.venv\Scripts\python.exe tools/host_probe.py --port COM8 --seconds 30 --output docs/reports/logs/host-probe-live.txt
+powershell -ExecutionPolicy Bypass -File tools/build_firmware.ps1 -UsbMode host
 ```
 
-5. 观察 `[HOST]` 行，重点记录：
-   - `mount` / `xinput interface`：USB-A 是否枚举到接收器；
-   - `handshake` / `compat`：XUSB10 请求是否成功；
-   - `pad n=...`：是否收到 20 字节报告，摇杆/按键/扳机是否随操作变化；
-   - `state=...`、`umount`：是否反复断开/重枚举。
+普通版产物`dist/host/pedals-host.uf2`，默认关闭Host日志；每次构建自动刷新同目录manifest中的大小/SHA256，明确重置为未烧录、未实机验证。只保留旧独立踏板时可回退`dist/xinput/pedals-xinput.uf2`。
 
-## 判定
+## 专用诊断版
 
-- **有 mount + xinput interface + pad 行**：现有硬件（R13 未拆）也能读到接收器；继续做合并接线。
-- **有 mount 但没有 xinput interface**：接收器枚举成了别的接口/模式；保存日志后分析，不要直接改合并代码。
-- **完全没有 mount**：R13 上拉导致 Host 不可用，或 USB-A 供电/接线问题；需要后续硬件核实（本轮不拆）。
-- **mount 后约 1–2 秒 umount/重枚举，或出现 `057E:2069`/`20DD`**：接收器的模式锁定握手不完整；保存日志，再补 GIP/OS 字符串等 A/B，不要先改合并。
+```powershell
+powershell -ExecutionPolicy Bypass -File tools/build_firmware.ps1 -UsbMode host -HostDiagnostics
+```
 
-本工具只读串口，不发送命令、不注入按键、不做电脑端映射。
+诊断版位于`dist/host-debug/pedals-host.uf2`，与普通版分开。需要排查时才烧录该文件；它仍是完整桥接，只是额外输出异步`[HOST]`日志。诊断版不作为可靠调参基线：旧日志与命令回复可能在字节层交错；新的客户端只能跳过完整日志行，不会猜测修复损坏的数据。
+
+关闭GUI后运行（不能同时占用串口）：
+
+```powershell
+.\.venv\Scripts\python.exe tools/host_probe.py --list
+.\.venv\Scripts\python.exe tools/host_probe.py --port COM8 --seconds 60 --output docs/reports/logs/host-new-live.txt
+```
+
+按实际串口替换COM8。查看mount/interface/handshake/pad/state/timeout记录；普通版不输出这些日志，所以读不到日志不能认定Host失效。state=3为STREAMING。异步日志不构成命令回复。
+
+## 尚待执行的实机验收
+
+- 同一个XInput槽位同时满足`LX != 0 && RT > 0`，以及`LX != 0 && LT > 0`；再检查ABXY/方向键/肩键与双踏板同时输入。
+- GUI连接、持续读取、应用/校准/SAVE及重启后保留；当前0.3.1二进制没有实测证据。
+- 拔插接收器、手柄关机及回连、保存Flash后Host恢复、至少1小时稳定性、FH6驾驶。
+
+可用`tools/check_xinput.py --seconds 30`只读记录Windows输入；至少同时保持转向和踏板数秒，不能只分开操作。旧日志仅能证明旧版本单项输入，不能替代本轮验收。

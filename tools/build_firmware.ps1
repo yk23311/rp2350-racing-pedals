@@ -1,4 +1,4 @@
-param([ValidatePattern('^[R-Z]$')][string]$DriveLetter = 'R', [ValidateSet('xinput','hid','host')][string]$UsbMode = 'xinput')
+param([ValidatePattern('^[R-Z]$')][string]$DriveLetter = 'R', [ValidateSet('xinput','hid','host')][string]$UsbMode = 'xinput', [switch]$HostDiagnostics)
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path -Parent $PSScriptRoot
 Set-Location -LiteralPath $projectRoot
@@ -7,6 +7,8 @@ if (-not (Test-Path -LiteralPath (Join-Path $projectRoot "deps\$toolchainName\bi
     throw 'Run python tools/fetch_deps.py first.'
 }
 $isHost = $UsbMode -eq 'host'
+if ($HostDiagnostics -and -not $isHost) { throw '-HostDiagnostics requires -UsbMode host.' }
+$variant = if ($HostDiagnostics) { 'host-debug' } else { $UsbMode }
 if ($isHost -and -not (Test-Path -LiteralPath (Join-Path $projectRoot 'build\pioasm-install\lib\cmake\pioasm\pioasmConfig.cmake'))) {
     powershell -ExecutionPolicy Bypass -File tools/build_pioasm.ps1
     if ($LASTEXITCODE -ne 0) { throw 'pioasm bootstrap failed.' }
@@ -19,10 +21,10 @@ $subst = Join-Path $env:SystemRoot 'System32\subst.exe'
 if (Test-Path ($drive + '\')) { throw "$drive is occupied. Select another free letter with -DriveLetter S." }
 & $subst $drive $projectRoot
 if ($LASTEXITCODE -ne 0) { throw 'Temporary SUBST mapping failed; run in a normal local PowerShell session.' }
-$build = "build/firmware-$UsbMode-$DriveLetter"
+$build = "build/firmware-$variant-$DriveLetter"
 $native = if ($UsbMode -eq 'hid') { 'OFF' } else { 'ON' }
 $hostMode = if ($isHost) { 'ON' } else { 'OFF' }
-$output = "dist/$UsbMode"
+$output = "dist/$variant"
 $artifact = "pedals-$UsbMode"
 try {
     $configure = @(
@@ -32,6 +34,7 @@ try {
         '-DPEDAL_FIRMWARE=ON',
         "-DPEDAL_USB_XINPUT=$native",
         "-DPEDAL_USB_HOST=$hostMode",
+        "-DPEDAL_HOST_DIAGNOSTICS=$(if ($HostDiagnostics) { 'ON' } else { 'OFF' })",
         "-DPICO_SDK_PATH=${mappedRoot}deps/pico-sdk-2.2.0",
         "-DPICO_TOOLCHAIN_PATH=${mappedRoot}deps/$toolchainName",
         '-DPICO_BOARD=waveshare_rp2350_usb_a',
@@ -54,6 +57,10 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'UF2 packaging failed.' }
     & "${mappedRoot}deps/$toolchainName/bin/arm-none-eabi-size.exe" "$output/$artifact.elf"
     if ($LASTEXITCODE -ne 0) { throw 'ELF size inspection failed.' }
+    $manifestArgs = @('tools/write_manifest.py', '--output', $output, '--mode', $UsbMode)
+    if ($HostDiagnostics) { $manifestArgs += '--diagnostics' }
+    python @manifestArgs
+    if ($LASTEXITCODE -ne 0) { throw 'Manifest generation failed.' }
 } finally {
     & $subst $drive /D
 }

@@ -1,4 +1,5 @@
 #include "console.h"
+#include "control_profile.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -29,6 +30,7 @@ void console_execute(pedal_t *p,const char *line,console_save_fn save,void *cont
     char buf[CONSOLE_LINE_SIZE],*token[8]; size_t len=strlen(line),count=0;
     snprintf(out,CONSOLE_RESPONSE_SIZE,"ERR COMMAND\n");
     if(len>=sizeof(buf)) { snprintf(out,CONSOLE_RESPONSE_SIZE,"ERR TOO_LONG\n"); return; }
+    if(control_console(p,line,out)) return;
     memcpy(buf,line,len+1);
     char *cursor=buf;
     while(*cursor) {

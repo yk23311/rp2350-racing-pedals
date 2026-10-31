@@ -59,7 +59,7 @@ int main(void) {
             unsigned budget=64;
             while(tx_pos==tx_len && budget-- && tud_cdc_available()) {
                 char ch=(char)tud_cdc_read_char();
-                if(console_feed(&input,ch,&pedal,save_config,NULL,response)) {
+                if(pedal_usb_feed(&input,ch,&pedal,save_config,NULL,response)) {
                     tx_pos=0; tx_len=strlen(response); break;
                 }
             }

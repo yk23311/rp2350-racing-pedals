@@ -1,0 +1,17 @@
+PICO_SDK_PATH is R:/deps/pico-sdk-2.2.0
+Target board (PICO_BOARD) is 'waveshare_rp2350_usb_a'.
+Using board configuration from R:/deps/pico-sdk-2.2.0/src/boards/include/boards/waveshare_rp2350_usb_a.h
+Pico Platform (PICO_PLATFORM) is 'rp2350-arm-s'.
+Build type is Release
+TinyUSB available at R:/deps/pico-sdk-2.2.0/lib/tinyusb/hw/bsp/rp2040; enabling build support for USB.
+-- Configuring done (0.5s)
+-- Generating done (0.2s)
+-- Build files have been written to: R:/build/firmware-host-R
+[1/4] Building C object CMakeFiles/pedal_core.dir/src/core/usb_layout.c.obj
+[2/4] Building C object CMakeFiles/pedal_core.dir/src/core/xinput_protocol.c.obj
+[3/4] Linking C static library libpedal_core.a
+[4/4] Linking CXX executable firmware\pedals.elf
+Created dist\host\pedals-host.uf2 (RP2350 ARM-S, not flashed)
+   text	   data	    bss	    dec	    hex	filename
+  79536	      0	  15496	  95032	  17338	dist/host/pedals-host.elf
+Manifest refreshed: dist\host\manifest.json (not flashed)

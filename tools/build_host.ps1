@@ -10,5 +10,8 @@ $linkerPath = Join-Path $vsRoot 'VC\Tools\Llvm\x64\bin\lld-link.exe'
 # clang-cl + LLD avoid the installed MSVC debug-linker MSPDB140 mismatch.
 & cmd /d /c "`"$vcvars`" && cmake -S . -B build/clang -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=`"$clangPath`" -DCMAKE_LINKER=`"$linkerPath`" && cmake --build build/clang && ctest --test-dir build/clang --output-on-failure"
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-python -m unittest discover -s tests -p 'test_*.py' -v
+$testPython = Join-Path $projectRoot '.venv\Scripts\python.exe'
+if (-not (Test-Path -LiteralPath $testPython)) { $testPython = 'python' }
+$env:QT_QPA_PLATFORM = 'offscreen'
+& $testPython -m unittest discover -s tests -p 'test_*.py' -v
 exit $LASTEXITCODE

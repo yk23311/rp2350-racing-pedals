@@ -1,0 +1,115 @@
+**********************************************************************
+** Visual Studio 2022 Developer Command Prompt v17.14.40
+** Copyright (c) 2025 Microsoft Corporation
+**********************************************************************
+[vcvarsall.bat] Environment initialized for: 'x64'
+-- Configuring done (0.2s)
+-- Generating done (0.1s)
+-- Build files have been written to: D:/练习项目/RP2350a/build/clang
+ninja: no work to do.
+Test project D:/练习项目/RP2350a/build/clang
+      Start  1: core_defaults
+ 1/36 Test  #1: core_defaults ....................   Passed    0.06 sec
+      Start  2: core_mapping
+ 2/36 Test  #2: core_mapping .....................   Passed    0.05 sec
+      Start  3: core_filtering
+ 3/36 Test  #3: core_filtering ...................   Passed    0.05 sec
+      Start  4: core_hysteresis
+ 4/36 Test  #4: core_hysteresis ..................   Passed    0.05 sec
+      Start  5: core_curve
+ 5/36 Test  #5: core_curve .......................   Passed    0.05 sec
+      Start  6: core_calibration
+ 6/36 Test  #6: core_calibration .................   Passed    0.05 sec
+      Start  7: core_modes
+ 7/36 Test  #7: core_modes .......................   Passed    0.07 sec
+      Start  8: core_invalid
+ 8/36 Test  #8: core_invalid .....................   Passed    0.06 sec
+      Start  9: core_button
+ 9/36 Test  #9: core_button ......................   Passed    0.05 sec
+      Start 10: config_records
+10/36 Test #10: config_records ...................   Passed    0.05 sec
+      Start 11: console_protocol
+11/36 Test #11: console_protocol .................   Passed    0.05 sec
+      Start 12: usb_contract
+12/36 Test #12: usb_contract .....................   Passed    0.05 sec
+      Start 13: flash_power_loss
+13/36 Test #13: flash_power_loss .................   Passed    0.06 sec
+      Start 14: xinput_packet
+14/36 Test #14: xinput_packet ....................   Passed    0.05 sec
+      Start 15: xinput_layout
+15/36 Test #15: xinput_layout ....................   Passed    0.06 sec
+      Start 16: xinput_control
+16/36 Test #16: xinput_control ...................   Passed    0.05 sec
+      Start 17: xinput_capabilities
+17/36 Test #17: xinput_capabilities ..............   Passed    0.05 sec
+      Start 18: xinput_pad_parse
+18/36 Test #18: xinput_pad_parse .................   Passed    0.05 sec
+      Start 19: xinput_pad_neutral
+19/36 Test #19: xinput_pad_neutral ...............   Passed    0.06 sec
+      Start 20: xinput_pad_predicates
+20/36 Test #20: xinput_pad_predicates ............   Passed    0.05 sec
+      Start 21: bridge_pedal_only
+21/36 Test #21: bridge_pedal_only ................   Passed    0.06 sec
+      Start 22: bridge_handshake
+22/36 Test #22: bridge_handshake .................   Passed    0.05 sec
+      Start 23: bridge_override
+23/36 Test #23: bridge_override ..................   Passed    0.05 sec
+      Start 24: bridge_max
+24/36 Test #24: bridge_max .......................   Passed    0.05 sec
+      Start 25: bridge_timeout
+25/36 Test #25: bridge_timeout ...................   Passed    0.05 sec
+      Start 26: bridge_unmount
+26/36 Test #26: bridge_unmount ...................   Passed    0.05 sec
+      Start 27: bridge_blocked
+27/36 Test #27: bridge_blocked ...................   Passed    0.05 sec
+      Start 28: bridge_quantize
+28/36 Test #28: bridge_quantize ..................   Passed    0.05 sec
+      Start 29: xinput_driver
+29/36 Test #29: xinput_driver ....................   Passed    0.05 sec
+      Start 30: xinput_usb_integration
+30/36 Test #30: xinput_usb_integration ...........   Passed    0.05 sec
+      Start 31: bridge_usb_combined
+31/36 Test #31: bridge_usb_combined ..............   Passed    0.05 sec
+      Start 32: bridge_usb_barrier
+32/36 Test #32: bridge_usb_barrier ...............   Passed    0.05 sec
+      Start 33: bridge_usb_faults
+33/36 Test #33: bridge_usb_faults ................   Passed    0.05 sec
+      Start 34: bridge_usb_save_sticks
+34/36 Test #34: bridge_usb_save_sticks ...........   Passed    0.05 sec
+      Start 35: bridge_usb_save_button
+35/36 Test #35: bridge_usb_save_button ...........   Passed    0.05 sec
+      Start 36: bridge_usb_save_trigger
+36/36 Test #36: bridge_usb_save_trigger ..........   Passed    0.05 sec
+
+100% tests passed out of 36
+
+Total Test time (real) =   1.96 sec
+test_native_windows_abi (test_check_xinput.XInputReaderTests.test_native_windows_abi) ... ok
+test_reads_independent_triggers_and_ignores_empty_slots (test_check_xinput.XInputReaderTests.test_reads_independent_triggers_and_ignores_empty_slots) ... ok
+test_initial_window_fits_content (test_gui.GuiLayoutTests.test_initial_window_fits_content) ... ok
+test_host_logs_allow_get_and_save_without_disconnect (test_gui_worker.GuiWorkerTests.test_host_logs_allow_get_and_save_without_disconnect) ... ok
+test_rejected_calibration_can_retry_without_reconnect (test_gui_worker.GuiWorkerTests.test_rejected_calibration_can_retry_without_reconnect) ... ok
+test_rejected_save_can_retry_without_reconnect (test_gui_worker.GuiWorkerTests.test_rejected_save_can_retry_without_reconnect) ... ok
+test_timeout_still_closes_connection (test_gui_worker.GuiWorkerTests.test_timeout_still_closes_connection) ... ok
+test_device_error (test_pedalctl.ClientTests.test_device_error) ... ok
+test_get (test_pedalctl.ClientTests.test_get) ... ok
+test_host_log_flood_has_bounded_wait (test_pedalctl.ClientTests.test_host_log_flood_has_bounded_wait) ... ok
+test_host_logs_do_not_consume_command_reply (test_pedalctl.ClientTests.test_host_logs_do_not_consume_command_reply) ... ok
+test_late_reply_is_not_accepted_after_deadline (test_pedalctl.ClientTests.test_late_reply_is_not_accepted_after_deadline) ... ok
+test_ok (test_pedalctl.ClientTests.test_ok) ... ok
+test_protocol_version (test_pedalctl.ClientTests.test_protocol_version) ... ok
+test_reject_injection (test_pedalctl.ClientTests.test_reject_injection) ... ok
+test_set_validation (test_pedalctl.ClientTests.test_set_validation) ... ok
+test_synchronize_discards_stale_responses (test_pedalctl.ClientTests.test_synchronize_discards_stale_responses) ... ok
+test_synchronize_handles_inflight_prefix_without_newline (test_pedalctl.ClientTests.test_synchronize_handles_inflight_prefix_without_newline) ... ok
+test_synchronize_timeout (test_pedalctl.ClientTests.test_synchronize_timeout) ... ok
+test_timeout (test_pedalctl.ClientTests.test_timeout) ... ok
+test_truncated_and_bad_response (test_pedalctl.ClientTests.test_truncated_and_bad_response) ... ok
+test_truncated_host_log_is_still_protocol_error (test_pedalctl.ClientTests.test_truncated_host_log_is_still_protocol_error) ... ok
+test_reject_empty_and_configuration_overlap (test_uf2.UF2Tests.test_reject_empty_and_configuration_overlap) ... ok
+test_roundtrip_headers_and_flash_reservation (test_uf2.UF2Tests.test_roundtrip_headers_and_flash_reservation) ... ok
+
+----------------------------------------------------------------------
+Ran 24 tests in 1.380s
+
+OK

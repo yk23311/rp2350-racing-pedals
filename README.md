@@ -1,10 +1,26 @@
-# RP2350 双踏板控制器
+# 基于 RP2350 的赛车模拟器油门与刹车
 
-**当前默认固件已升级为原生XInput：GP26油门→RT，GP27刹车→LT。** 使用Windows内置Xbox驱动，不通过Steam Input或第三方映射器。请烧录 `dist/xinput/pedals-xinput.uf2`，详见[原生XInput使用说明](docs/native-xinput.md)和[实施交接报告](docs/reports/10-native-xinput.md)。下文通用HID为保留的旧版/回退路线；dist根目录的旧UF2不是原生XInput固件。
+**新版驾驶控制中心已实现**：自动识别串口，实时踏板百分比、手柄按键/摇杆/扳机监视，踏板和手柄曲线预览与调参，手柄按钮→手柄/键盘映射。双击根目录 **启动调参GUI.bat**，详见[一步步使用说明](docs/control-center.md)。
 
-面向 **微雪 RP2350-USB-A** 的开发原型：两路踏板、标准 HID 双轴、可切换 W/S 键盘、CDC 调参和 Flash 显式保存。电脑使用 **Type-C** 接口。USB-A PIO 端口未启用。
+完整功能需要新版`dist/host/pedals-host.uf2`（0.4.0-control-center）。Type-C接电脑，2.4G接收器插板卡USB-A，GP26/27踏板保持原接线；曲线和映射在板端执行，关闭GUI仍有效，不依赖Steam或电脑虚拟手柄。新版已构建，**尚未烧录或实机验收**。
+
+旧固件可继续调踏板；手柄遥测和配置会明确显示不支持。新固件能迁移读取旧PDL1校准；显式保存后使用PDL2，旧固件不能读取新格式，降级前请备份校准。下文旧HID/Tk内容作为历史与兼容路线保留，最新入口为[HANDOFF.md](HANDOFF.md)。
 
 **当前传感器仅确认 5V 供电，输出类型和电压未知。先按 [硬件接入说明](docs/hardware.md) 测量，不能直接把未知信号接到 GP26/GP27。** 未校准默认输出中立。
+
+## 从 GitHub 首次使用
+
+本仓库包含源码、测试、文档与界面演示图，不上传本地工具链、`.venv`、`build`、`deps`或`dist`。面向Windows与微雪RP2350-USB-A开发板；没有硬件也能预览GUI。
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r tools/requirements.txt
+powershell -ExecutionPolicy Bypass -File tools/start_gui.ps1 -Demo
+```
+
+实际连接时去掉`-Demo`。完整手柄遥测、曲线和映射需要本地按下文构建并烧录桥接固件，GUI不会自动烧录。界面如下（演示数据）：
+
+![驾驶控制中心演示](artifacts/control-center-demo.png)
 
 ## 工程入口
 
@@ -36,10 +52,10 @@ python -m unittest discover -s tests -p 'test_*.py' -v
 
 ```powershell
 python tools/fetch_deps.py
-powershell -ExecutionPolicy Bypass -File tools/build_firmware.ps1
+powershell -ExecutionPolicy Bypass -File tools/build_firmware.ps1 -UsbMode host
 ```
 
-依赖只下载至项目 `deps/`：Pico SDK 2.2.0、其锁定的 TinyUSB、Arm GNU 14.3.rel1。下载较大；需要联网。脚本打印 SHA256 供记录，但不等于验证上游数字签名。默认原生构建输出 `dist/xinput/pedals-xinput.*`；`-UsbMode hid`输出 `dist/hid/pedals-hid.*`。UF2使用 SDK定义的 RP2350 ARM-S family，不自动烧录。
+依赖只下载至项目 `deps/`：Pico SDK 2.2.0、其锁定的 TinyUSB、Arm GNU 14.3.rel1。下载较大；需要联网。脚本打印 SHA256 供记录，但不等于验证上游数字签名。桥接构建输出 `dist/host/pedals-host.*`；不传`-UsbMode host`时脚本仍默认构建独立踏板`dist/xinput/pedals-xinput.*`；`-UsbMode hid`输出 `dist/hid/pedals-hid.*`。UF2使用 SDK定义的 RP2350 ARM-S family，不自动烧录。
 
 Windows Arm链接器在本项目中文路径下无法解析其标准库；脚本临时使用空闲R:映射本项目，完成或失败后移除。R:已被占用时可传入 `-DriveLetter S`；不会覆盖现有盘符，也不移动工程。构建缓存分为 `build/firmware-xinput-R/` 与 `build/firmware-hid-R/`。
 

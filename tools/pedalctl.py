@@ -42,11 +42,23 @@ class Client:
         data = (command + "\n").encode("ascii")
         if self.link.write(data) != len(data):
             raise ProtocolError("Incomplete serial write; reconnect before retrying")
-        raw = self.link.readline(768)
-        if not raw:
-            raise TimeoutError("No response; check Type-C connection and firmware")
-        if not raw.endswith(b"\n"):
-            raise ProtocolError("Truncated response; reconnect before retrying")
+        deadline = time.monotonic() + 4
+        for _ in range(64):
+            if time.monotonic() >= deadline:
+                raise TimeoutError("No command response; reconnect before retrying")
+            raw = self.link.readline(768)
+            if time.monotonic() >= deadline:
+                raise TimeoutError("No command response before deadline; reconnect before retrying")
+            if not raw:
+                raise TimeoutError("No response; check Type-C connection and firmware")
+            if not raw.endswith(b"\n"):
+                raise ProtocolError("Truncated response; reconnect before retrying")
+            # Older bridge firmware shares CDC with asynchronous diagnostics.
+            # Skip only complete known log lines, never arbitrary protocol data.
+            if not raw.startswith(b"[HOST] "):
+                break
+        else:
+            raise TimeoutError("Too many Host logs without a command response; reconnect before retrying")
         try:
             response = raw.decode("ascii").strip()
         except UnicodeError as exc:

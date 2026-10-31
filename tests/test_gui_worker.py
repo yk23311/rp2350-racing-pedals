@@ -80,6 +80,11 @@ class GuiWorkerTests(unittest.TestCase):
         self.assertEqual(link.commands, ["GET", "CAL 0 END"])
         self.assertTrue(link.closed)
 
+    def test_host_logs_allow_get_and_save_without_disconnect(self):
+        log = b"[HOST] state=3 reports=500\r\n"
+        link = self.exercise("保存到 Flash", [log, state(-1), log, b"OK\n", log, state(-1)], repeats=1)
+        self.assertEqual(link.commands, ["GET", "SAVE", "GET"])
+
 
 if __name__ == "__main__":
     unittest.main()
