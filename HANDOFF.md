@@ -1,6 +1,6 @@
 # RP2350 双踏板：接手入口
 
-更新：2026-10-31，Asia/Shanghai。工作目录：`D:\练习项目\RP2350a`。已建立Git仓库；软件桥接核心已完成并通过PC测试，Host USB栈、能力查询和硬件改动尚未开始。最新阶段报告：[11 软件桥接核心](docs/reports/11-software-bridge-core.md)。本文件是最新状态摘要，优先于旧报告中的阶段性结论。
+更新：2026-10-31，Asia/Shanghai。工作目录：`D:\练习项目\RP2350a`。已建立Git仓库；软件桥接核心和Host-only探针固件已构建，**探针尚未烧录/上板**；未修改任何硬件。最新阶段报告：[12 Host探针构建](docs/reports/12-host-probe-build.md)。本文件是最新状态摘要，优先于旧报告中的阶段性结论。
 
 ## 1. 用户当前目标与授权边界
 
@@ -28,6 +28,7 @@
 - **原生USB XInput**，不依赖电脑映射器；独立键盘HID、CDC保留。
 - **Git仓库**：2026-10-31初始化，基线提交`6fa0512`；此后按阶段提交，不再“没有Git历史”。
 - **软件桥接核心（未接线）**：`src/core/xinput_pad.c`严格解析20字节XInput Host报文；`src/core/bridge.c`实现Host状态机、250ms超时、回中容差4000、踏板优先OVERRIDE/MAX和20字节合并构造；PC测试29项CTest通过。尚未接入固件，接收器仍不能读取。
+- **Host-only探针（已构建、未烧录）**：`firmware/host.c`用TinyUSB双rhport + Pico-PIO-USB 0.7.2读取USB-A；自定义XInput Host类、IN保活、XUSB10回退/magic握手、CDC `[HOST]`诊断。产物`dist/host/pedals-host.uf2`，尚未在R13未拆的硬件上验证。
 
 当前已烧录版本：**0.2.0-xinput**。
 
@@ -117,6 +118,9 @@ GP27刹车 ----------------┤ LT
 | `src/core/xinput_pad.c`、`include/xinput_pad.h` | 新增：严格解析Xbox360有线20字节Host报告；短包/错误报告ID拒绝；中立谓词 |
 | `src/core/bridge.c`、`include/bridge.h` | 新增：Host状态机、超时/重连、OVERRIDE/MAX合并、20字节输出；尚未被`usb.c`调用 |
 | `tests/test_xinput_pad.c`、`tests/test_bridge.c` | 新增11项CTest，覆盖解析、回中、握手、超时、断连、OVERRIDE/MAX |
+| `firmware/host.c`、`host.h` | 新增：Host-only探针；TinyUSB Host自定义XInput类、Pico-PIO-USB、XUSB10/magic握手、CDC诊断；未被`usb.c`用于合并 |
+| `tools/build_pioasm.ps1` | 新增：用Clang/LLD预构建/安装pioasm，供PIO-USB头生成 |
+| `tools/host_probe.py`、`docs/host-probe.md` | 新增：只读CDC日志工具与探针烧录/判定说明 |
 | `firmware/xinput_device.c` | TinyUSB自定义Device类、IN81/OUT01、能力/LED/GET_REPORT、稳定SRAM缓冲；不是Host驱动 |
 | `firmware/usb.c` | 原生与旧HID分支、报告调度、中立屏障、键盘实例0映射到逻辑gate1 |
 | `src/core/report_gate.c` | 模式/配置变化时等待手柄与键盘中立完成；注意XInput包头byte1=20不能当非中立输入 |
@@ -135,18 +139,19 @@ Set-Location -LiteralPath 'D:\练习项目\RP2350a'
 powershell -ExecutionPolicy Bypass -File tools/build_host.ps1
 powershell -ExecutionPolicy Bypass -File tools/build_firmware.ps1 -UsbMode xinput
 powershell -ExecutionPolicy Bypass -File tools/build_firmware.ps1 -UsbMode hid
+powershell -ExecutionPolicy Bypass -File tools/build_firmware.ps1 -UsbMode host
 powershell -ExecutionPolicy Bypass -File tools/start_gui.ps1
 .\.venv\Scripts\python.exe tools/check_xinput.py --seconds 30
 ```
 
 - 最新测试 **29项C CTest + 19项Python全部通过**。桥接核心日志：`docs/reports/logs/software-bridge-core.txt`；基线日志：`docs/reports/logs/software-baseline-host.txt`。
-- 原生固件：`dist/xinput/pedals-xinput.uf2`，已烧录，80,384字节。
-- SHA256：`4aca95a4a7f06559d88b5d80a71aa5f64bf3b46e1f6c39ec361deb4843641f70`。
+- Host探针：`dist/host/pedals-host.uf2`，140,288字节，SHA256 `E1536CF02B4B321808CB2DC87DF9897A095765B1C447C288E9B52D572EDAC8D8`；`__flash_binary_end=0x10011118`；**未烧录/未上板**。
+- 原生固件：`dist/xinput/pedals-xinput.uf2`。注意：为回归验证重新构建过（80,896字节），当前SHA与旧报告中的`4aca95...`不同；它不是原始已烧录产物的逐字节副本，不要拿旧SHA当本文件证据。
 - HID回退：`dist/hid/pedals-hid.uf2`。`dist/pedals.uf2`是更早的HID版本，**不要把它误当当前原生固件**。
-- 原生程序结束0x10009CEC；配置区0x101FE000/0x101FF000，末尾8KiB由链接脚本排除。普通UF2更新不应擦掉校准。
+- 原生程序结束0x10009CEC（旧构建）；当前回归构建结束点需重新查map；配置区0x101FE000/0x101FF000，末尾8KiB由链接脚本排除。普通UF2更新不应擦掉校准。
 - Arm工具链在中文路径下找不到标准库：构建脚本临时将项目SUBST到空闲R:，finally移除；可用`-DriveLetter S`避让。受限沙箱可能禁止SUBST，需要正常本地终端或相应执行权限。
 - PC测试用Clang/LLD规避本机MSPDB140.DLL错误；脚本使用完整编译器路径，直接裸调用cmake可能遇到环境问题。
-- `deps/`已有Pico SDK2.2.0、TinyUSB锁定提交`86ad6e56c1700e85f1c5678607a762cfe3aa2f47`、Arm GNU14.3.rel1；不需要重新下载几百MB工具链。
+- `deps/`已有Pico SDK2.2.0、TinyUSB锁定提交`86ad6e56c1700e85f1c5678607a762cfe3aa2f47`、Arm GNU14.3.rel1、**Pico-PIO-USB 0.7.2 tag**；不需要重新下载几百MB工具链。
 - 尚未引入Pico-PIO-USB依赖，也没有XInput Host实现。`deps/xinput-research/`是此前只读参考，不是正式依赖。
 
 只读PnP诊断可筛选`VID_CAFE&PID_4012`与`VID_20BC&PID_5128`，查询Service及CompatibleIds。沙箱内CIM或XInput读取可能被限制，先前在允许的只读本机执行中才成功。不要把沙箱拒绝当设备故障，更不要据此重装驱动。
@@ -163,7 +168,7 @@ powershell -ExecutionPolicy Bypass -File tools/start_gui.ps1
 用户明确实施后，按阶段推进并各写报告：
 
 1. 核实R13/Host硬件和接收器供电，确定是否需要用户物理改板；在未确认前不声称接收器可直接插用。
-2. 仅接收器Host枚举，记录VID/PID、速度、接口/端点及原始输入，确认摇杆和所有按键。
+2. Host-only探针**已构建、未烧录**：`dist/host/pedals-host.uf2`。下一步由用户烧录、把接收器插开发板USB-A、用`tools/host_probe.py`采集`[HOST]`日志；在R13未拆的现状下先验证能否枚举/出报告。
 3. 已完成的纯软件部分：`xinput_pad`解析、`bridge`状态/超时/OVERRIDE/MAX合并、回中容差4000、29项CTest。注意这些模块**尚未接入**`usb.c`，不能据此宣称桥接可用。
 4. 连接原生Device端输出，保持现有校准/CDC/Flash协议；复核多核安全与吞吐/延迟。
 5. **电脑端只保留开发板一只游戏手柄，接收器插在开发板而非电脑。** 在同一个XInput槽位实测：LX非零同时RT非零、LX非零同时LT非零、双踏板与按钮同时输入。
@@ -184,4 +189,4 @@ powershell -ExecutionPolicy Bypass -File tools/start_gui.ps1
 
 ## 给下一位agent的任务摘要（可直接复制）
 
-> 先阅读本项目根目录HANDOFF.md。当前原生XInput踏板已上板，GP26→RT、GP27→LT；真实北通BTP-KP20的2.4G USB接收器是另一只控制器，FH6出现输入切换。用户拒绝Steam及PC第三方转换，已批准**软件优先**：Git仓库已建，`xinput_pad`/`bridge`纯C解析合并核心及29项CTest已完成，但**尚未接入固件，USB-A Host栈也未实现**。用户明确暂不修改硬件（R13未拆）。下一步是做Host-only探针：vendor Pico-PIO-USB、TinyUSB双rhport、自定义XInput Host类、XUSB10/GIP握手A/B、CDC原始报文；先验证20BC:5128在现有硬件上能否读取。不要重做已验证的Device驱动，不要用电脑映射冒充硬件合并，不要把纯C测试当成桥接/游戏验收。
+> 先阅读本项目根目录HANDOFF.md。当前原生XInput踏板已上板，GP26→RT、GP27→LT；真实北通BTP-KP20的2.4G USB接收器是另一只控制器，FH6出现输入切换。用户拒绝Steam及PC第三方转换，已批准**软件优先**：Git仓库已建，`xinput_pad`/`bridge`纯C解析合并核心及29项CTest已完成；Host-only探针`dist/host/pedals-host.uf2`也已构建，但**尚未烧录/上板**，合并尚未接入`usb.c`。用户明确暂不修改硬件（R13未拆）。下一步：烧录探针、接收器插开发板USB-A、`tools/host_probe.py`采集日志，先验证20BC:5128能否枚举并读出20字节报告；再决定补握手/处理R13/接合并。不要重做已验证的Device驱动，不要用电脑映射冒充硬件合并，不要把纯C测试或探针构建当成桥接/游戏验收。

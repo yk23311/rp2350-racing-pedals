@@ -25,7 +25,12 @@ void pedal_usb_init(pedal_t *pedal) {
     uint32_t serial=0; for(unsigned i=0;i<4;i++)serial|=(uint32_t)id.id[i+4]<<(8*i);
     xinput_device_set_serial(serial);
 #endif
+#if PEDAL_USB_HOST
+    tusb_rhport_init_t init = {.role=TUSB_ROLE_DEVICE,.speed=TUSB_SPEED_FULL};
+    tusb_init(0,&init);
+#else
     tusb_init();
+#endif
 }
 bool pedal_usb_quiet(void) { return tud_mounted() && !tud_suspended() && generation==state->generation && report_gate_quiet(&gate); }
 static void make_report(unsigned itf,uint8_t data[20]) {

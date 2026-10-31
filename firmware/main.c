@@ -3,6 +3,10 @@
 #include "hal.h"
 #include "storage.h"
 #include "usb.h"
+#if PEDAL_USB_HOST
+#include "host.h"
+#include "hardware/clocks.h"
+#endif
 #include "pico/stdlib.h"
 #include "tusb.h"
 #include <string.h>
@@ -21,13 +25,22 @@ static bool save_config(void *context,const pedal_config_t *config) {
     return pedal_usb_quiet() && storage_save(config);
 }
 int main(void) {
+#if PEDAL_USB_HOST
+    set_sys_clock_khz(120000, true);
+#endif
     pedal_config_t config; storage_load(&config);
     pedal_t pedal; pedal_init(&pedal,&config);
     pedal_hal_init(); pedal_usb_init(&pedal);
+#if PEDAL_USB_HOST
+    host_init();
+#endif
     pedal_button_t button={0};
     uint64_t next_sample=0;
     while(true) {
         pedal_usb_task();
+#if PEDAL_USB_HOST
+        host_task();
+#endif
         uint64_t now=time_us_64();
         if(now>=next_sample) {
             next_sample=now+1000;

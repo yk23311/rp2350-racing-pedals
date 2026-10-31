@@ -1,10 +1,15 @@
-param([ValidatePattern('^[R-Z]$')][string]$DriveLetter = 'R', [ValidateSet('xinput','hid')][string]$UsbMode = 'xinput')
+param([ValidatePattern('^[R-Z]$')][string]$DriveLetter = 'R', [ValidateSet('xinput','hid','host')][string]$UsbMode = 'xinput')
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path -Parent $PSScriptRoot
 Set-Location -LiteralPath $projectRoot
 $toolchainName = 'arm-gnu-toolchain-14.3.rel1-mingw-w64-x86_64-arm-none-eabi'
 if (-not (Test-Path -LiteralPath (Join-Path $projectRoot "deps\$toolchainName\bin\arm-none-eabi-gcc.exe"))) {
     throw 'Run python tools/fetch_deps.py first.'
+}
+$isHost = $UsbMode -eq 'host'
+if ($isHost -and -not (Test-Path -LiteralPath (Join-Path $projectRoot 'build\pioasm-install\lib\cmake\pioasm\pioasmConfig.cmake'))) {
+    powershell -ExecutionPolicy Bypass -File tools/build_pioasm.ps1
+    if ($LASTEXITCODE -ne 0) { throw 'pioasm bootstrap failed.' }
 }
 # Arm's Windows linker cannot resolve its libraries in this Unicode path.
 # Map only this project for this build; never replace an existing drive.
@@ -15,11 +20,29 @@ if (Test-Path ($drive + '\')) { throw "$drive is occupied. Select another free l
 & $subst $drive $projectRoot
 if ($LASTEXITCODE -ne 0) { throw 'Temporary SUBST mapping failed; run in a normal local PowerShell session.' }
 $build = "build/firmware-$UsbMode-$DriveLetter"
-$native = if ($UsbMode -eq 'xinput') { 'ON' } else { 'OFF' }
+$native = if ($UsbMode -eq 'hid') { 'OFF' } else { 'ON' }
+$hostMode = if ($isHost) { 'ON' } else { 'OFF' }
 $output = "dist/$UsbMode"
 $artifact = "pedals-$UsbMode"
 try {
-    cmake -S $mappedRoot -B ($mappedRoot + $build) -G Ninja -DPEDAL_FIRMWARE=ON "-DPEDAL_USB_XINPUT=$native" "-DPICO_SDK_PATH=${mappedRoot}deps/pico-sdk-2.2.0" "-DPICO_TOOLCHAIN_PATH=${mappedRoot}deps/$toolchainName" -DPICO_BOARD=waveshare_rp2350_usb_a -DPICO_PLATFORM=rp2350-arm-s -DPICO_NO_PICOTOOL=1 -DCMAKE_BUILD_TYPE=Release
+    $configure = @(
+        '-S', $mappedRoot,
+        '-B', ($mappedRoot + $build),
+        '-G', 'Ninja',
+        '-DPEDAL_FIRMWARE=ON',
+        "-DPEDAL_USB_XINPUT=$native",
+        "-DPEDAL_USB_HOST=$hostMode",
+        "-DPICO_SDK_PATH=${mappedRoot}deps/pico-sdk-2.2.0",
+        "-DPICO_TOOLCHAIN_PATH=${mappedRoot}deps/$toolchainName",
+        '-DPICO_BOARD=waveshare_rp2350_usb_a',
+        '-DPICO_PLATFORM=rp2350-arm-s',
+        '-DPICO_NO_PICOTOOL=1',
+        '-DCMAKE_BUILD_TYPE=Release'
+    )
+    if ($isHost) {
+        $configure += "-Dpioasm_DIR=${mappedRoot}build/pioasm-install/lib/cmake/pioasm"
+    }
+    cmake @configure
     if ($LASTEXITCODE -ne 0) { throw 'Firmware configure failed.' }
     cmake --build ($mappedRoot + $build) --parallel 4
     if ($LASTEXITCODE -ne 0) { throw 'Firmware build failed.' }

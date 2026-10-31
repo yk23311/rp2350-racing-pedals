@@ -39,9 +39,16 @@ if not (tiny_target / "src/tusb.h").exists():
     if tiny_target.exists():
         tiny_target.rmdir()
     (ROOT / f"tinyusb-{tiny_sha}").rename(tiny_target)
+pio = fetch("https://codeload.github.com/sekigon-gonnoc/Pico-PIO-USB/zip/refs/tags/0.7.2", "Pico-PIO-USB-0.7.2.zip")
+pio_target = ROOT / "Pico-PIO-USB"
+if not (pio_target / "src/pio_usb.c").exists():
+    extract(pio)
+    if pio_target.exists():
+        pio_target.rmdir()
+    (ROOT / "Pico-PIO-USB-0.7.2").rename(pio_target)
 toolchain_name = "arm-gnu-toolchain-14.3.rel1-mingw-w64-x86_64-arm-none-eabi"
 arm = fetch(f"https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu/14.3.rel1/binrel/{toolchain_name}.zip", toolchain_name + ".zip")
 if not (ROOT / toolchain_name / "bin/arm-none-eabi-gcc.exe").exists():
     extract(arm, ROOT / toolchain_name)
-(ROOT / "versions.json").write_text(json.dumps({"sdk": "2.2.0", "tinyusb": tiny_sha, "arm_gcc": "14.3.rel1"}, indent=2), encoding="utf-8")
+(ROOT / "versions.json").write_text(json.dumps({"sdk": "2.2.0", "tinyusb": tiny_sha, "pico_pio_usb": "0.7.2", "arm_gcc": "14.3.rel1"}, indent=2), encoding="utf-8")
 print("Dependencies ready", flush=True)
