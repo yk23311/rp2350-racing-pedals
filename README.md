@@ -47,10 +47,18 @@ Flash配置保留区：`0x101FE000` 和 `0x101FF000` 两个4KiB扇区；正常�
 
 ## 上板后调参
 
-项目已准备好独立的 `.venv` 串口环境；GUI 使用 Python 自带的 Tkinter，无需 PyQt：
+项目已准备好独立的 `.venv` 串口环境；GUI 使用 Python 自带的 Tkinter，无需 PyQt。
+
+**最简单的启动方式：双击项目根目录的 `启动调参GUI.bat`。** 也可以在 PowerShell 中运行：
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File tools/start_gui.ps1
+```
+
+只想检查环境而不打开窗口：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tools/start_gui.ps1 -Check
 ```
 
 移交到新电脑时先执行 `python -m venv .venv`，再执行 `.\.venv\Scripts\python.exe -m pip install -r tools/requirements.txt`。CLI也使用该虚拟环境的Python；下列示例运行前可执行 `.\.venv\Scripts\Activate.ps1`，或把 `python` 换成 `.\.venv\Scripts\python.exe`。

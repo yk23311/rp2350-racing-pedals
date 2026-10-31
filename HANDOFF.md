@@ -128,6 +128,7 @@ GP27刹车 ----------------┤ LT
 | `src/core/config_record.c` | 40字节版本化小端记录、CRC/序号；保持用户校准兼容 |
 | `src/core/console.c` | GET/SET/CAL/MODE/SAVE，GET含usb_transport=XINPUT |
 | `tools/pedal_gui.py`、`pedalctl.py` | 串口调参；完整ERR为CommandRejected，保持连接，真正通信失败才断开 |
+| `启动调参GUI.bat`、`tools/start_gui.ps1` | 双击启动GUI；`-Check`只检查.venv/tkinter环境 |
 | `tools/check_xinput.py` | 只读调用系统XInputGetState，无映射/模拟/按键注入 |
 
 ## 7. 构建、测试和产物
