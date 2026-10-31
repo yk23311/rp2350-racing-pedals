@@ -85,4 +85,4 @@ powershell -ExecutionPolicy Bypass -File tools/start_gui.ps1 -Legacy
 
 微雪官方说明Host热插拔需移除R13，实物R13/R10/15k下拉及总电流状态没有本轮确认；本轮没有改硬件。用户无万用表，传感器只知道5V供电，原10k/10k分压+100nF图是假定模拟OUT，不要让未知5V直入ADC。踏板图与说明仍在docs/images及docs/breadboard-wiring.md。
 
-Git已有基线6fa0512、桥接8f7c0a2、MAX7539a07；GitHub推送任务将本轮及上轮改动统一提交，公开仓库为yk23311/rp2350-racing-pedals；最新源码提交以git log为准。固件manifest记录的是构建当时的HEAD/dirty状态，不冒充当时已提交。历史报告见[总索引](docs/reports/00-handoff.md)，本文件优先。
+Git已有基线6fa0512、桥接8f7c0a2、MAX7539a07；本轮及上轮改动已统一提交并推送公开仓库yk23311/rp2350-racing-pedals；源码提交9b81c3f，后续文档提交以git log为准，见docs/reports/15-github-publication.md。固件manifest记录的是构建当时的HEAD/dirty状态，不冒充当时已提交。历史报告见[总索引](docs/reports/00-handoff.md)，本文件优先。
