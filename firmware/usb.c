@@ -5,6 +5,9 @@
 #include "xinput_device.h"
 #include "xinput_protocol.h"
 #endif
+#if PEDAL_USB_HOST
+#include "host.h"
+#endif
 #include "tusb.h"
 #include "pico/unique_id.h"
 #include "pico/time.h"
@@ -13,10 +16,20 @@ static pedal_t *state;
 static report_gate_t gate;
 static uint32_t generation;
 static uint64_t next_report;
+#if PEDAL_USB_HOST
+static bridge_host_state_t last_host_state;
+static bool last_host_seen;
+static bool last_xinput_controlled_neutral;
+static bool pending_xinput_controlled_neutral;
+#endif
 static void restart(void) {
     pedal_reset(state); generation=state->generation;
     memset(&gate,0,sizeof(gate)); report_gate_reset(&gate);
     next_report=0;
+#if PEDAL_USB_HOST
+    last_xinput_controlled_neutral=false;
+    pending_xinput_controlled_neutral=false;
+#endif
 }
 void pedal_usb_init(pedal_t *pedal) {
     state=pedal; restart();
@@ -32,12 +45,24 @@ void pedal_usb_init(pedal_t *pedal) {
     tusb_init();
 #endif
 }
-bool pedal_usb_quiet(void) { return tud_mounted() && !tud_suspended() && generation==state->generation && report_gate_quiet(&gate); }
+bool pedal_usb_quiet(void) {
+#if PEDAL_USB_HOST
+    bool gate_quiet=!report_gate_blocked(&gate) && !gate.busy[0] && !gate.busy[1] &&
+                    gate.last_neutral[1] && last_xinput_controlled_neutral;
+    return tud_mounted() && !tud_suspended() && generation==state->generation && gate_quiet;
+#else
+    return tud_mounted() && !tud_suspended() && generation==state->generation && report_gate_quiet(&gate);
+#endif
+}
 static void make_report(unsigned itf,uint8_t data[20]) {
     memset(data,0,20);
     bool blocked=report_gate_blocked(&gate) || generation!=state->generation;
 #if PEDAL_USB_XINPUT
+#if PEDAL_USB_HOST
+    if(itf==0) { bridge_build_report(host_bridge(),state,blocked,data);return; }
+#else
     if(itf==0) { xinput_report_build(state,blocked,data);return; }
+#endif
 #endif
     if(blocked || !state->armed || state->calibration_axis>=0) return;
     if(itf==0 && state->mode==PEDAL_JOYSTICK) {
@@ -46,6 +71,12 @@ static void make_report(unsigned itf,uint8_t data[20]) {
     } else if(itf==1) pedal_keyboard(state,data);
 }
 void pedal_usb_task(void) {
+#if PEDAL_USB_HOST
+    const bridge_t *host=host_bridge();
+    if(host->state!=last_host_state || host->host_seen!=last_host_seen) {
+        last_host_state=host->state; last_host_seen=host->host_seen; restart();
+    }
+#endif
     tud_task();
     if(generation!=state->generation) { generation=state->generation; report_gate_reset(&gate); }
     if(!tud_mounted() || tud_suspended()) return;
@@ -70,8 +101,12 @@ void pedal_usb_task(void) {
         if(!report_gate_begin(&gate,i,neutral))continue;
         bool sent;
 #if PEDAL_USB_XINPUT
-        if(i==0)sent=xinput_device_send(data);
-        else
+        if(i==0) {
+#if PEDAL_USB_HOST
+            pending_xinput_controlled_neutral=!data[2] && !data[3] && !data[4] && !data[5];
+#endif
+            sent=xinput_device_send(data);
+        } else
 #endif
         sent=tud_hid_n_report(hid_instance,0,data,(uint16_t)len);
         if(!sent)gate.busy[i]=false;
@@ -92,6 +127,11 @@ void tud_hid_report_complete_cb(uint8_t instance,const uint8_t *report,uint16_t 
 #if PEDAL_USB_XINPUT
 void xinput_device_get_report(uint8_t report[20]) { make_report(0,report); }
 void xinput_device_report_complete(bool success) {
+#if PEDAL_USB_HOST
+    if(success) last_xinput_controlled_neutral=pending_xinput_controlled_neutral;
+    else last_xinput_controlled_neutral=false;
+    pending_xinput_controlled_neutral=false;
+#endif
     if(success)report_gate_complete(&gate,0);
     else { gate.busy[0]=false;pedal_reset(state); }
 }
@@ -136,7 +176,10 @@ const uint8_t *tud_hid_descriptor_report_cb(uint8_t instance) {
 }
 const uint16_t *tud_descriptor_string_cb(uint8_t index,uint16_t langid) {
     (void)langid; static uint16_t out[33]; char serial[2*PICO_UNIQUE_BOARD_ID_SIZE_BYTES+1];
-#if PEDAL_USB_XINPUT
+#if PEDAL_USB_HOST
+    if(index==0xee)return xinput_os_string;
+    const char *strings[]={"","DIY Pedals","RP2350 Host Probe",serial};
+#elif PEDAL_USB_XINPUT
     if(index==0xee)return xinput_os_string;
     const char *strings[]={"","DIY Pedals","RP2350 Native XInput Pedals",serial};
 #else

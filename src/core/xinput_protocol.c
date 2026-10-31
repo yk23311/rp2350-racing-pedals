@@ -42,9 +42,20 @@ void xinput_report_build(const pedal_t *p,bool neutral,uint8_t out[20]) {
 }
 int xinput_control_response(uint8_t t,uint8_t r,uint16_t v,uint16_t i,uint8_t out[64]) {
     if(t==0xc0 && r==0x20 && v==0 && i==4) { memcpy(out,xinput_compatible_id,40);return 40; }
-    /* PC capabilities queries, also used by SDL's Xbox 360 backend. */
+    /* PC capabilities queries, also used by SDL's Xbox 360 backend.
+     * Declare the standard complete wired 360 gamepad: all standard face,
+     * d-pad, shoulder and stick buttons, 8-bit triggers and full-range
+     * 16-bit thumbsticks. No rumble motors are exposed. */
     if(t==0xc1 && r==1 && i==0 && v==0x100) {
-        memset(out,0,20); out[1]=20; out[4]=out[5]=255; return 20;
+        memset(out,0,20);
+        out[1]=20;
+        out[2]=0xFF; out[3]=0xF3; /* XINPUT_GAMEPAD button mask */
+        out[4]=out[5]=255;        /* trigger resolution */
+        for(unsigned axis=0;axis<4;axis++) {
+            out[6+2*axis]=0xFF;   /* 32767 little-endian */
+            out[7+2*axis]=0x7F;
+        }
+        return 20;
     }
     if(t==0xc1 && r==1 && i==0 && v==0) {
         memset(out,0,8); out[1]=8;return 8; /* no physical rumble motors */

@@ -1,0 +1,180 @@
+[HOST] pad n=37250 btn=0000 LT=0 RT=0 LX=-480 LY=192 RX=0 RY=0
+[HOST] state=3 reports=37480 invalid=0 age=1 timeouts=0 events=37505 attach=2 remove=1
+[HOST] pad n=37500 btn=0000 LT=0 RT=0 LX=-209 LY=85 RX=0 RY=0
+[HOST] pad n=37750 btn=0000 LT=0 RT=0 LX=0 LY=0 RX=0 RY=0
+[HOST] state=3 reports=37980 invalid=0 age=1 timeouts=0 events=38005 attach=2 remove=1
+[HOST] pad n=38000 btn=0000 LT=0 RT=0 LX=0 LY=0 RX=0 RY=0
+[HOST] pad n=38250 btn=0000 LT=0 RT=0 LX=0 LY=0 RX=0 RY=0
+[HOST] state=3 reports=38480 invalid=0 age=1 timeouts=0 events=38505 attach=2 remove=1
+[HOST] pad n=38500 btn=0000 LT=0 RT=0 LX=0 LY=0 RX=0 RY=0
+[HOST] pad n=38750 btn=0000 LT=0 RT=0 LX=0 LY=0 RX=0 RY=0
+[HOST] state=3 reports=38980 invalid=0 age=1 timeouts=0 events=39005 attach=2 remove=1
+[HOST] pad n=39000 btn=0000 LT=0 RT=0 LX=0 LY=0 RX=0 RY=0
+[HOST] pad n=39250 btn=0000 LT=0 RT=0 LX=0 LY=0 RX=0 RY=0
+[HOST] state=3 reports=39480 invalid=0 age=1 timeouts=0 events=39505 attach=2 remove=1
+[HOST] pad n=39500 btn=0000 LT=0 RT=0 LX=0 LY=0 RX=0 RY=0
+[HOST] pad n=39750 btn=0000 LT=0 RT=0 LX=0 LY=0 RX=0 RY=0
+[HOST] state=3 reports=39980 invalid=0 age=1 timeouts=0 events=40005 attach=2 remove=1
+[HOST] pad n=40000 btn=0000 LT=0 RT=0 LX=0 LY=0 RX=0 RY=0
+[HOST] pad n=40250 btn=0000 LT=0 RT=0 LX=0 LY=0 RX=0 RY=0
+[HOST] state=3 reports=40480 invalid=0 age=1 timeouts=0 events=40505 attach=2 remove=1
+[HOST] pad n=40500 btn=0000 LT=0 RT=0 LX=-13796 LY=4322 RX=0 RY=0
+[HOST] pad n=40750 btn=0000 LT=0 RT=0 LX=-1745 LY=781 RX=0 RY=0
+[HOST] state=3 reports=40980 invalid=0 age=1 timeouts=0 events=41005 attach=2 remove=1
+[HOST] pad n=41000 btn=0000 LT=0 RT=0 LX=-1614 LY=553 RX=0 RY=0
+[HOST] pad n=41250 btn=0000 LT=0 RT=0 LX=-1419 LY=489 RX=0 RY=0
+[HOST] state=3 reports=41480 invalid=0 age=1 timeouts=0 events=41505 attach=2 remove=1
+[HOST] pad n=41500 btn=0000 LT=0 RT=0 LX=-960 LY=288 RX=0 RY=0
+[HOST] pad n=41750 btn=0000 LT=0 RT=0 LX=-896 LY=224 RX=0 RY=0
+[HOST] state=3 reports=41980 invalid=0 age=1 timeouts=0 events=42005 attach=2 remove=1
+[HOST] pad n=42000 btn=0000 LT=0 RT=0 LX=-896 LY=224 RX=0 RY=0
+[HOST] pad n=42250 btn=0000 LT=0 RT=0 LX=-864 LY=192 RX=0 RY=0
+[HOST] state=3 reports=42480 invalid=0 age=1 timeouts=0 events=42505 attach=2 remove=1
+[HOST] pad n=42500 btn=0000 LT=0 RT=0 LX=0 LY=0 RX=0 RY=0
+[HOST] pad n=42750 btn=0000 LT=0 RT=0 LX=0 LY=0 RX=0 RY=0
+[HOST] state=3 reports=42980 invalid=0 age=1 timeouts=0 events=43005 attach=2 remove=1
+[HOST] pad n=43000 btn=0000 LT=0 RT=0 LX=0 LY=0 RX=0 RY=0
+[HOST] pad n=43250 btn=0000 LT=0 RT=0 LX=0 LY=0 RX=0 RY=0
+[HOST] state=3 reports=43480 invalid=0 age=1 timeouts=0 events=43505 attach=2 remove=1
+[HOST] pad n=43500 btn=0000 LT=0 RT=0 LX=0 LY=0 RX=0 RY=0
+[HOST] pad n=43750 btn=0000 LT=0 RT=0 LX=0 LY=0 RX=0 RY=0
+[HOST] state=3 reports=43980 invalid=0 age=1 timeouts=0 events=44005 attach=2 remove=1
+[HOST] pad n=44000 btn=0000 LT=0 RT=0 LX=0 LY=0 RX=0 RY=0
+[HOST] pad n=44250 btn=0000 LT=0 RT=0 LX=0 LY=0 RX=0 RY=0
+[HOST] state=3 reports=44480 invalid=0 age=1 timeouts=0 events=44505 attach=2 remove=1
+[HOST] pad n=44500 btn=0000 LT=0 RT=0 LX=0 LY=0 RX=0 RY=0
+[HOST] pad n=44750 btn=0000 LT=0 RT=0 LX=0 LY=0 RX=0 RY=0
+[HOST] state=3 reports=44980 invalid=0 age=1 timeouts=0 events=45005 attach=2 remove=1
+[HOST] pad n=45000 btn=0000 LT=0 RT=0 LX=25387 LY=-20369 RX=0 RY=0
+[HOST] pad n=45250 btn=0000 LT=0 RT=0 LX=-576 LY=160 RX=0 RY=0
+[HOST] state=3 reports=45480 invalid=0 age=1 timeouts=0 events=45505 attach=2 remove=1
+[HOST] pad n=45500 btn=0000 LT=0 RT=0 LX=-1235 LY=-1040 RX=0 RY=0
+[HOST] pad n=45750 btn=0000 LT=0 RT=0 LX=-30423 LY=12363 RX=0 RY=0
+[HOST] state=3 reports=45980 invalid=0 age=1 timeouts=0 events=46005 attach=2 remove=1
+[HOST] pad n=46000 btn=0000 LT=0 RT=0 LX=4339 LY=-5358 RX=0 RY=0
+[HOST] pad n=46250 btn=0000 LT=0 RT=0 LX=-457 LY=-1081 RX=0 RY=0
+[HOST] state=3 reports=46480 invalid=0 age=1 timeouts=0 events=46505 attach=2 remove=1
+[HOST] pad n=46500 btn=0000 LT=0 RT=0 LX=-1184 LY=160 RX=0 RY=0
+[HOST] pad n=46750 btn=0000 LT=0 RT=0 LX=-1184 LY=160 RX=0 RY=0
+[HOST] state=3 reports=46980 invalid=0 age=1 timeouts=0 events=47005 attach=2 remove=1
+[HOST] pad n=47000 btn=0000 LT=0 RT=0 LX=-1184 LY=192 RX=0 RY=0
+[HOST] pad n=47250 btn=0000 LT=0 RT=0 LX=-1184 LY=192 RX=0 RY=0
+[HOST] state=3 reports=47480 invalid=0 age=1 timeouts=0 events=47505 attach=2 remove=1
+[HOST] pad n=47500 btn=0000 LT=0 RT=0 LX=0 LY=0 RX=0 RY=0
+[HOST] pad n=47750 btn=0000 LT=0 RT=0 LX=0 LY=0 RX=0 RY=0
+[HOST] state=3 reports=47980 invalid=0 age=1 timeouts=0 events=48005 attach=2 remove=1
+[HOST] pad n=48000 btn=0000 LT=0 RT=0 LX=0 LY=0 RX=0 RY=0
+[HOST] pad n=48250 btn=0000 LT=0 RT=0 LX=-24820 LY=-21054 RX=0 RY=0
+[HOST] state=3 reports=48480 invalid=0 age=1 timeouts=0 events=48505 attach=2 remove=1
+[HOST] pad n=48500 btn=0000 LT=0 RT=0 LX=4867 LY=-2128 RX=0 RY=0
+[HOST] pad n=48750 btn=0040 LT=0 RT=0 LX=-1559 LY=1687 RX=0 RY=0
+[HOST] state=3 reports=48980 invalid=0 age=1 timeouts=0 events=49005 attach=2 remove=1
+[HOST] pad n=49000 btn=0000 LT=0 RT=0 LX=-1032 LY=101 RX=0 RY=0
+[HOST] pad n=49250 btn=0000 LT=0 RT=0 LX=-2163 LY=-31599 RX=0 RY=0
+[HOST] state=3 reports=49480 invalid=0 age=1 timeouts=0 events=49505 attach=2 remove=1
+[HOST] pad n=49500 btn=0000 LT=0 RT=0 LX=13576 LY=27041 RX=0 RY=0
+[HOST] pad n=49750 btn=0000 LT=0 RT=0 LX=-20375 LY=-25270 RX=0 RY=0
+[HOST] state=3 reports=49980 invalid=0 age=1 timeouts=0 events=50005 attach=2 remove=1
+[HOST] pad n=50000 btn=0000 LT=0 RT=0 LX=32558 LY=-1917 RX=0 RY=0
+[HOST] pad n=50250 btn=0000 LT=0 RT=0 LX=-1278 LY=1272 RX=0 RY=0
+[HOST] state=3 reports=50480 invalid=0 age=1 timeouts=0 events=50505 attach=2 remove=1
+[HOST] pad n=50500 btn=0000 LT=0 RT=0 LX=-662 LY=-1278 RX=0 RY=0
+[HOST] pad n=50750 btn=0000 LT=0 RT=0 LX=-1088 LY=-192 RX=0 RY=0
+[HOST] state=3 reports=50980 invalid=0 age=1 timeouts=0 events=51005 attach=2 remove=1
+[HOST] pad n=51000 btn=0006 LT=0 RT=0 LX=-1088 LY=-192 RX=0 RY=0
+[HOST] pad n=51250 btn=1008 LT=0 RT=0 LX=-1088 LY=-192 RX=0 RY=0
+[HOST] state=3 reports=51480 invalid=0 age=1 timeouts=0 events=51505 attach=2 remove=1
+[HOST] pad n=51500 btn=0004 LT=0 RT=0 LX=-1088 LY=-192 RX=0 RY=0
+[HOST] pad n=51750 btn=0002 LT=0 RT=0 LX=0 LY=0 RX=0 RY=0
+[HOST] state=3 reports=51980 invalid=0 age=1 timeouts=0 events=52005 attach=2 remove=1
+[HOST] pad n=52000 btn=1000 LT=0 RT=0 LX=0 LY=0 RX=0 RY=0
+[HOST] pad n=52250 btn=0000 LT=0 RT=0 LX=0 LY=0 RX=0 RY=0
+[HOST] state=3 reports=52480 invalid=0 age=1 timeouts=0 events=52505 attach=2 remove=1
+[HOST] pad n=52500 btn=1002 LT=0 RT=0 LX=0 LY=0 RX=0 RY=0
+[HOST] pad n=52750 btn=1000 LT=0 RT=0 LX=0 LY=0 RX=0 RY=0
+[HOST] state=3 reports=52980 invalid=0 age=1 timeouts=0 events=53005 attach=2 remove=1
+[HOST] pad n=53000 btn=0000 LT=0 RT=0 LX=0 LY=0 RX=0 RY=0
+[HOST] pad n=53250 btn=0001 LT=0 RT=0 LX=0 LY=0 RX=0 RY=0
+[HOST] state=3 reports=53480 invalid=0 age=1 timeouts=0 events=53505 attach=2 remove=1
+[HOST] pad n=53500 btn=2000 LT=0 RT=0 LX=0 LY=0 RX=0 RY=0
+[HOST] pad n=53750 btn=0000 LT=0 RT=0 LX=0 LY=0 RX=0 RY=0
+[HOST] state=3 reports=53980 invalid=0 age=1 timeouts=0 events=54005 attach=2 remove=1
+[HOST] pad n=54000 btn=0000 LT=0 RT=0 LX=-32038 LY=2287 RX=0 RY=0
+[HOST] pad n=54250 btn=0000 LT=0 RT=0 LX=23894 LY=-22341 RX=0 RY=0
+[HOST] state=3 reports=54480 invalid=0 age=1 timeouts=0 events=54505 attach=2 remove=1
+[HOST] pad n=54500 btn=1000 LT=0 RT=0 LX=-9901 LY=31144 RX=0 RY=0
+[HOST] pad n=54750 btn=0000 LT=0 RT=0 LX=-6282 LY=-32087 RX=0 RY=0
+[HOST] state=3 reports=54980 invalid=0 age=1 timeouts=0 events=55005 attach=2 remove=1
+[HOST] pad n=55000 btn=0000 LT=0 RT=0 LX=-2125 LY=1716 RX=0 RY=0
+[HOST] pad n=55250 btn=0000 LT=0 RT=0 LX=348 LY=-1451 RX=0 RY=0
+[HOST] state=3 reports=55480 invalid=0 age=1 timeouts=0 events=55505 attach=2 remove=1
+[HOST] pad n=55500 btn=0000 LT=0 RT=0 LX=6535 LY=-22864 RX=0 RY=0
+[HOST] pad n=55750 btn=0000 LT=0 RT=0 LX=-7381 LY=31991 RX=0 RY=0
+[HOST] state=3 reports=55980 invalid=0 age=1 timeouts=0 events=56005 attach=2 remove=1
+[HOST] pad n=56000 btn=0000 LT=0 RT=0 LX=-5736 LY=-32347 RX=0 RY=0
+[HOST] pad n=56250 btn=0000 LT=0 RT=0 LX=-567 LY=16425 RX=0 RY=0
+[HOST] state=3 reports=56480 invalid=0 age=1 timeouts=0 events=56505 attach=2 remove=1
+[HOST] pad n=56500 btn=0000 LT=0 RT=0 LX=-2330 LY=3962 RX=0 RY=0
+[HOST] pad n=56750 btn=0000 LT=0 RT=0 LX=16190 LY=-28510 RX=0 RY=0
+[HOST] state=3 reports=56980 invalid=0 age=1 timeouts=0 events=57005 attach=2 remove=1
+[HOST] pad n=57000 btn=0000 LT=0 RT=0 LX=-14235 LY=29396 RX=0 RY=0
+[HOST] pad n=57250 btn=0000 LT=0 RT=0 LX=-17986 LY=-27376 RX=0 RY=0
+[HOST] state=3 reports=57480 invalid=0 age=1 timeouts=0 events=57505 attach=2 remove=1
+[HOST] pad n=57500 btn=0000 LT=0 RT=0 LX=-256 LY=64 RX=0 RY=0
+[HOST] pad n=57750 btn=0000 LT=0 RT=0 LX=-256 LY=64 RX=0 RY=0
+[HOST] state=3 reports=57980 invalid=0 age=1 timeouts=0 events=58005 attach=2 remove=1
+[HOST] pad n=58000 btn=0000 LT=0 RT=0 LX=-256 LY=64 RX=0 RY=0
+[HOST] pad n=58250 btn=0000 LT=0 RT=0 LX=-256 LY=64 RX=0 RY=0
+[HOST] state=3 reports=58480 invalid=0 age=1 timeouts=0 events=58505 attach=2 remove=1
+[HOST] pad n=58500 btn=0000 LT=0 RT=0 LX=0 LY=0 RX=0 RY=0
+[HOST] pad n=58750 btn=0001 LT=0 RT=0 LX=-489 LY=225 RX=0 RY=0
+[HOST] state=3 reports=58980 invalid=0 age=1 timeouts=0 events=59005 attach=2 remove=1
+[HOST] pad n=59000 btn=0000 LT=0 RT=0 LX=-512 LY=288 RX=0 RY=0
+[HOST] pad n=59250 btn=0000 LT=0 RT=0 LX=-512 LY=288 RX=0 RY=0
+[HOST] state=3 reports=59480 invalid=0 age=1 timeouts=0 events=59505 attach=2 remove=1
+[HOST] pad n=59500 btn=0000 LT=0 RT=0 LX=-576 LY=288 RX=0 RY=0
+[HOST] pad n=59750 btn=0008 LT=0 RT=0 LX=-24 LY=15 RX=0 RY=0
+[HOST] state=3 reports=59980 invalid=0 age=1 timeouts=0 events=60005 attach=2 remove=1
+[HOST] pad n=60000 btn=0004 LT=0 RT=0 LX=0 LY=0 RX=0 RY=0
+[HOST] pad n=60250 btn=0000 LT=0 RT=0 LX=0 LY=0 RX=0 RY=0
+[HOST] state=3 reports=60480 invalid=0 age=1 timeouts=0 events=60505 attach=2 remove=1
+[HOST] pad n=60500 btn=0000 LT=0 RT=0 LX=0 LY=0 RX=0 RY=0
+[HOST] pad n=60750 btn=0000 LT=0 RT=0 LX=-2240 LY=-32768 RX=0 RY=0
+[HOST] state=3 reports=60980 invalid=0 age=1 timeouts=0 events=61005 attach=2 remove=1
+[HOST] pad n=61000 btn=0000 LT=0 RT=0 LX=302 LY=2462 RX=0 RY=0
+[HOST] pad n=61250 btn=0000 LT=0 RT=0 LX=-58 LY=-6 RX=0 RY=0
+[HOST] state=3 reports=61480 invalid=0 age=1 timeouts=0 events=61505 attach=2 remove=1
+[HOST] pad n=61500 btn=0000 LT=0 RT=0 LX=-96 LY=-32 RX=0 RY=0
+[HOST] pad n=61750 btn=0000 LT=0 RT=0 LX=-96 LY=-32 RX=0 RY=0
+[HOST] state=3 reports=61980 invalid=0 age=1 timeouts=0 events=62005 attach=2 remove=1
+[HOST] pad n=62000 btn=0000 LT=0 RT=0 LX=-96 LY=-32 RX=0 RY=0
+[HOST] pad n=62250 btn=0002 LT=0 RT=0 LX=-96 LY=-32 RX=0 RY=0
+[HOST] state=3 reports=62480 invalid=0 age=1 timeouts=0 events=62505 attach=2 remove=1
+[HOST] pad n=62500 btn=0000 LT=0 RT=0 LX=0 LY=0 RX=0 RY=0
+[HOST] pad n=62750 btn=0000 LT=0 RT=0 LX=0 LY=0 RX=0 RY=0
+[HOST] state=3 reports=62980 invalid=0 age=1 timeouts=0 events=63005 attach=2 remove=1
+[HOST] pad n=63000 btn=0000 LT=0 RT=0 LX=0 LY=0 RX=0 RY=0
+[HOST] pad n=63250 btn=0000 LT=0 RT=0 LX=0 LY=0 RX=0 RY=0
+[HOST] state=3 reports=63480 invalid=0 age=1 timeouts=0 events=63505 attach=2 remove=1
+[HOST] pad n=63500 btn=0000 LT=0 RT=0 LX=0 LY=0 RX=0 RY=0
+[HOST] pad n=63750 btn=0000 LT=0 RT=0 LX=0 LY=0 RX=0 RY=0
+[HOST] state=3 reports=63980 invalid=0 age=1 timeouts=0 events=64005 attach=2 remove=1
+[HOST] pad n=64000 btn=0000 LT=0 RT=0 LX=0 LY=0 RX=0 RY=0
+[HOST] pad n=64250 btn=0000 LT=0 RT=0 LX=0 LY=0 RX=0 RY=0
+[HOST] state=3 reports=64480 invalid=0 age=1 timeouts=0 events=64505 attach=2 remove=1
+[HOST] pad n=64500 btn=0000 LT=0 RT=0 LX=0 LY=0 RX=0 RY=0
+[HOST] pad n=64750 btn=0000 LT=0 RT=0 LX=0 LY=0 RX=0 RY=0
+[HOST] state=3 reports=64980 invalid=0 age=1 timeouts=0 events=65005 attach=2 remove=1
+[HOST] pad n=65000 btn=0000 LT=0 RT=0 LX=0 LY=0 RX=0 RY=0
+[HOST] pad n=65250 btn=0000 LT=0 RT=0 LX=0 LY=0 RX=0 RY=0
+[HOST] state=3 reports=65480 invalid=0 age=1 timeouts=0 events=65505 attach=2 remove=1
+[HOST] pad n=65500 btn=0000 LT=0 RT=0 LX=0 LY=0 RX=0 RY=0
+[HOST] pad n=65750 btn=0000 LT=0 RT=0 LX=0 LY=0 RX=0 RY=0
+[HOST] state=3 reports=65980 invalid=0 age=1 timeouts=0 events=66005 attach=2 remove=1
+[HOST] pad n=66000 btn=0000 LT=0 RT=0 LX=0 LY=0 RX=0 RY=0
+[HOST] pad n=66250 btn=0000 LT=0 RT=0 LX=0 LY=0 RX=0 RY=0
+[HOST] state=3 reports=66480 invalid=0 age=1 timeouts=0 events=66505 attach=2 remove=1
+[HOST] pad n=66500 btn=0000 LT=0 RT=0 LX=0 LY=0 RX=0 RY=0
+[HOST] pad n=66750 btn=0000 LT=0 RT=0 LX=0 LY=0 RX=0 RY=0
+[HOST] state=3 reports=66980 invalid=0 age=1 timeouts=0 events=67005 attach=2 remove=1
+[HOST] pad n=67000 btn=0000 LT=0 RT=0 LX=0 LY=0 RX=0 RY=0

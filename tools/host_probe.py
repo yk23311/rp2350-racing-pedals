@@ -13,6 +13,7 @@ def main():
     parser.add_argument("--baud", type=int, default=115200, help="USB CDC ignores this value")
     parser.add_argument("--seconds", type=float, default=20, help="0 means run until Ctrl+C")
     parser.add_argument("--output", help="optional text log path")
+    parser.add_argument("--timestamps", action="store_true", help="prefix each line with Unix time")
     parser.add_argument("--list", action="store_true", help="list serial ports and exit")
     args = parser.parse_args()
     if args.list:
@@ -33,6 +34,8 @@ def main():
                 if not raw:
                     continue
                 text = raw.decode("utf-8", "replace").rstrip("\r\n")
+                if args.timestamps:
+                    text = f"{time.time():.3f} {text}"
                 print(text, flush=True)
                 if sink is not None:
                     sink.write(text + "\n")

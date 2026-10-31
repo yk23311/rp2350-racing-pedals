@@ -39,11 +39,21 @@ static void layout(void) {
     CHECK(xinput_compatible_id[0]==40 && xinput_compatible_id[8]==1 && xinput_compatible_id[16]==0 && xinput_compatible_id[17]==1);
     CHECK(memcmp(xinput_compatible_id+18,"XUSB10\0\0",8)==0);
 }
+static void capabilities(void) {
+    uint8_t reply[64];
+    CHECK(xinput_control_response(0xc1,1,0x100,0,reply)==20);
+    CHECK(reply[0]==0 && reply[1]==20);
+    CHECK(reply[2]==0xff && reply[3]==0xf3);
+    CHECK(reply[4]==255 && reply[5]==255);
+    for(unsigned axis=0;axis<4;axis++) {
+        CHECK(reply[6+2*axis]==0xff && reply[7+2*axis]==0x7f);
+    }
+    for(unsigned i=14;i<20;i++) CHECK(reply[i]==0);
+}
 static void control(void) {
     uint8_t reply[64];
     CHECK(xinput_control_response(0xc0,0x20,0,4,reply)==40 && memcmp(reply,xinput_compatible_id,40)==0);
     CHECK(xinput_control_response(0xc1,1,0x100,0,reply)==20 && reply[4]==255 && reply[5]==255);
-    for(unsigned i=2;i<20;i++) if(i!=4 && i!=5) CHECK(reply[i]==0);
     CHECK(xinput_control_response(0xc1,1,0,0,reply)==8 && reply[3]==0 && reply[4]==0);
     CHECK(xinput_control_response(0xc1,1,0x100,1,reply)==-1);
     CHECK(xinput_control_response(0xc0,0x20,0,5,reply)==-1);
@@ -55,6 +65,7 @@ int main(int argc,char **argv) {
     if(!strcmp(argv[1],"packet")) packet();
     else if(!strcmp(argv[1],"layout"))layout();
     else if(!strcmp(argv[1],"control"))control();
+    else if(!strcmp(argv[1],"capabilities"))capabilities();
     else return 2;
     puts("PASS");return 0;
 }

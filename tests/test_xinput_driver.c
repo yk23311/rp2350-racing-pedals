@@ -50,7 +50,7 @@ int main(void) {
     led=(tusb_control_request_t){0xa1,1,0x101,0,3};CHECK(driver->control_xfer_cb(0,0,&led));CHECK(control_buffer[2]==7);
     tusb_control_request_t req={0xc0,0x20,0,4,16};
     CHECK(tud_vendor_control_xfer_cb(0,CONTROL_STAGE_SETUP,&req));CHECK(control_length==16 && control_buffer[0]==40);
-    req=(tusb_control_request_t){0xc1,1,0x100,0,20};CHECK(tud_vendor_control_xfer_cb(0,0,&req));CHECK(control_length==20 && control_buffer[4]==255);
+    req=(tusb_control_request_t){0xc1,1,0x100,0,20};CHECK(tud_vendor_control_xfer_cb(0,0,&req));CHECK(control_length==20 && control_buffer[4]==255 && control_buffer[2]==0xff && control_buffer[3]==0xf3 && control_buffer[6]==0xff && control_buffer[7]==0x7f);
     req=(tusb_control_request_t){0xa1,1,0x100,0,20};CHECK(driver->control_xfer_cb(0,0,&req));CHECK(control_buffer[5]==99);
     req=(tusb_control_request_t){0x21,9,0x200,0,33};CHECK(!driver->control_xfer_cb(0,0,&req));
     req=(tusb_control_request_t){0x21,9,0x200,0,8};CHECK(driver->control_xfer_cb(0,0,&req));CHECK(control_length==8);

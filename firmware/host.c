@@ -3,6 +3,7 @@
 #include "tusb.h"
 #include "host/usbh.h"
 #include "host/usbh_pvt.h"
+#include "host/hcd.h"
 #include "pio_usb.h"
 #include "xinput_pad.h"
 #include <stdarg.h>
@@ -41,7 +42,14 @@ static bool handshake_pending;
 static uint32_t host_report_count;
 static uint32_t host_invalid_reports;
 static uint32_t host_last_status_ms;
+static uint32_t host_last_idle_ms;
 static uint32_t host_last_report_ms;
+static volatile uint32_t host_event_count;
+static volatile uint32_t host_attach_events;
+static volatile uint32_t host_remove_events;
+static volatile uint32_t host_last_event_id;
+static bool host_banner_logged;
+static bool host_init_ok;
 
 static void host_handshake_complete(tuh_xfer_t *xfer);
 
@@ -281,6 +289,15 @@ const usbh_class_driver_t *usbh_app_driver_get_cb(uint8_t *driver_count) {
     return &host_xinput_driver;
 }
 
+void tuh_event_hook_cb(uint8_t rhport, uint32_t eventid, bool in_isr) {
+    (void)rhport;
+    (void)in_isr;
+    host_event_count++;
+    host_last_event_id = eventid;
+    if (eventid == HCD_EVENT_DEVICE_ATTACH) host_attach_events++;
+    else if (eventid == HCD_EVENT_DEVICE_REMOVE) host_remove_events++;
+}
+
 void host_init(void) {
     bridge_config_t config;
     bridge_defaults(&config);
@@ -290,18 +307,22 @@ void host_init(void) {
     handshake_pending = false;
     host_report_count = 0;
     host_invalid_reports = 0;
+    host_event_count = 0;
+    host_attach_events = 0;
+    host_remove_events = 0;
+    host_last_event_id = 0;
+    host_banner_logged = false;
+    host_init_ok = false;
     host_last_status_ms = host_now_ms();
+    host_last_idle_ms = host_now_ms();
     host_last_report_ms = host_now_ms();
 
     pio_usb_configuration_t config_pio = PIO_USB_DEFAULT_CONFIG;
     config_pio.pin_dp = 12;
-    if (!tuh_configure(1, TUH_CFGID_RPI_PIO_USB_CONFIGURATION, &config_pio)) {
-        host_log("[HOST] tuh_configure failed");
-    }
+    bool ok = tuh_configure(1, TUH_CFGID_RPI_PIO_USB_CONFIGURATION, &config_pio);
     tusb_rhport_init_t init = {.role = TUSB_ROLE_HOST, .speed = TUSB_SPEED_FULL};
-    if (!tusb_init(1, &init)) {
-        host_log("[HOST] tusb_init(host) failed");
-    }
+    ok = tusb_init(1, &init) && ok;
+    host_init_ok = ok;
 }
 
 void host_task(void) {
@@ -309,14 +330,28 @@ void host_task(void) {
     if (handshake_pending) host_handshake_start_step();
     uint32_t now = host_now_ms();
     bridge_tick(&host_state, now);
+    if (!host_banner_logged && tud_cdc_connected()) {
+        host_banner_logged = true;
+        host_log("[HOST] probe boot init=%d pin=12", host_init_ok ? 1 : 0);
+    }
     if ((uint32_t)(now - host_last_status_ms) >= 500u) {
         host_last_status_ms = now;
         if (host_state.host_seen) {
-            host_log("[HOST] state=%d reports=%lu invalid=%lu age=%lu timeouts=%lu",
+            host_log("[HOST] state=%d reports=%lu invalid=%lu age=%lu timeouts=%lu events=%lu attach=%lu remove=%lu",
                      (int)host_state.state, (unsigned long)host_report_count,
                      (unsigned long)host_invalid_reports,
                      (unsigned long)(now - host_last_report_ms),
-                     (unsigned long)host_state.timeouts);
+                     (unsigned long)host_state.timeouts,
+                     (unsigned long)host_event_count,
+                     (unsigned long)host_attach_events,
+                     (unsigned long)host_remove_events);
+        } else if ((uint32_t)(now - host_last_idle_ms) >= 2000u) {
+            host_last_idle_ms = now;
+            host_log("[HOST] waiting events=%lu attach=%lu remove=%lu last=%lu",
+                     (unsigned long)host_event_count,
+                     (unsigned long)host_attach_events,
+                     (unsigned long)host_remove_events,
+                     (unsigned long)host_last_event_id);
         }
     }
 }

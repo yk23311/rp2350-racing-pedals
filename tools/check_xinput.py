@@ -38,6 +38,7 @@ def load_api():
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--seconds',type=float,default=0,help='0: one snapshot; positive: monitor changes')
+    parser.add_argument('--timestamps',action='store_true',help='prefix each JSON line with Unix time')
     args = parser.parse_args()
     if not 0 <= args.seconds <= 3600: parser.error('seconds must be 0..3600')
     api = load_api()
@@ -46,7 +47,8 @@ def main():
     while True:
         states = read_slots(api)
         if states != previous:
-            print(json.dumps(states),flush=True)
+            line = json.dumps(states)
+            print(f"{time.time():.3f} {line}" if args.timestamps else line,flush=True)
             previous = states
         if args.seconds == 0 or time.monotonic() >= end: break
         time.sleep(0.05)
