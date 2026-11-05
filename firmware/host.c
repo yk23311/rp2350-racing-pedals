@@ -50,11 +50,98 @@ static volatile uint32_t host_remove_events;
 static volatile uint32_t host_last_event_id;
 static bool host_banner_logged;
 static bool host_init_ok;
+static host_rumble_status_t rumble;
+/* HCD owns tx until completion. New PC commands only change desired. */
+_Alignas(4) static uint8_t rumble_tx[8];
+static uint8_t rumble_desired[8];
+static uint32_t rumble_generation,rumble_sent_generation,rumble_retry_ms,rumble_started_ms;
+static unsigned rumble_failures;
+static bool rumble_was_ready;
+static bool rumble_stop_pending,rumble_sending_stop;
+static uint32_t rumble_test_deadline;
 
 static void host_handshake_complete(tuh_xfer_t *xfer);
 
 static uint32_t host_now_ms(void) {
     return to_ms_since_boot(get_absolute_time());
+}
+void host_rumble_stop(void) {
+    rumble.testing=false;
+    bool changed=rumble.left || rumble.right;
+    memset(rumble_desired,0,8);rumble_desired[1]=8;
+    rumble.left=rumble.right=0;rumble_generation++;
+    rumble.pending=host_itf.opened && host_itf.ep_out && host_itf.ep_out_size>=8;
+    rumble_stop_pending=rumble.pending;
+    if(changed && !rumble.faulted) rumble_failures=0;
+    if(!rumble_failures) rumble_retry_ms=host_now_ms();
+}
+void host_rumble_enable(bool enabled) {
+    if(rumble.enabled && !enabled) host_rumble_stop();
+    rumble.enabled=enabled;
+}
+void host_rumble_receive(const uint8_t report[8]) {
+    if(!report || report[0] || report[1]!=8 || report[2] || report[5] || report[6] || report[7]) return;
+    rumble.received++;
+    if(rumble.testing) return; /* A board-timed test owns both motors until stopped. */
+    if(!report[3] && !report[4]) { host_rumble_stop();return; }
+    if(rumble.faulted || !rumble.enabled || !bridge_host_ready(&host_state) || !host_itf.opened || !host_itf.ep_out || host_itf.ep_out_size<8) return;
+    memcpy(rumble_desired,report,8);rumble.left=report[3];rumble.right=report[4];
+    rumble_generation++;rumble.pending=true;
+    if(!rumble_failures) rumble_retry_ms=host_now_ms();
+}
+void host_rumble_status(host_rumble_status_t *status) {
+    *status=rumble;
+    status->available=host_itf.opened && host_itf.ep_out && host_itf.ep_out_size>=8 && handshake_state==HOST_HS_DONE;
+    int32_t remaining=(int32_t)(rumble_test_deadline-host_now_ms());
+    status->remaining_ms=rumble.testing && remaining>0?(uint32_t)remaining:0;
+}
+bool host_rumble_test(uint8_t left,uint8_t right,uint32_t duration_ms) {
+    host_rumble_status_t current;host_rumble_status(&current);
+    if(duration_ms<100 || duration_ms>3000 || !current.available || !rumble.enabled ||
+       rumble.faulted || !bridge_host_ready(&host_state)) return false;
+    memset(rumble_desired,0,8);rumble_desired[1]=8;
+    rumble_desired[3]=rumble.left=left;rumble_desired[4]=rumble.right=right;
+    rumble_generation++;rumble.pending=true;rumble.testing=true;
+    rumble_test_deadline=host_now_ms()+duration_ms;
+    if(!rumble_failures) rumble_retry_ms=host_now_ms();
+    return true;
+}
+static void rumble_failed(void) {
+    rumble.errors++;
+    rumble_retry_ms=host_now_ms()+((rumble_stop_pending && !rumble_sending_stop)?0:20);
+    if(++rumble_failures>=3) {
+        rumble.faulted=true;
+        if(!rumble_sending_stop) {
+            host_rumble_stop();rumble_failures=0;rumble_retry_ms=host_now_ms();
+        } else rumble.pending=rumble_stop_pending=false; /* Require recovery/reconnect after failed stops. */
+    }
+}
+static void host_rumble_task(void) {
+    if(rumble.testing && (int32_t)(host_now_ms()-rumble_test_deadline)>=0) host_rumble_stop();
+    bool ready=bridge_host_ready(&host_state) && rumble.enabled;
+    if(!ready && rumble_was_ready) host_rumble_stop();
+    rumble_was_ready=ready;
+    if(rumble.in_flight) {
+        bool expired=(uint32_t)(host_now_ms()-rumble_started_ms)>=100;
+        if((expired || (rumble_stop_pending && !rumble_sending_stop)) &&
+           tuh_edpt_abort_xfer(host_itf.dev_addr,host_itf.ep_out)) {
+            rumble.in_flight=false;
+            if(expired) rumble_failed();
+            /* Next tuh_task drains any completion queued just before abort,
+             * before this SRAM buffer is reused for a different command. */
+        }
+        return;
+    }
+    if(!host_itf.opened || !host_itf.ep_out || host_itf.ep_out_size<8 || handshake_state!=HOST_HS_DONE ||
+       !rumble.pending || rumble.in_flight || (int32_t)(host_now_ms()-rumble_retry_ms)<0) return;
+    if(usbh_edpt_busy(host_itf.dev_addr,host_itf.ep_out) || !usbh_edpt_claim(host_itf.dev_addr,host_itf.ep_out)) return;
+    rumble_sending_stop=rumble_stop_pending;
+    if(rumble_sending_stop) {memset(rumble_tx,0,8);rumble_tx[1]=8;}
+    else memcpy(rumble_tx,rumble_desired,8);
+    rumble_sent_generation=rumble_generation;rumble.in_flight=true;rumble_started_ms=host_now_ms();
+    if(!usbh_edpt_xfer(host_itf.dev_addr,host_itf.ep_out,rumble_tx,8)) {
+        rumble.in_flight=false;usbh_edpt_release(host_itf.dev_addr,host_itf.ep_out);rumble_failed();
+    }
 }
 
 static void host_log(const char *format, ...) {
@@ -100,6 +187,8 @@ static void host_handshake_finished(void) {
     handshake_pending = false;
     bridge_host_handshake_done(&host_state, host_now_ms());
     host_arm_in();
+    rumble.faulted=false;rumble_failures=0;
+    host_rumble_stop(); /* Never carry a motor level across receiver (re)initialization. */
 }
 
 static void host_handshake_fail_step(void) {
@@ -268,6 +357,16 @@ static bool host_xinput_xfer_cb(uint8_t dev_addr, uint8_t ep_addr, xfer_result_t
         return true;
     }
     if (ep_addr == host_itf.ep_out) {
+        if(rumble.in_flight) {
+            rumble.in_flight=false;
+            if(result==XFER_RESULT_SUCCESS && xferred_bytes==8) {
+                rumble.sent++;
+                rumble_failures=0;
+                if(rumble_sending_stop) {
+                    rumble_stop_pending=false;rumble.faulted=false;rumble.pending=rumble.left || rumble.right;
+                } else rumble.pending=rumble_sent_generation!=rumble_generation || rumble_stop_pending;
+            } else rumble_failed();
+        }
         return true;
     }
     return false;
@@ -276,6 +375,7 @@ static bool host_xinput_xfer_cb(uint8_t dev_addr, uint8_t ep_addr, xfer_result_t
 static void host_xinput_close(uint8_t dev_addr) {
     if (host_itf.opened && host_itf.dev_addr == dev_addr) {
         host_itf.opened = false;
+        rumble.pending=rumble.in_flight=rumble.testing=false;rumble.left=rumble.right=0;
     }
 }
 
@@ -310,6 +410,10 @@ void host_init(void) {
     config.merge_mode = BRIDGE_MERGE_MAX;
     bridge_init(&host_state, &config, host_now_ms());
     memset(&host_itf, 0, sizeof(host_itf));
+    memset(&rumble,0,sizeof(rumble));memset(rumble_desired,0,8);rumble_desired[1]=8;
+    rumble_generation=rumble_sent_generation=rumble_retry_ms=rumble_started_ms=0;
+    rumble_test_deadline=0;
+    rumble_failures=0;rumble_was_ready=rumble_stop_pending=rumble_sending_stop=false;
     handshake_state = HOST_HS_IDLE;
     handshake_pending = false;
     host_report_count = 0;
@@ -337,6 +441,7 @@ void host_task(void) {
     if (handshake_pending) host_handshake_start_step();
     uint32_t now = host_now_ms();
     bridge_tick(&host_state, now);
+    host_rumble_task();
     if (!host_banner_logged && tud_cdc_connected()) {
         host_banner_logged = true;
         host_log("[HOST] bridge boot init=%d pin=12", host_init_ok ? 1 : 0);
@@ -396,5 +501,6 @@ void tuh_umount_cb(uint8_t dev_addr) {
         host_itf.opened = false;
         handshake_state = HOST_HS_IDLE;
         handshake_pending = false;
+        rumble.pending=rumble.in_flight=false;rumble.left=rumble.right=0;
     }
 }

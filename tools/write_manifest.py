@@ -31,7 +31,7 @@ def main():
     dirty = bool(subprocess.check_output(["git", "status", "--porcelain"], cwd=root, text=True).strip())
     manifest = {
         "built_at_utc": datetime.now(timezone.utc).isoformat(),
-        "version": {"host": "0.4.0-control-center", "xinput": "0.2.0-xinput", "hid": "0.1.0-hid"}[args.mode],
+        "version": {"host": "0.5.0-device-tests-updater", "xinput": "0.2.0-xinput", "hid": "0.1.0-hid"}[args.mode],
         "board": "waveshare_rp2350_usb_a",
         "source_revision": revision,
         "source_dirty": dirty,

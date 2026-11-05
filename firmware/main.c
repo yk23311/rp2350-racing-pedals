@@ -6,6 +6,7 @@
 #if PEDAL_USB_HOST
 #include "host.h"
 #include "hardware/clocks.h"
+#include "pico/bootrom.h"
 #endif
 #include "pico/stdlib.h"
 #include "tusb.h"
@@ -13,9 +14,19 @@
 static console_input_t input;
 static char response[CONSOLE_RESPONSE_SIZE];
 static size_t tx_pos,tx_len;
+#if PEDAL_USB_HOST
+static bool boot_reply_queued,boot_reply_acked;
+void tud_cdc_tx_complete_cb(uint8_t instance) {
+    if(instance==0 && pedal_usb_boot_pending() && boot_reply_queued && tud_cdc_write_available()==CFG_TUD_CDC_TX_BUFSIZE)
+        boot_reply_acked=true;
+}
+#endif
 void tud_cdc_line_state_cb(uint8_t instance,bool dtr,bool rts) {
     (void)rts;
     if(instance==0 && !dtr) {
+#if PEDAL_USB_HOST
+        if(!boot_reply_acked)boot_reply_queued=false;
+#endif
         tx_pos=tx_len=0; memset(&input,0,sizeof(input));
         tud_cdc_write_clear(); tud_cdc_read_flush();
     }
@@ -49,11 +60,20 @@ int main(void) {
                 pedal_mode(&pedal,pedal.mode==PEDAL_JOYSTICK?PEDAL_KEYBOARD:PEDAL_JOYSTICK);
         }
         if(!tud_cdc_connected()) {
+#if PEDAL_USB_HOST
+            if(!boot_reply_acked)boot_reply_queued=false;
+#endif
             tx_pos=tx_len=0; memset(&input,0,sizeof(input));
             tud_cdc_write_clear(); tud_cdc_read_flush();
         }
         else {
-            if(tx_pos<tx_len) tx_pos+=tud_cdc_write(response+tx_pos,(uint32_t)(tx_len-tx_pos));
+            if(tx_pos<tx_len) {
+                tx_pos+=tud_cdc_write(response+tx_pos,(uint32_t)(tx_len-tx_pos));
+#if PEDAL_USB_HOST
+                if(pedal_usb_boot_pending() && tx_pos==tx_len &&
+                   !strcmp(response,"OK {\"bootsel\":true}\n"))boot_reply_queued=true;
+#endif
+            }
             tud_cdc_write_flush();
             /* Bounded service work per iteration; do not starve ADC/USB on a flood. */
             unsigned budget=64;
@@ -64,6 +84,10 @@ int main(void) {
                 }
             }
         }
+#if PEDAL_USB_HOST
+        if(pedal_usb_boot_ready(boot_reply_acked))rom_reset_usb_boot(0,0);
+        if(!pedal_usb_boot_pending())boot_reply_queued=boot_reply_acked=false;
+#endif
         tight_loop_contents();
     }
 }

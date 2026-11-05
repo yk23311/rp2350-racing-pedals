@@ -2,9 +2,11 @@
 
 **下载：[v0.4.0 预发布版](https://github.com/yk23311/rp2350-racing-pedals/releases/tag/v0.4.0)**，包含普通/诊断UF2、含GUI的源码包、快速说明与SHA256。软件测试通过，仍待实机验收；GUI源码包需Python环境。
 
+**本地开发版0.5.0**新增十四键检查、板端限时双马达震动测试及一键UF2升级，含0.4.1震动转发修复。58项C与109项Python测试通过；尚未发布/烧录/实机验收，详见[阶段18步骤及交接](docs/reports/18-gui-tests-updater.md)。公共v0.4.0附件不包含这些新增功能。
+
 **新版驾驶控制中心已实现**：自动识别串口，实时踏板百分比、手柄按键/摇杆/扳机监视，踏板和手柄曲线预览与调参，手柄按钮→手柄/键盘映射。双击根目录 **启动调参GUI.bat**，详见[一步步使用说明](docs/control-center.md)。
 
-完整功能需要新版`dist/host/pedals-host.uf2`（0.4.0-control-center）。Type-C接电脑，2.4G接收器插板卡USB-A，GP26/27踏板保持原接线；曲线和映射在板端执行，关闭GUI仍有效，不依赖Steam或电脑虚拟手柄。新版已构建，**尚未烧录或实机验收**。
+完整功能需要新版`dist/host/pedals-host.uf2`（0.5.0-device-tests-updater）；本地交付副本为`dist/gui-upgrade/pedals-bridge-v0.5.0.uf2`。Type-C接电脑，2.4G接收器插板卡USB-A，GP26/27踏板保持原接线；曲线和映射在板端执行，关闭GUI仍有效，不依赖Steam或电脑虚拟手柄。新版已构建，**尚未烧录或实机验收**。
 
 旧固件可继续调踏板；手柄遥测和配置会明确显示不支持。新固件能迁移读取旧PDL1校准；显式保存后使用PDL2，旧固件不能读取新格式，降级前请备份校准。下文旧HID/Tk内容作为历史与兼容路线保留，最新入口为[HANDOFF.md](HANDOFF.md)。
 
@@ -20,7 +22,7 @@ python -m venv .venv
 powershell -ExecutionPolicy Bypass -File tools/start_gui.ps1 -Demo
 ```
 
-实际连接时去掉`-Demo`。完整手柄遥测、曲线和映射需要本地按下文构建并烧录桥接固件，GUI不会自动烧录。界面如下（演示数据）：
+实际连接时去掉`-Demo`。先按下文构建桥接固件；旧固件首次需手动BOOT安装，此后可在GUI“固件升级”选择UF2并点击自动升级。GUI不会在后台自行刷机。界面如下（演示数据）：
 
 ![驾驶控制中心演示](artifacts/control-center-demo.png)
 

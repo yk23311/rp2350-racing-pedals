@@ -27,6 +27,9 @@ static bool last_host_seen;
 static bool last_xinput_controlled_neutral;
 static bool pending_xinput_controlled_neutral;
 static bool host_controls_released;
+static bool boot_pending;
+static bool boot_ack_seen;
+static uint64_t boot_requested_at,boot_ack_at;
 #endif
 static void restart(void) {
     pedal_reset(state); generation=state->generation;
@@ -36,9 +39,13 @@ static void restart(void) {
     last_xinput_controlled_neutral=false;
     pending_xinput_controlled_neutral=false;
     host_controls_released=false;
+    host_rumble_enable(false);host_rumble_stop();
 #endif
 }
 void pedal_usb_init(pedal_t *pedal) {
+#if PEDAL_USB_HOST
+    boot_pending=boot_ack_seen=false;boot_requested_at=boot_ack_at=0;
+#endif
     state=pedal; restart();
 #if PEDAL_USB_XINPUT
     pico_unique_board_id_t id; pico_get_unique_board_id(&id);
@@ -50,6 +57,32 @@ void pedal_usb_init(pedal_t *pedal) {
     tusb_init(0,&init);
 #else
     tusb_init();
+#endif
+}
+bool pedal_usb_boot_pending(void) {
+#if PEDAL_USB_HOST
+    return boot_pending;
+#else
+    return false;
+#endif
+}
+bool pedal_usb_boot_ready(bool response_acked) {
+#if PEDAL_USB_HOST
+    if(!boot_pending) return false;
+    uint64_t elapsed=time_us_64()-boot_requested_at;
+    if(!response_acked) {
+        if(elapsed>=1500000) {boot_pending=false;restart();}
+        return false;
+    }
+    if(!boot_ack_seen) {boot_ack_seen=true;boot_ack_at=time_us_64();}
+    elapsed=time_us_64()-boot_ack_at;
+    if(elapsed<300000) return false;
+    host_rumble_status_t r;host_rumble_status(&r);
+    /* If a cable/receiver fails, ROM USB reset still releases PC inputs.
+     * Stop delivery has a finite retry budget; never claim a radio ACK. */
+    return (report_gate_quiet(&gate) && !r.pending && !r.in_flight) || elapsed>=1500000;
+#else
+    (void)response_acked;return false;
 #endif
 }
 bool pedal_usb_quiet(void) {
@@ -69,7 +102,7 @@ static void make_report(unsigned itf,uint8_t data[20]) {
     memset(data,0,20);
     bool blocked=report_gate_blocked(&gate) || generation!=state->generation;
 #if PEDAL_USB_HOST
-    blocked=blocked || !host_controls_released;
+    blocked=blocked || !host_controls_released || boot_pending;
 #endif
 #if PEDAL_USB_XINPUT
 #if PEDAL_USB_HOST
@@ -92,15 +125,50 @@ static void make_report(unsigned itf,uint8_t data[20]) {
 #endif
     }
 }
+#if PEDAL_USB_HOST
+static bool parse_bounded(const char **cursor,unsigned limit,unsigned *result) {
+    const char *p=*cursor;unsigned value=0;
+    if(*p<'0' || *p>'9')return false;
+    while(*p>='0' && *p<='9') {
+        unsigned digit=(unsigned)(*p++-'0');
+        if(value>limit/10 || (value==limit/10 && digit>limit%10))return false;
+        value=value*10+digit;
+    }
+    *cursor=p;*result=value;return true;
+}
+#endif
 bool pedal_usb_console(const char *line,char response[CONSOLE_RESPONSE_SIZE]) {
     if(!strcmp(line,"CAPS")) {
         snprintf(response,CONSOLE_RESPONSE_SIZE,
-            "OK {\"control_center\":1,\"profile\":%d,\"telemetry\":%d,\"bridge\":%d,\"version\":\"%s\",\"persist_format\":%d}\n",
+            "OK {\"control_center\":1,\"profile\":%d,\"telemetry\":%d,\"bridge\":%d,\"version\":\"%s\",\"persist_format\":%d,\"rumble\":%d,\"rumble_test\":%d,\"bootsel\":%d}\n",
             PEDAL_USB_HOST?1:0,PEDAL_USB_HOST?1:0,PEDAL_USB_HOST?1:0,
-            PEDAL_USB_HOST?"0.4.0":(PEDAL_USB_XINPUT?"0.2.0":"0.1.0"),PEDAL_USB_HOST?2:1);
+            PEDAL_USB_HOST?"0.5.0":(PEDAL_USB_XINPUT?"0.2.0":"0.1.0"),PEDAL_USB_HOST?2:1,PEDAL_USB_HOST?1:0,PEDAL_USB_HOST?1:0,PEDAL_USB_HOST?1:0);
         return true;
     }
 #if PEDAL_USB_HOST
+    if(!strcmp(line,"BOOTSEL")) {
+        boot_pending=true;boot_ack_seen=false;boot_requested_at=time_us_64();restart();
+        snprintf(response,CONSOLE_RESPONSE_SIZE,"OK {\"bootsel\":true}\n");return true;
+    }
+    if(!strcmp(line,"RUMBLE STOP")) {
+        host_rumble_stop();snprintf(response,CONSOLE_RESPONSE_SIZE,"OK\n");return true;
+    }
+    if(!strncmp(line,"RUMBLE TEST ",12)) {
+        const char *p=line+12;unsigned left,right,duration;
+        bool valid=parse_bounded(&p,255,&left) && *p++==' ' &&
+                   parse_bounded(&p,255,&right) && *p++==' ' &&
+                   parse_bounded(&p,3000,&duration) && !*p && duration>=100;
+        bool accepted=valid && !boot_pending && host_rumble_test((uint8_t)left,(uint8_t)right,duration);
+        snprintf(response,CONSOLE_RESPONSE_SIZE,accepted?"OK\n":"ERR STATE_OR_VALUE\n");return true;
+    }
+    if(!strcmp(line,"RUMBLE")) {
+        host_rumble_status_t r;host_rumble_status(&r);
+        snprintf(response,CONSOLE_RESPONSE_SIZE,
+            "OK {\"received\":%lu,\"sent\":%lu,\"errors\":%lu,\"left\":%u,\"right\":%u,\"pending\":%s,\"in_flight\":%s,\"enabled\":%s,\"available\":%s,\"faulted\":%s,\"testing\":%s,\"remaining_ms\":%lu}\n",
+            (unsigned long)r.received,(unsigned long)r.sent,(unsigned long)r.errors,r.left,r.right,
+            r.pending?"true":"false",r.in_flight?"true":"false",r.enabled?"true":"false",r.available?"true":"false",r.faulted?"true":"false",r.testing?"true":"false",(unsigned long)r.remaining_ms);
+        return true;
+    }
     if(!strcmp(line,"TELEMETRY")) {
         const bridge_t *host=host_bridge();
         xinput_pad_t raw=host->pad,processed={0}; uint8_t ignored[8],keys[20],output[20];
@@ -127,6 +195,11 @@ bool pedal_usb_console(const char *line,char response[CONSOLE_RESPONSE_SIZE]) {
     return false;
 }
 bool pedal_usb_feed(console_input_t *input,char ch,pedal_t *pedal,console_save_fn save,void *context,char response[CONSOLE_RESPONSE_SIZE]) {
+    if(pedal_usb_boot_pending()) {
+        memset(input,0,sizeof(*input));
+        if(ch!='\n')return false;
+        snprintf(response,CONSOLE_RESPONSE_SIZE,"ERR UPDATING\n");return true;
+    }
     if(!console_feed(input,ch,pedal,save,context,response)) return false;
     if(!strcmp(response,"ERR COMMAND\n") || !strcmp(response,"ERR STATE_OR_VALUE\n"))
         (void)pedal_usb_console(input->line,response);
@@ -150,13 +223,25 @@ void pedal_usb_task(void) {
     if(!host->host_seen || (bridge_host_ready(host) && xinput_pad_is_neutral(&host->pad,BRIDGE_STICK_TOLERANCE)))
         host_controls_released=true;
 #endif
-    if(!tud_mounted() || tud_suspended()) return;
+    if(!tud_mounted() || tud_suspended()) {
+#if PEDAL_USB_HOST
+        host_rumble_enable(false);
+#endif
+        return;
+    }
+#if PEDAL_USB_HOST
+    host_rumble_enable(state->armed && state->sample_valid && state->mode==PEDAL_JOYSTICK &&
+                       state->calibration_axis<0 && !report_gate_blocked(&gate) && host_controls_released && !boot_pending);
+#endif
 #if PEDAL_USB_XINPUT
     xinput_device_task();
 #endif
     uint64_t now=time_us_64(); if(now<next_report) return;
     next_report=now+1000;
     for(unsigned i=0;i<2;i++) {
+#if PEDAL_USB_HOST
+        if(boot_pending && !gate.pending[i])continue;
+#endif
         uint8_t hid_instance=(uint8_t)i;
         unsigned len=i?8:4,first=0;
 #if PEDAL_USB_XINPUT
@@ -196,6 +281,13 @@ void tud_hid_report_complete_cb(uint8_t instance,const uint8_t *report,uint16_t 
 #endif
 }
 #if PEDAL_USB_XINPUT
+void xinput_device_output_report(const uint8_t report[8]) {
+#if PEDAL_USB_HOST
+    host_rumble_receive(report);
+#else
+    (void)report;
+#endif
+}
 void xinput_device_get_report(uint8_t report[20]) { make_report(0,report); }
 void xinput_device_report_complete(bool success) {
 #if PEDAL_USB_HOST

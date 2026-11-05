@@ -31,13 +31,15 @@ class FakeSession(QObject):
     snapshot = Signal(dict)
     connected_changed = Signal(bool, str)
     message = Signal(str, bool)
+    upgrade_changed = Signal(dict)
 
     def __init__(self):
-        super().__init__(); self.commands = []; self.closed = False
+        super().__init__(); self.commands = []; self.closed = False; self.upgrades=[]; self.connection_calls=[]
     def start(self): pass
     def submit(self, commands): self.commands.append(commands)
-    def connect_port(self, port): pass
-    def disconnect_port(self): pass
+    def connect_port(self, port): self.connection_calls.append(port)
+    def disconnect_port(self): self.connection_calls.append(None)
+    def upgrade(self,path,manual=False): self.upgrades.append((path,manual))
     def close(self): self.closed = True
 
 
@@ -56,6 +58,72 @@ class ControlGuiTests(unittest.TestCase):
         self.session.snapshot.emit(incoming)
         self.assertEqual(self.window.pedal_editors[0]["gamma"].value(), 2.3)
         self.assertTrue(self.window.dirty)
+
+    def test_new_pages_track_raw_buttons_and_clear_on_new_session(self):
+        self.assertEqual(self.window.tabs.count(),6)
+        data=snapshot();data["telemetry"]["raw"][0]=1<<12
+        self.session.snapshot.emit(data)
+        data["telemetry"]["raw"][0]=0;self.session.snapshot.emit(data)
+        self.assertEqual(self.window.test_page.completed_mask,1<<12)
+        self.session.connected_changed.emit(True,"另一块板")
+        self.assertEqual(self.window.test_page.completed_mask,0)
+
+    def test_test_page_watchdog_gap_cannot_complete_pressed_button(self):
+        with patch("tools.control_center.time.monotonic",return_value=100):
+            data=snapshot();data["telemetry"]["raw"][0]=1<<12;self.session.snapshot.emit(data)
+        with patch("tools.control_center.time.monotonic",return_value=100.6):self.window._watchdog_tick()
+        with patch("tools.control_center.time.monotonic",return_value=100.61):
+            data["telemetry"]["raw"][0]=0;self.session.snapshot.emit(data)
+            self.assertEqual(self.window.test_page.completed_mask,0)
+
+    def test_snapshot_gap_without_watchdog_cannot_complete_old_press(self):
+        for gap,age in ((.6,10),(.2,100)):
+            with self.subTest(gap=gap,previous_host_age=age):
+                self.window.test_page.clear_history()
+                with patch("tools.control_center.time.monotonic",return_value=100):
+                    data=snapshot();data["telemetry"]["raw"][0]=1<<12
+                    data["telemetry"]["age"]=age;self.session.snapshot.emit(data)
+                with patch("tools.control_center.time.monotonic",return_value=100+gap):
+                    data["telemetry"]["raw"][0]=0;data["telemetry"]["age"]=10
+                    self.session.snapshot.emit(data)
+                    self.assertEqual(self.window.test_page.completed_mask,0)
+
+    def test_rumble_uses_session_and_legacy_cannot_start(self):
+        self.window.test_page.start_rumble();self.assertEqual(self.session.commands,[])
+        data=snapshot();data["capabilities"].update(rumble_test=1,bootsel=1)
+        data["rumble"]=dict(available=True,enabled=True,faulted=False)
+        self.session.snapshot.emit(data)
+        self.window.test_page.start_button.click()
+        self.assertEqual(self.session.commands[-1],["RUMBLE TEST 64 64 500"])
+        self.window.test_page.stop_button.click()
+        self.assertEqual(self.session.commands[-1],["RUMBLE STOP"])
+
+    def test_upgrade_busy_guards_methods_controls_and_copy_close(self):
+        self.window.pedal_editors[0]["gamma"].setValue(2)
+        self.session.upgrade_changed.emit(dict(stage="copying",progress=40,busy=True,error="",detail=""))
+        for widget in (self.window.apply_button,self.window.save_button,self.window.connect_button,
+                       self.window.port_combo,self.window.pedal_editors[0]["gamma"],self.window.test_page.start_button):
+            self.assertFalse(widget.isEnabled())
+        self.window.apply_changes();self.window.save_changes();self.window._command("CAL 0 BEGIN")
+        self.window.toggle_connection();self.window.test_page.start_rumble();self.window._request_upgrade("test.uf2")
+        self.assertEqual(self.session.commands,[]);self.assertEqual(self.session.connection_calls,[])
+        self.assertEqual(self.session.upgrades,[])
+        self.window.close();self.assertFalse(self.session.closed)
+        self.session.upgrade_changed.emit(dict(stage="failed",progress=40,busy=False,error="drive lost",detail=""))
+        self.assertTrue(self.window.apply_button.isEnabled())
+        self.assertTrue(self.window.connect_button.isEnabled())
+
+    def test_upgrade_legacy_manual_and_demo_write_guards(self):
+        self.window._request_upgrade("test.uf2")
+        self.assertEqual(self.session.upgrades,[])
+        self.window._request_upgrade("test.uf2",True)
+        self.assertEqual(self.session.upgrades,[("test.uf2",True)])
+        self.session.upgrade_changed.emit(dict(stage="failed",busy=False,error="test",progress=0))
+        demo=ControlCenter(self.session,demo=True)
+        demo._request_upgrade("test.uf2",True);demo.test_page.start_rumble();demo.test_page.stop_rumble()
+        self.assertEqual(self.session.commands,[])
+        self.assertEqual(self.session.upgrades,[("test.uf2",True)])
+        demo.close()
     def test_apply_generates_board_commands_and_waits_for_ack(self):
         self.window.pedal_editors[0]["gamma"].setValue(2.3)
         self.window.stick_editors[1]["deadzone"].setValue(12.5)
@@ -286,6 +354,9 @@ class ControlGuiTests(unittest.TestCase):
             if index in (1, 2):
                 self.assertEqual(self.window.tabs.widget(index).verticalScrollBar().maximum(), 0,
                                  "Primary tuning controls must fit at 1280x800")
+            if index==4:
+                self.assertEqual(self.window.tabs.widget(index).verticalScrollBar().maximum(),0,
+                                 "Device test actions must fit at 1280x800")
 
 
 if __name__ == "__main__": unittest.main()

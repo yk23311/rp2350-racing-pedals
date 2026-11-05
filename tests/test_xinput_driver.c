@@ -11,6 +11,9 @@ static bool busy[256],mounted=true,fail_send,fail_open_out;
 static uint8_t *in_buffer,*out_buffer,*control_buffer;
 static uint16_t control_length;
 static unsigned success_count,failure_count,closed;
+static unsigned output_count;
+static uint8_t last_output[8];
+void xinput_device_output_report(const uint8_t report[8]) { output_count++;memcpy(last_output,report,8); }
 bool tud_ready(void) { return mounted; }
 bool usbd_edpt_open(uint8_t p,const tusb_desc_endpoint_t *d) { CHECK(p==0);return !(d->bEndpointAddress==1 && fail_open_out); }
 void usbd_edpt_close(uint8_t p,uint8_t ep) { CHECK(p==0 && ep==0x81);closed++; }
@@ -54,6 +57,20 @@ int main(void) {
     req=(tusb_control_request_t){0xa1,1,0x100,0,20};CHECK(driver->control_xfer_cb(0,0,&req));CHECK(control_buffer[5]==99);
     req=(tusb_control_request_t){0x21,9,0x200,0,33};CHECK(!driver->control_xfer_cb(0,0,&req));
     req=(tusb_control_request_t){0x21,9,0x200,0,8};CHECK(driver->control_xfer_cb(0,0,&req));CHECK(control_length==8);
+    const uint8_t rumble[8]={0,8,0,120,230,0,0,0};
+    unsigned before=output_count;memcpy(out_buffer,rumble,8);busy[1]=false;
+    CHECK(driver->xfer_cb(0,1,XFER_RESULT_SUCCESS,8));CHECK(output_count==before+1 && !memcmp(last_output,rumble,8));
+    out_buffer[1]=7;CHECK(driver->xfer_cb(0,1,XFER_RESULT_SUCCESS,8));CHECK(output_count==before+1);
+    memcpy(out_buffer,rumble,8);CHECK(driver->xfer_cb(0,1,XFER_RESULT_FAILED,8));CHECK(output_count==before+1);
+    CHECK(driver->xfer_cb(0,1,XFER_RESULT_SUCCESS,7));CHECK(output_count==before+1);
+    req=(tusb_control_request_t){0x21,9,0x200,0,8};CHECK(driver->control_xfer_cb(0,0,&req));
+    memcpy(control_buffer,rumble,8);CHECK(driver->control_xfer_cb(0,CONTROL_STAGE_DATA,&req));CHECK(output_count==before+2);
+    req=(tusb_control_request_t){0xc1,1,0,0,8};CHECK(tud_vendor_control_xfer_cb(0,0,&req));
+#if PEDAL_USB_HOST
+    CHECK(control_buffer[3]==255 && control_buffer[4]==255);
+#else
+    CHECK(!control_buffer[3] && !control_buffer[4]);
+#endif
     req=(tusb_control_request_t){0xc1,99,0,0,64};CHECK(!tud_vendor_control_xfer_cb(0,0,&req));
     mounted=false;CHECK(!xinput_device_ready());mounted=true;
     driver->reset(0);CHECK(!xinput_device_ready());CHECK(driver->open(0,itf,40)==40 && xinput_device_ready());

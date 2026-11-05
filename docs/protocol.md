@@ -50,3 +50,25 @@ axis：0油门/1刹车；0≤off<on≤5000（万分比），gamma100–400（1.0
 Host桥接构建SAVE现写256字节`PDL2`统一记录，包含踏板和手柄配置；版本2、长度256、序列号、末尾CRC32。地址仍在末尾两个4KiB扇区。启动可读PDL1并在RAM补默认手柄配置，显式SAVE才迁移。旧固件不认识PDL2，降级不保证保留最新校准。非Host构建继续使用PDL1。
 
 键盘报告仍为8字节，最多6普通键+8修饰键；新报告描述符长度64，普通键Usage/Logical范围覆盖0..DF，E0..E7走修饰位。超限发送标准ErrorRollOver，释放后恢复，不会把某个源释放误当全部源释放。
+
+
+## 0.4.1震动扩展
+
+Host桥接`CAPS`新增`rumble:1`。`RUMBLE`只读返回received/sent/errors、当前请求left/right、pending/in_flight/enabled/available/faulted。此命令不直接启动马达，也不等于硬件验收。CLI：`pedalctl.py --port <COM> rumble-status`。
+
+标准8字节包`00 08 00 left right 00 00 00`经OUT或SET_REPORT进入，严格校验后转发给接收器实际OUT端点。Host构建的C1/01/0000能力回复offset3/4声明255；独立踏板构建保持0。持续busy最长100ms，中止后跨轮排空旧completion再重用缓冲。重试20ms退避，失败3次降停止，停止再失败3次faulted，拒绝非零直到接收器重新初始化或新的显式停止命令成功。停止、挂起、模式/校准变化、Host失联均清理旧强度，恢复不自动重放。
+
+## 0.5.0 测试与升级扩展
+
+仅 Host 构建公布 `CAPS` 的 `rumble_test:1`、`bootsel:1`、`version:"0.5.0"`。
+
+| 命令 | 回复与行为 |
+|---|---|
+| `RUMBLE TEST left right duration_ms` | `left/right` 为十进制 0..255，时长 100..3000ms，完整语法验证；使能且 Host 可用时 `OK`，否则 `ERR STATE_OR_VALUE` |
+| `RUMBLE STOP` | `OK`，取消测试并提交优先停止，即使非零命令已在途也可中止后停震 |
+| `RUMBLE` | 原有字段外新增 `testing`、`remaining_ms`；left/right 是当前请求而非无线确认 |
+| `BOOTSEL` | `OK {"bootsel":true}`，立即强制手柄/键盘中立与停震，等待 CDC 确认完成后至少 300ms 进入 ROM USB 下载模式 |
+
+测试期间忽略游戏发来的全部震动命令，结束时不回放；之后的新游戏命令正常处理。计时由板端执行，串口中断不延长截止时间。进入升级等待后，后续串口命令收到 `ERR UPDATING`，不修改配置。原始 BOOTSEL 回复未获 CDC 发送确认超过 1.5s 时取消升级等待、重置输出屏障并恢复命令；确认后等待中立/停震最多 1.5s，然后 ROM 重启。300ms 从首次观察到确认完成计时。
+
+GUI 只接受本项目连续 256 字节 payload、family `0xE48BFF59`、从 `0x10000000` 开始且结束不超过 `0x101FE000` 的完整 UF2；不执行擦除命令。软件 BOOTSEL 不等于 COM 口直接写 Flash，数据通过 ROM 下载盘传输。

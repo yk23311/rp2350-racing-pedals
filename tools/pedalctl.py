@@ -108,6 +108,7 @@ def main():
     parser.add_argument("--port", required=True, help="e.g. COM5; do not guess another device's port")
     commands = parser.add_subparsers(dest="action", required=True)
     commands.add_parser("get")
+    commands.add_parser("rumble-status", help="Read bridge rumble counters; does not activate motors")
     commands.add_parser("save", help="Explicit flash save; release both pedals first")
     commands.add_parser("defaults", help="Reset RAM config, not flash")
     settings = commands.add_parser("set")
@@ -135,6 +136,8 @@ def main():
             client = Client(link)
             if args.action == "get":
                 print(json.dumps(client.get(), indent=2))
+            elif args.action == "rumble-status":
+                print(json.dumps(client.request("RUMBLE"), indent=2))
             elif args.action == "set":
                 client.request(command)
             elif args.action in ("save", "defaults"):

@@ -17,8 +17,10 @@ from PySide6.QtWidgets import (QApplication, QComboBox, QDoubleSpinBox, QFormLay
     QProgressBar, QScrollArea, QSizePolicy, QSpinBox, QTabWidget, QVBoxLayout, QWidget)
 try:
     from .control_widgets import BUTTONS, BITS, ControllerView, CurvePlot, PedalGauge, StickView
+    from .control_test_pages import DeviceTestPage, FirmwareUpdatePage
 except ImportError:
     from control_widgets import BUTTONS, BITS, ControllerView, CurvePlot, PedalGauge, StickView
+    from control_test_pages import DeviceTestPage, FirmwareUpdatePage
 
 
 STYLE = """
@@ -113,6 +115,7 @@ class ControlCenter(QMainWindow):
         self._baseline, self._latest, self._has_profile = None, {}, False
         self._persistent_config = None
         self._last_snapshot = None
+        self._upgrade_busy, self._upgrade_stage = False, ""
         self.pedal_editors, self.stick_editors, self.trigger_editors, self.binding_editors = [], [], [], []
         self.pedal_plots, self.stick_plots, self.trigger_plots = [], [], []
         self.calibration_buttons, self.pedal_details = [], []
@@ -137,6 +140,12 @@ class ControlCenter(QMainWindow):
         self.tabs.addTab(self._pedals_page(), "踏板调校")
         self.tabs.addTab(self._sticks_page(), "摇杆与扳机")
         self.tabs.addTab(self._bindings_page(), "按键映射")
+        self.test_page=DeviceTestPage(demo=demo)
+        self.test_page.command_requested.connect(self._rumble_command)
+        self.tabs.addTab(scroll_page(self.test_page), "设备测试")
+        self.upgrade_page=FirmwareUpdatePage(demo=demo)
+        self.upgrade_page.upgrade_requested.connect(self._request_upgrade)
+        self.tabs.addTab(scroll_page(self.upgrade_page), "固件升级")
         footer = QFrame(); footer.setObjectName("footer"); footer.setMinimumHeight(75)
         foot = QHBoxLayout(footer); foot.setContentsMargins(15,13,15,13)
         state = QVBoxLayout(); state.setSpacing(4)
@@ -155,6 +164,7 @@ class ControlCenter(QMainWindow):
             session.connected_changed.connect(self.on_connected)
             session.snapshot.connect(self.on_snapshot)
             session.message.connect(self.on_message)
+            session.upgrade_changed.connect(self.on_upgrade_changed)
             session.start()
         if demo:
             self.port_combo.setEnabled(False); self.connect_button.setEnabled(False)
@@ -347,7 +357,7 @@ class ControlCenter(QMainWindow):
         if found>=0:self.port_combo.setCurrentIndex(found)
 
     def toggle_connection(self):
-        if not self.session:return
+        if not self.session or self.demo or self._upgrade_busy:return
         if self.connected:self.session.disconnect_port()
         elif self.port_combo.currentData():self.session.connect_port(self.port_combo.currentData())
         else:self.on_message("未发现设备；检查 Type-C 连接与驱动，等待自动扫描。",True)
@@ -357,6 +367,7 @@ class ControlCenter(QMainWindow):
             # Every successful open is a new Session epoch; an older False
             # event may have been discarded. Never carry drafts across boards.
             discarded=self.dirty
+            self.test_page.clear_history()
             self._baseline=None;self._persistent_config=None;self._latest={};self._last_snapshot=None
             self.dirty=False;self._saved=False;self._applied_changed=False
             self._pending_revision=None;self._pending_save=False;self._revision+=1
@@ -378,7 +389,16 @@ class ControlCenter(QMainWindow):
         self._render_live(); self._update_state()
 
     def on_snapshot(self,data):
-        self._last_snapshot=time.monotonic()
+        now=time.monotonic()
+        if self._last_snapshot is not None:
+            previous_host=self._latest.get("telemetry") or {}
+            elapsed=max(0.,now-self._last_snapshot)
+            previous_age=previous_host.get("age",0)+elapsed*1000
+            # A modal dialog or a blocked event loop may delay the watchdog.
+            # Break old gestures before replacing their timestamp/host age.
+            if elapsed>.5 or previous_host.get("state",0)!=3 or previous_age>250:
+                self.test_page.update_buttons(0,False)
+        self._last_snapshot=now
         self._latest=data
         has_profile=bool(data.get("profile")); self._has_profile=has_profile
         for editors in (self.stick_editors,self.trigger_editors):
@@ -455,6 +475,7 @@ class ControlCenter(QMainWindow):
         rawpad=telemetry.get("raw",[0]*7) if telemetry else [0]*7
         rawvalid=isinstance(rawpad,(list,tuple)) and len(rawpad)>=7
         if not rawvalid:rawpad=[0]*7
+        self.test_page.update_input(rawpad,fresh and rawvalid and not self._upgrade_busy)
         for i,source in enumerate(self.binding_source_labels):
             pressed=bool(fresh and rawvalid and rawpad[0]&(1<<BITS[i]))
             if source.property("pressed")!=pressed:
@@ -477,14 +498,29 @@ class ControlCenter(QMainWindow):
             self.keyboard_status.setText("键盘输出 — 遥测不可用")
 
     def _update_state(self):
-        ready=self.connected and not self.demo and self._baseline is not None and self._data_fresh()
+        ready=self.connected and not self.demo and not self._upgrade_busy and self._baseline is not None and self._data_fresh()
         stale=self.connected and self._last_snapshot is not None and not self._data_fresh()
         pending=self._pending_revision is not None or self._pending_save
         self.apply_button.setEnabled(ready and self.dirty and not pending)
-        self.revert_button.setEnabled(self.dirty and not pending)
+        self.revert_button.setEnabled(self.dirty and not pending and not self._upgrade_busy)
         self.save_button.setEnabled(ready and not self.dirty and not pending)
         for button in self.calibration_buttons:button.setEnabled(ready and not pending)
-        self.edit_label.setText("演示模式 · 修改仅作预览" if self.demo else "数据已过期，等待串口回复 · 本地编辑已保留" if stale else "正在等待设备确认…" if pending else
+        self.connect_button.setEnabled(not self.demo and not self._upgrade_busy)
+        self.port_combo.setEnabled(not self.demo and not self._upgrade_busy)
+        self.mode_combo.setEnabled(not self._upgrade_busy)
+        for edits in self.pedal_editors:
+            for widget in edits.values():widget.setEnabled(not self._upgrade_busy)
+        for editors in (self.stick_editors,self.trigger_editors):
+            for edits in editors:
+                for widget in edits.values():widget.setEnabled(self._has_profile and not self._upgrade_busy)
+        for kind,target in self.binding_editors:
+            kind.setEnabled(self._has_profile and not self._upgrade_busy)
+            target.setEnabled(self._has_profile and kind.currentData()!=2 and not self._upgrade_busy)
+        caps=self._latest.get("capabilities") or {}
+        self.test_page.set_context(self.connected,self._data_fresh(),caps,self._latest.get("rumble"),self._upgrade_busy)
+        version=caps.get("version") or self._latest.get("version")
+        self.upgrade_page.set_context(self.connected,self._data_fresh(),caps,version)
+        self.edit_label.setText("演示模式 · 修改仅作预览" if self.demo else "固件升级中 · 调参和测试已暂停" if self._upgrade_busy else "数据已过期，等待串口回复 · 本地编辑已保留" if stale else "正在等待设备确认…" if pending else
                                 "有未应用的修改 · 当前仅为本地预览" if self.dirty else "参数已应用到设备 RAM" if ready else
                                 "已连接 · 等待读取当前设备参数" if self.connected else "离线 · 等待连接设备")
         self.edit_label.setStyleSheet("color:#f5cd75" if self.dirty else "color:#a9b9d2")
@@ -492,7 +528,7 @@ class ControlCenter(QMainWindow):
                                        "RAM 已修改 · 未保存到 Flash" if self._applied_changed else "Flash 状态未知 · 读取参数不代表已经保存")
 
     def apply_changes(self):
-        if not self.connected or self.demo or not self._data_fresh() or self._baseline is None or not self.dirty or self._pending_revision is not None or self._pending_save:return
+        if self._upgrade_busy or not self.connected or self.demo or not self._data_fresh() or self._baseline is None or not self.dirty or self._pending_revision is not None or self._pending_save:return
         current=self._preview(); commands=[]
         for i,axis in enumerate(current["axes"]):
             if not 0<=axis["off"]<axis["on"]<=5000:
@@ -509,14 +545,35 @@ class ControlCenter(QMainWindow):
             self._saved=False;self._pending_revision=self._revision; self._update_state(); self.session.submit(commands)
 
     def revert_changes(self):
+        if self._upgrade_busy:return
         if self._baseline:self._load_config(self._baseline);self.dirty=False;self._revision+=1;self._update_state()
 
     def save_changes(self):
-        if not self.connected or self.demo or not self._data_fresh() or self._baseline is None or self.dirty or self._pending_save or self._pending_revision is not None:return
+        if self._upgrade_busy or not self.connected or self.demo or not self._data_fresh() or self._baseline is None or self.dirty or self._pending_save or self._pending_revision is not None:return
         self._pending_save=True;self._update_state();self.session.submit(["SAVE"])
 
     def _command(self,command):
-        if self.connected and not self.demo and self._baseline is not None and self._data_fresh():self.session.submit([command])
+        if not self._upgrade_busy and self.connected and not self.demo and self._baseline is not None and self._data_fresh():self.session.submit([command])
+
+    def _rumble_command(self,command):
+        if not self.session or self.demo or self._upgrade_busy or not self.connected:return
+        if not (self._latest.get("capabilities") or {}).get("rumble_test"):return
+        if command=="RUMBLE STOP":self.session.submit([command]);return
+        rumble=self._latest.get("rumble") or {}
+        if self._data_fresh() and rumble.get("available") and rumble.get("enabled") and not rumble.get("faulted"):
+            self.session.submit([command])
+
+    def _request_upgrade(self,path,manual=False):
+        if not self.session or self.demo or self._upgrade_busy:return
+        if not manual and not (self.connected and self._data_fresh() and (self._latest.get("capabilities") or {}).get("bootsel")):
+            self.on_message("当前固件不支持自动升级。首次请按住 BOOT 重新插入 USB，再使用手动写入。",True);return
+        self.on_upgrade_changed(dict(stage="validating",progress=0,busy=True,error="",detail="正在完整校验所选 UF2；未应用草稿不会自动保存。"))
+        self.session.upgrade(str(path),manual=manual)
+
+    def on_upgrade_changed(self,state):
+        self._upgrade_busy=bool(state.get("busy"));self._upgrade_stage=state.get("stage","")
+        self.upgrade_page.update_upgrade(state)
+        self._render_live();self._update_state()
 
     def on_message(self,text,error=False):
         if error:self._pending_revision=None;self._pending_save=False
@@ -525,9 +582,14 @@ class ControlCenter(QMainWindow):
         self._update_state()
 
     def closeEvent(self,event):
+        if self._upgrade_busy and self._upgrade_stage=="copying":
+            self.on_message("UF2 正在写入，请保持连接并等待写入结束后关闭。",True)
+            event.ignore();return
+        if self.session and self.session.close() is False:
+            self.on_message("UF2 正在写入，请等待写入结束后关闭。",True)
+            event.ignore();return
         self._watchdog.stop()
         if hasattr(self,"_demo_timer"):self._demo_timer.stop()
-        if self.session:self.session.close()
         super().closeEvent(event)
 
     def _demo_tick(self):
@@ -538,14 +600,14 @@ class ControlCenter(QMainWindow):
         profile={"sticks":[{"deadzone":800,"gamma":130,"invert":0},{"deadzone":600,"gamma":100,"invert":0}],"triggers":[{"deadzone":300,"gamma":100} for _ in range(2)],"bindings":[[0,i] for i in range(14)]}
         pad=[(1<<12)|(1<<8),int(b*255),int(a*255),int(math.sin(t)*19000),int(math.cos(t)*13000),4000,-2500]
         self.connection_label.setText("DEMO · 演示模式 · 无硬件连接")
-        self.on_snapshot({"refresh_config":self._baseline is None,"pedal":{"axes":axes,"mode":"JOYSTICK","armed":True,"calibration_axis":-1,"raw":raw,"filtered":[v-2 for v in raw],"output":[int(a*65535),int(b*b*65535)]},"profile":profile,"capabilities":{"profile":1,"telemetry":1},"telemetry":{"state":3,"age":12,"reports":int(t*400),"timeouts":0,"raw":pad,"processed":pad,"output":pad,"keys":[0]*8,"blocked":False}})
+        self.on_snapshot({"refresh_config":self._baseline is None,"pedal":{"axes":axes,"mode":"JOYSTICK","armed":True,"calibration_axis":-1,"raw":raw,"filtered":[v-2 for v in raw],"output":[int(a*65535),int(b*b*65535)]},"profile":profile,"capabilities":{"profile":1,"telemetry":1,"rumble_test":1,"bootsel":1,"version":"0.5.0 · 演示"},"rumble":{"available":True,"enabled":True,"faulted":False,"testing":False,"remaining_ms":0,"left":0,"right":0,"pending":False,"in_flight":False,"received":32,"sent":32,"errors":0},"telemetry":{"state":3,"age":12,"reports":int(t*400),"timeouts":0,"raw":pad,"processed":pad,"output":pad,"keys":[0]*8,"blocked":False}})
 
 
 def main(argv=None):
     parser=argparse.ArgumentParser(description="RP2350 驾驶控制中心")
     parser.add_argument("--demo",action="store_true",help="明确标记的模拟数据；不连接硬件")
     parser.add_argument("--screenshot",type=Path,help="保存界面截图并退出（建议与 --demo 一起使用）")
-    parser.add_argument("--tab",type=int,default=0,choices=range(4),help="截图/启动页面 0..3")
+    parser.add_argument("--tab",type=int,default=0,choices=range(6),help="截图/启动页面 0..5")
     args=parser.parse_args(argv)
     app=QApplication.instance() or QApplication(sys.argv[:1]); app.setFont(QFont("Microsoft YaHei UI",9))
     session=None

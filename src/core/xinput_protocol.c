@@ -45,7 +45,8 @@ int xinput_control_response(uint8_t t,uint8_t r,uint16_t v,uint16_t i,uint8_t ou
     /* PC capabilities queries, also used by SDL's Xbox 360 backend.
      * Declare the standard complete wired 360 gamepad: all standard face,
      * d-pad, shoulder and stick buttons, 8-bit triggers and full-range
-     * 16-bit thumbsticks. No rumble motors are exposed. */
+     * 16-bit thumbsticks. Device-only base has no motors; the Host bridge's
+     * device driver advertises its two-motor forwarding capability. */
     if(t==0xc1 && r==1 && i==0 && v==0x100) {
         memset(out,0,20);
         out[1]=20;

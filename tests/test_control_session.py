@@ -3,6 +3,8 @@ import os
 import threading
 import time
 import unittest
+import tempfile
+from pathlib import Path
 from types import SimpleNamespace
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
@@ -10,6 +12,8 @@ from PySide6.QtWidgets import QApplication
 
 from tools import control_session
 from tools.pedalctl import CommandRejected
+from tools.bin_to_uf2 import convert
+from tools.firmware_update import FirmwareUpdater, BootDrive
 
 
 def port(device="COM_A", serial="board-a", vid=0xCAFE, pid=0x4012):
@@ -34,6 +38,7 @@ class Endpoint:
         self.entered = threading.Event()
         self.release = threading.Event()
         self.block = None
+        self.extra_caps = {}
 
     def open(self, name):
         link = Link()
@@ -56,7 +61,11 @@ class Endpoint:
         if command == "CAPS":
             if self.legacy:
                 raise CommandRejected("ERR UNKNOWN_COMMAND")
-            return {"profile": 1, "telemetry": 1, "control_center": 1, "bridge": 1}
+            return {"profile": 1, "telemetry": 1, "control_center": 1, "bridge": 1, **self.extra_caps}
+        if command == "BOOTSEL":
+            return {"bootsel": True}
+        if command == "RUMBLE":
+            return {"testing": False, "remaining_ms": 0}
         if command == "GET":
             return {"protocol": 1, "raw": [10, 20], "output": [0, 0]}
         if command == "PROFILE":
@@ -83,10 +92,10 @@ class SessionTests(unittest.TestCase):
             session.close()
         self.app.processEvents()
 
-    def make(self, start=True):
+    def make(self, start=True, **kwargs):
         session = control_session.Session(
             link_opener=self.endpoint.open, port_provider=lambda: list(self.ports),
-            client_factory=self.endpoint.client, discovery_interval=0.025)
+            client_factory=self.endpoint.client, discovery_interval=0.025, **kwargs)
         self.sessions.append(session)
         self.snapshots, self.connections, self.messages, self.port_events = [], [], [], []
         session.snapshot.connect(self.snapshots.append)
@@ -271,6 +280,267 @@ class SessionTests(unittest.TestCase):
         self.assertLess(time.monotonic() - begin, 0.5)
         self.assertNotIn("BIND 0 1 4", [c[0] for c in self.endpoint.calls])
         self.assertTrue(self.endpoint.links[0][1].closed)
+
+    def updater_session(self, *, writer=None, drives=None, timeout=0.1):
+        directory = tempfile.TemporaryDirectory()
+        self.addCleanup(directory.cleanup)
+        self.image_path = str(Path(directory.name) / 'firmware.uf2')
+        Path(self.image_path).write_bytes(convert(bytes(512)))
+        self.drives = []
+        self.writes, self.upgrades = [], []
+        def default_writer(drive, data, progress):
+            self.assertTrue(self.endpoint.links[-1][1].closed)
+            self.writes.append((drive, data))
+            self.ports = [port('COM_OTHER', 'board-b'), port('COM_NEW', 'board-a')]
+            progress(100)
+        updater = FirmwareUpdater(drive_provider=drives or (lambda: list(self.drives)),
+                                  writer=writer or default_writer, timeout=timeout, poll_interval=0.005)
+        session = self.make(updater=updater, reconnect_timeout=0.15)
+        session.upgrade_changed.connect(self.upgrades.append)
+        self.until(lambda: self.connections and self.connections[-1][0])
+        return session
+
+    def test_rumble_diagnostic_is_polled_only_when_advertised(self):
+        self.endpoint.extra_caps['rumble'] = 1
+        self.connected()
+        self.assertEqual(self.snapshots[-1]['rumble']['remaining_ms'], 0)
+        self.assertIn('RUMBLE', [x[0] for x in self.endpoint.calls])
+
+    def test_upgrade_reconnects_same_serial_after_state_reread_and_no_replay(self):
+        self.endpoint.extra_caps['bootsel'] = 1
+        self.endpoint.extra_caps['version'] = '0.5.0'
+        scans = iter([[], [BootDrive('A:/', 'rom')], [BootDrive('A:/', 'rom')]])
+        session = self.updater_session(drives=lambda: next(scans))
+        session.upgrade(self.image_path)
+        session.submit(['SAVE'])
+        self.until(lambda: any(x['stage'] == 'complete' for x in self.upgrades))
+        self.assertEqual(len(self.writes), 1)
+        self.assertEqual([x[0] for x in self.endpoint.links], ['COM_A', 'COM_NEW'])
+        self.assertEqual(sum(x[0] == 'BOOTSEL' for x in self.endpoint.calls), 1)
+        self.assertNotIn('SAVE', [x[0] for x in self.endpoint.calls])
+        self.assertGreaterEqual(sum(x[0] == 'GET' for x in self.endpoint.calls), 2)
+        self.assertTrue(self.snapshots[-1]['refresh_config'])
+        self.assertFalse(self.upgrades[-1]['busy'])
+        self.assertIn('0.5.0', self.upgrades[-1]['detail'])
+
+    def test_legacy_automatic_upgrade_explains_manual_and_does_not_reboot(self):
+        session = self.updater_session()
+        session.upgrade(self.image_path)
+        self.until(lambda: any(x['stage'] == 'failed' for x in self.upgrades))
+        self.assertIn('手动', self.upgrades[-1]['error'])
+        self.assertNotIn('BOOTSEL', [x[0] for x in self.endpoint.calls])
+        self.assertFalse(self.endpoint.links[0][1].closed)
+        self.assertTrue(session._connected)
+
+    def test_bootsel_rejection_preserves_connection_without_writing(self):
+        self.endpoint.extra_caps['bootsel'] = 1
+        self.endpoint.fail['BOOTSEL'] = CommandRejected('ERR STATE')
+        session = self.updater_session()
+        session.upgrade(self.image_path)
+        self.until(lambda: any(x['stage'] == 'failed' for x in self.upgrades))
+        self.assertEqual(self.writes, [])
+        self.assertTrue(session._connected)
+
+    def test_missing_drive_fails_once_and_does_not_flash_preexisting_drive(self):
+        self.endpoint.extra_caps['bootsel'] = 1
+        session = self.updater_session(drives=lambda: [BootDrive('A:/', 'preexisting')])
+        session.upgrade(self.image_path)
+        self.until(lambda: any(x['stage'] == 'failed' for x in self.upgrades))
+        self.assertEqual(self.writes, [])
+        self.assertEqual(sum(x[0] == 'BOOTSEL' for x in self.endpoint.calls), 1)
+
+    def test_explicit_manual_upgrade_writes_unique_existing_drive(self):
+        session = self.updater_session(drives=lambda: [BootDrive('A:/', 'existing')])
+        session.upgrade(self.image_path, manual=True)
+        self.until(lambda: any(x['stage'] == 'complete' for x in self.upgrades))
+        self.assertEqual(len(self.writes), 1)
+        self.assertNotIn('BOOTSEL', [x[0] for x in self.endpoint.calls])
+
+    def test_copy_close_is_refused_and_reconnect_failure_is_not_success(self):
+        self.endpoint.extra_caps['bootsel'] = 1
+        entered, release = threading.Event(), threading.Event()
+        def writer(drive, data, progress):
+            entered.set()
+            release.wait(1)
+            self.ports = [port('COM_OTHER', 'board-b')]
+        self.addCleanup(release.set)
+        scans = iter([[], [BootDrive('A:/', 'rom')], [BootDrive('A:/', 'rom')]])
+        session = self.updater_session(writer=writer, drives=lambda: next(scans))
+        session.upgrade(self.image_path)
+        self.until(entered.is_set)
+        self.assertFalse(session.close())
+        self.assertFalse(session.cancel_upgrade())
+        session.connect_port('COM_OTHER')
+        session.disconnect_port()
+        release.set()
+        self.until(lambda: any(x['stage'] == 'failed' for x in self.upgrades))
+        self.assertFalse(any(x['stage'] == 'complete' for x in self.upgrades))
+        self.assertEqual(len(self.endpoint.links), 1)
+
+    def test_cancel_while_waiting_drive_does_not_copy(self):
+        self.endpoint.extra_caps['bootsel'] = 1
+        session = self.updater_session(timeout=1)
+        session.upgrade(self.image_path)
+        self.until(lambda: any(x['stage'] == 'waiting_drive' for x in self.upgrades))
+        self.assertTrue(session.cancel_upgrade())
+        self.until(lambda: any(x['stage'] == 'cancelled' for x in self.upgrades))
+        self.assertEqual(self.writes, [])
+
+    def test_cancel_during_reconnect_read_closes_new_link_and_never_completes(self):
+        self.endpoint.extra_caps['bootsel'] = 1
+        def writer(drive, data, progress):
+            self.endpoint.block = 'GET'
+            self.ports = [port('COM_NEW', 'board-a')]
+        scans = iter([[], [BootDrive('A:/', 'rom')], [BootDrive('A:/', 'rom')]])
+        session = self.updater_session(writer=writer, drives=lambda: next(scans))
+        session.upgrade(self.image_path)
+        self.until(self.endpoint.entered.is_set)
+        self.assertTrue(session.cancel_upgrade())
+        self.endpoint.release.set()
+        self.until(lambda: any(x['stage'] == 'cancelled' for x in self.upgrades))
+        self.assertFalse(any(x['stage'] == 'complete' for x in self.upgrades))
+        self.assertTrue(self.endpoint.links[1][1].closed)
+
+    def test_close_before_copy_cancels_worker_without_writing(self):
+        self.endpoint.extra_caps['bootsel'] = 1
+        session = self.updater_session(timeout=1)
+        session.upgrade(self.image_path)
+        self.until(lambda: any(x['stage'] == 'waiting_drive' for x in self.upgrades))
+        self.assertTrue(session.close())
+        self.assertFalse(session._thread.is_alive())
+        self.assertEqual(self.writes, [])
+
+    def test_bad_image_fails_before_bootsel_and_preserves_live_session(self):
+        self.endpoint.extra_caps['bootsel'] = 1
+        session = self.updater_session()
+        Path(self.image_path).write_bytes(b'bad uf2')
+        session.upgrade(self.image_path)
+        self.until(lambda: any(x['stage'] == 'failed' for x in self.upgrades))
+        self.assertNotIn('BOOTSEL', [x[0] for x in self.endpoint.calls])
+        self.assertTrue(session._connected)
+        self.assertFalse(self.endpoint.links[0][1].closed)
+
+    def test_manual_without_previously_captured_serial_does_not_write(self):
+        self.ports = []
+        # Construct offline without helper's connected wait.
+        updater = FirmwareUpdater(drive_provider=lambda: [BootDrive('A:/', 'rom')],
+                                  writer=lambda *args: self.fail('unbound board written'))
+        session = self.make(updater=updater)
+        upgrades = []
+        session.upgrade_changed.connect(upgrades.append)
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / 'firmware.uf2'
+            path.write_bytes(convert(bytes(256)))
+            session.upgrade(str(path), manual=True)
+            self.until(lambda: any(x['stage'] == 'failed' for x in upgrades))
+        self.assertIn('序列号', upgrades[-1]['error'])
+
+    def test_writer_failure_is_not_retried_and_session_releases_upgrade_gate(self):
+        self.endpoint.extra_caps['bootsel'] = 1
+        attempts = []
+        def writer(*args):
+            attempts.append(1)
+            raise OSError('disk vanished')
+        scans = iter([[], [BootDrive('A:/', 'rom')], [BootDrive('A:/', 'rom')]])
+        session = self.updater_session(writer=writer, drives=lambda: next(scans))
+        session.upgrade(self.image_path)
+        self.until(lambda: any(x['stage'] == 'failed' for x in self.upgrades))
+        self.assertEqual(len(attempts), 1)
+        self.assertFalse(session._upgrade_busy)
+        self.assertIn('disk vanished', self.upgrades[-1]['error'])
+
+    def test_failed_upgrade_status_survives_later_transport_epoch_with_busy_ui(self):
+        self.endpoint.extra_caps['bootsel'] = 1
+        session = self.updater_session()
+        self.endpoint.fail['BOOTSEL'] = TimeoutError('ACK lost')
+        self.endpoint.fail['GET'] = OSError('device now in BOOTSEL')
+        self.ports = []
+        session.upgrade(self.image_path)
+        time.sleep(0.2)  # Qt is busy while the worker advances transport epoch.
+        self.app.processEvents()
+        self.assertTrue(any(x['stage'] == 'failed' for x in self.upgrades))
+        self.assertFalse(self.upgrades[-1]['busy'])
+        self.assertIn('ACK lost', self.upgrades[-1]['error'])
+        self.assertFalse(session._upgrade_busy)
+
+    def test_complete_upgrade_status_survives_immediate_unplug_with_busy_ui(self):
+        self.endpoint.extra_caps['bootsel'] = 1
+        scans = iter([[], [BootDrive('A:/', 'rom')], [BootDrive('A:/', 'rom')]])
+        session = self.updater_session(drives=lambda: next(scans))
+        original_get = self.endpoint.get
+        reads = []
+        def get_then_unplug():
+            value = original_get()
+            reads.append(1)
+            self.endpoint.fail['GET'] = OSError('unplugged after restored state')
+            self.ports = []
+            return value
+        self.endpoint.get = get_then_unplug
+        session.upgrade(self.image_path)
+        time.sleep(0.2)
+        self.app.processEvents()
+        self.assertEqual(len(reads), 1)
+        self.assertTrue(any(x['stage'] == 'complete' for x in self.upgrades))
+        self.assertFalse(self.upgrades[-1]['busy'])
+
+    def test_stop_preempts_full_test_queue_preserves_config_and_does_not_replay(self):
+        session = self.connected()
+        test = 'RUMBLE TEST 64 64 3000'
+        self.endpoint.block = test
+        session.submit([test, test, 'BIND 0 1 4'])
+        self.until(self.endpoint.entered.is_set)
+        for _ in range(7):
+            session.submit([test])
+        session.submit([test, 'SAVE'])
+        session.submit(['RUMBLE STOP'])
+        session.submit(['RUMBLE STOP'])
+        self.endpoint.release.set()
+        self.until(lambda: any(x[0] == 'SAVE' for x in self.endpoint.calls))
+        calls = [x[0] for x in self.endpoint.calls]
+        first_test = calls.index(test)
+        self.assertEqual(calls[first_test + 1], 'RUMBLE STOP')
+        self.assertEqual(calls.count('RUMBLE STOP'), 1)
+        self.assertEqual(calls.count(test), 1)
+        self.assertIn('BIND 0 1 4', calls)
+        self.assertIn('SAVE', calls)
+        session.disconnect_port()
+        self.until(lambda: self.endpoint.links[0][1].closed)
+        session.connect_port('COM_A')
+        self.until(lambda: len(self.endpoint.links) == 2)
+        self.assertEqual([x[0] for x in self.endpoint.calls].count('RUMBLE STOP'), 1)
+        self.assertEqual([x[0] for x in self.endpoint.calls].count(test), 1)
+
+    def test_terminal_upgrade_status_is_not_visible_until_retry_gate_released(self):
+        session = self.updater_session()
+        entered, release = threading.Event(), threading.Event()
+        self.addCleanup(release.set)
+        original = session._upgrade_event
+        def delayed_finally(epoch, stage, *args, **kwargs):
+            original(epoch, stage, *args, **kwargs)
+            if stage == 'failed':
+                entered.set()
+                release.wait(1)
+        session._upgrade_event = delayed_finally
+        session.upgrade(self.image_path)
+        self.until(entered.is_set)
+        session._drain()
+        self.assertFalse(any(x['stage'] == 'failed' for x in self.upgrades))
+        release.set()
+        self.until(lambda: any(x['stage'] == 'failed' for x in self.upgrades))
+        self.assertFalse(session._upgrade_busy)
+
+    def test_upgrade_clears_queue_and_interrupts_remaining_batch(self):
+        self.endpoint.extra_caps['bootsel'] = 1
+        session = self.updater_session()
+        self.endpoint.block = 'STICK 0 0 100 0'
+        session.submit(['STICK 0 0 100 0', 'SAVE'])
+        self.until(self.endpoint.entered.is_set)
+        session.submit(['BIND 0 1 4'])
+        session.upgrade(self.image_path)
+        self.endpoint.release.set()
+        self.until(lambda: any(x['stage'] == 'failed' for x in self.upgrades))
+        self.assertNotIn('SAVE', [x[0] for x in self.endpoint.calls])
+        self.assertNotIn('BIND 0 1 4', [x[0] for x in self.endpoint.calls])
 
 
 if __name__ == "__main__":

@@ -1,0 +1,244 @@
+**********************************************************************
+** Visual Studio 2022 Developer Command Prompt v17.14.40
+** Copyright (c) 2025 Microsoft Corporation
+**********************************************************************
+[vcvarsall.bat] Environment initialized for: 'x64'
+-- Configuring done (0.2s)
+-- Generating done (0.2s)
+-- Build files have been written to: D:/练习项目/RP2350a/build/clang
+ninja: no work to do.
+Test project D:/练习项目/RP2350a/build/clang
+      Start  1: control_profile
+ 1/58 Test  #1: control_profile ..................   Passed    0.05 sec
+      Start  2: control_console
+ 2/58 Test  #2: control_console ..................   Passed    0.05 sec
+      Start  3: control_storage
+ 3/58 Test  #3: control_storage ..................   Passed    0.06 sec
+      Start  4: core_defaults
+ 4/58 Test  #4: core_defaults ....................   Passed    0.05 sec
+      Start  5: core_mapping
+ 5/58 Test  #5: core_mapping .....................   Passed    0.05 sec
+      Start  6: core_filtering
+ 6/58 Test  #6: core_filtering ...................   Passed    0.05 sec
+      Start  7: core_hysteresis
+ 7/58 Test  #7: core_hysteresis ..................   Passed    0.05 sec
+      Start  8: core_curve
+ 8/58 Test  #8: core_curve .......................   Passed    0.05 sec
+      Start  9: core_calibration
+ 9/58 Test  #9: core_calibration .................   Passed    0.05 sec
+      Start 10: core_modes
+10/58 Test #10: core_modes .......................   Passed    0.06 sec
+      Start 11: core_invalid
+11/58 Test #11: core_invalid .....................   Passed    0.05 sec
+      Start 12: core_button
+12/58 Test #12: core_button ......................   Passed    0.05 sec
+      Start 13: config_records
+13/58 Test #13: config_records ...................   Passed    0.05 sec
+      Start 14: console_protocol
+14/58 Test #14: console_protocol .................   Passed    0.05 sec
+      Start 15: usb_contract
+15/58 Test #15: usb_contract .....................   Passed    0.05 sec
+      Start 16: flash_power_loss
+16/58 Test #16: flash_power_loss .................   Passed    0.05 sec
+      Start 17: xinput_packet
+17/58 Test #17: xinput_packet ....................   Passed    0.05 sec
+      Start 18: xinput_layout
+18/58 Test #18: xinput_layout ....................   Passed    0.05 sec
+      Start 19: xinput_control
+19/58 Test #19: xinput_control ...................   Passed    0.05 sec
+      Start 20: xinput_capabilities
+20/58 Test #20: xinput_capabilities ..............   Passed    0.05 sec
+      Start 21: xinput_pad_parse
+21/58 Test #21: xinput_pad_parse .................   Passed    0.05 sec
+      Start 22: xinput_pad_neutral
+22/58 Test #22: xinput_pad_neutral ...............   Passed    0.05 sec
+      Start 23: xinput_pad_predicates
+23/58 Test #23: xinput_pad_predicates ............   Passed    0.05 sec
+      Start 24: bridge_pedal_only
+24/58 Test #24: bridge_pedal_only ................   Passed    0.05 sec
+      Start 25: bridge_handshake
+25/58 Test #25: bridge_handshake .................   Passed    0.05 sec
+      Start 26: bridge_override
+26/58 Test #26: bridge_override ..................   Passed    0.05 sec
+      Start 27: bridge_max
+27/58 Test #27: bridge_max .......................   Passed    0.05 sec
+      Start 28: bridge_timeout
+28/58 Test #28: bridge_timeout ...................   Passed    0.05 sec
+      Start 29: bridge_unmount
+29/58 Test #29: bridge_unmount ...................   Passed    0.05 sec
+      Start 30: bridge_blocked
+30/58 Test #30: bridge_blocked ...................   Passed    0.05 sec
+      Start 31: bridge_quantize
+31/58 Test #31: bridge_quantize ..................   Passed    0.05 sec
+      Start 32: xinput_driver
+32/58 Test #32: xinput_driver ....................   Passed    0.05 sec
+      Start 33: xinput_rumble_driver
+33/58 Test #33: xinput_rumble_driver .............   Passed    0.05 sec
+      Start 34: rumble_host_relay
+34/58 Test #34: rumble_host_relay ................   Passed    0.07 sec
+      Start 35: rumble_host_faults
+35/58 Test #35: rumble_host_faults ...............   Passed    0.05 sec
+      Start 36: rumble_host_retries
+36/58 Test #36: rumble_host_retries ..............   Passed    0.05 sec
+      Start 37: rumble_host_stalled
+37/58 Test #37: rumble_host_stalled ..............   Passed    0.05 sec
+      Start 38: rumble_host_flood
+38/58 Test #38: rumble_host_flood ................   Passed    0.05 sec
+      Start 39: rumble_host_stop_priority
+39/58 Test #39: rumble_host_stop_priority ........   Passed    0.05 sec
+      Start 40: rumble_host_exhausted
+40/58 Test #40: rumble_host_exhausted ............   Passed    0.05 sec
+      Start 41: rumble_host_timed
+41/58 Test #41: rumble_host_timed ................   Passed    0.05 sec
+      Start 42: rumble_host_timed_wrap
+42/58 Test #42: rumble_host_timed_wrap ...........   Passed    0.05 sec
+      Start 43: xinput_usb_integration
+43/58 Test #43: xinput_usb_integration ...........   Passed    0.05 sec
+      Start 44: bridge_usb_combined
+44/58 Test #44: bridge_usb_combined ..............   Passed    0.05 sec
+      Start 45: bridge_usb_barrier
+45/58 Test #45: bridge_usb_barrier ...............   Passed    0.05 sec
+      Start 46: bridge_usb_faults
+46/58 Test #46: bridge_usb_faults ................   Passed    0.05 sec
+      Start 47: bridge_usb_save_sticks
+47/58 Test #47: bridge_usb_save_sticks ...........   Passed    0.05 sec
+      Start 48: bridge_usb_save_button
+48/58 Test #48: bridge_usb_save_button ...........   Passed    0.04 sec
+      Start 49: bridge_usb_save_trigger
+49/58 Test #49: bridge_usb_save_trigger ..........   Passed    0.05 sec
+      Start 50: bridge_usb_mapped
+50/58 Test #50: bridge_usb_mapped ................   Passed    0.05 sec
+      Start 51: bridge_usb_save_source
+51/58 Test #51: bridge_usb_save_source ...........   Passed    0.05 sec
+      Start 52: bridge_usb_telemetry
+52/58 Test #52: bridge_usb_telemetry .............   Passed    0.05 sec
+      Start 53: bridge_usb_mapped_release
+53/58 Test #53: bridge_usb_mapped_release ........   Passed    0.05 sec
+      Start 54: bridge_usb_rumble
+54/58 Test #54: bridge_usb_rumble ................   Passed    0.05 sec
+      Start 55: bridge_usb_test_commands
+55/58 Test #55: bridge_usb_test_commands .........   Passed    0.05 sec
+      Start 56: bridge_usb_bootsel
+56/58 Test #56: bridge_usb_bootsel ...............   Passed    0.05 sec
+      Start 57: bridge_usb_bootsel_ack_loss
+57/58 Test #57: bridge_usb_bootsel_ack_loss ......   Passed    0.05 sec
+      Start 58: bridge_usb_bootsel_delayed_ack
+58/58 Test #58: bridge_usb_bootsel_delayed_ack ...   Passed    0.05 sec
+
+100% tests passed out of 58
+
+Total Test time (real) =   2.93 sec
+test_native_windows_abi (test_check_xinput.XInputReaderTests.test_native_windows_abi) ... ok
+test_reads_independent_triggers_and_ignores_empty_slots (test_check_xinput.XInputReaderTests.test_reads_independent_triggers_and_ignores_empty_slots) ... ok
+test_apply_ack_preserves_edits_made_while_waiting (test_control_gui.ControlGuiTests.test_apply_ack_preserves_edits_made_while_waiting) ... ok
+test_apply_generates_board_commands_and_waits_for_ack (test_control_gui.ControlGuiTests.test_apply_generates_board_commands_and_waits_for_ack) ... ok
+test_blocked_controller_is_visible_in_main_status (test_control_gui.ControlGuiTests.test_blocked_controller_is_visible_in_main_status) ... ok
+test_calibration_after_save_marks_ram_unsaved_without_local_edits (test_control_gui.ControlGuiTests.test_calibration_after_save_marks_ram_unsaved_without_local_edits) ... ok
+test_calibration_and_invalid_hysteresis (test_control_gui.ControlGuiTests.test_calibration_and_invalid_hysteresis) ... ok
+test_connected_signal_alone_resets_previous_session (test_control_gui.ControlGuiTests.test_connected_signal_alone_resets_previous_session) ... ok
+test_discovery_displays_serial_suffix_and_full_tooltip (test_control_gui.ControlGuiTests.test_discovery_displays_serial_suffix_and_full_tooltip) ... ok
+test_host_age_includes_time_waiting_in_ui (test_control_gui.ControlGuiTests.test_host_age_includes_time_waiting_in_ui) ... ok
+test_keyboard_modifier_binding_and_disable_commands (test_control_gui.ControlGuiTests.test_keyboard_modifier_binding_and_disable_commands) ... ok
+test_legacy_and_disconnect_disable_board_actions (test_control_gui.ControlGuiTests.test_legacy_and_disconnect_disable_board_actions) ... ok
+test_mapping_highlights_use_raw_sources_and_clear_when_not_fresh (test_control_gui.ControlGuiTests.test_mapping_highlights_use_raw_sources_and_clear_when_not_fresh) ... ok
+test_mode_selector_explains_ram_only_lifetime (test_control_gui.ControlGuiTests.test_mode_selector_explains_ram_only_lifetime) ... ok
+test_new_pages_track_raw_buttons_and_clear_on_new_session (test_control_gui.ControlGuiTests.test_new_pages_track_raw_buttons_and_clear_on_new_session) ... ok
+test_output_shows_pedal_only_without_host_but_raw_stays_inactive (test_control_gui.ControlGuiTests.test_output_shows_pedal_only_without_host_but_raw_stays_inactive) ... ok
+test_pc_snapshot_watchdog_greys_data_and_blocks_writes_then_recovers (test_control_gui.ControlGuiTests.test_pc_snapshot_watchdog_greys_data_and_blocks_writes_then_recovers) ... ok
+test_polling_preserves_unsent_edits (test_control_gui.ControlGuiTests.test_polling_preserves_unsent_edits) ... ok
+test_reconnect_discards_draft_and_waits_for_new_device_config (test_control_gui.ControlGuiTests.test_reconnect_discards_draft_and_waits_for_new_device_config) ... ok
+test_revert_restores_applied_values (test_control_gui.ControlGuiTests.test_revert_restores_applied_values) ... ok
+test_rumble_uses_session_and_legacy_cannot_start (test_control_gui.ControlGuiTests.test_rumble_uses_session_and_legacy_cannot_start) ... ok
+test_save_needs_board_ack (test_control_gui.ControlGuiTests.test_save_needs_board_ack) ... ok
+test_small_window_keeps_footer_and_scrollable_controls (test_control_gui.ControlGuiTests.test_small_window_keeps_footer_and_scrollable_controls) ... ok
+test_snapshot_gap_without_watchdog_cannot_complete_old_press (test_control_gui.ControlGuiTests.test_snapshot_gap_without_watchdog_cannot_complete_old_press) ... ok
+test_stale_clean_config_cannot_save_until_next_snapshot (test_control_gui.ControlGuiTests.test_stale_clean_config_cannot_save_until_next_snapshot) ... ok
+test_test_page_watchdog_gap_cannot_complete_pressed_button (test_control_gui.ControlGuiTests.test_test_page_watchdog_gap_cannot_complete_pressed_button) ... ok
+test_unlabelled_legal_hid_binding_is_preserved_on_other_edits (test_control_gui.ControlGuiTests.test_unlabelled_legal_hid_binding_is_preserved_on_other_edits) ... ok
+test_upgrade_busy_guards_methods_controls_and_copy_close (test_control_gui.ControlGuiTests.test_upgrade_busy_guards_methods_controls_and_copy_close) ... ok
+test_upgrade_legacy_manual_and_demo_write_guards (test_control_gui.ControlGuiTests.test_upgrade_legacy_manual_and_demo_write_guards) ... ok
+test_widgets_clamp_and_render_at_target_size (test_control_gui.ControlGuiTests.test_widgets_clamp_and_render_at_target_size) ... ok
+test_advertised_unsupported_telemetry_is_disabled_without_losing_link (test_control_session.SessionTests.test_advertised_unsupported_telemetry_is_disabled_without_losing_link) ... ok
+test_auto_discovery_opens_only_unique_known_identity (test_control_session.SessionTests.test_auto_discovery_opens_only_unique_known_identity) ... ok
+test_bad_image_fails_before_bootsel_and_preserves_live_session (test_control_session.SessionTests.test_bad_image_fails_before_bootsel_and_preserves_live_session) ... ok
+test_bootsel_rejection_preserves_connection_without_writing (test_control_session.SessionTests.test_bootsel_rejection_preserves_connection_without_writing) ... ok
+test_cancel_during_reconnect_read_closes_new_link_and_never_completes (test_control_session.SessionTests.test_cancel_during_reconnect_read_closes_new_link_and_never_completes) ... ok
+test_cancel_while_waiting_drive_does_not_copy (test_control_session.SessionTests.test_cancel_while_waiting_drive_does_not_copy) ... ok
+test_capabilities_and_profile_refresh_only_on_connect_and_batch (test_control_session.SessionTests.test_capabilities_and_profile_refresh_only_on_connect_and_batch) ... ok
+test_close_before_copy_cancels_worker_without_writing (test_control_session.SessionTests.test_close_before_copy_cancels_worker_without_writing) ... ok
+test_close_cancels_remaining_batch_after_inflight_request_returns (test_control_session.SessionTests.test_close_cancels_remaining_batch_after_inflight_request_returns) ... ok
+test_close_is_idempotent_and_closes_link_on_worker (test_control_session.SessionTests.test_close_is_idempotent_and_closes_link_on_worker) ... ok
+test_complete_upgrade_status_survives_immediate_unplug_with_busy_ui (test_control_session.SessionTests.test_complete_upgrade_status_survives_immediate_unplug_with_busy_ui) ... ok
+test_copy_close_is_refused_and_reconnect_failure_is_not_success (test_control_session.SessionTests.test_copy_close_is_refused_and_reconnect_failure_is_not_success) ... ok
+test_disconnect_drops_pending_commands_and_stale_inflight_snapshot (test_control_session.SessionTests.test_disconnect_drops_pending_commands_and_stale_inflight_snapshot) ... ok
+test_explicit_manual_upgrade_writes_unique_existing_drive (test_control_session.SessionTests.test_explicit_manual_upgrade_writes_unique_existing_drive) ... ok
+test_failed_upgrade_status_survives_later_transport_epoch_with_busy_ui (test_control_session.SessionTests.test_failed_upgrade_status_survives_later_transport_epoch_with_busy_ui) ... ok
+test_later_apply_cancels_pending_save_indication (test_control_session.SessionTests.test_later_apply_cancels_pending_save_indication) ... ok
+test_legacy_automatic_upgrade_explains_manual_and_does_not_reboot (test_control_session.SessionTests.test_legacy_automatic_upgrade_explains_manual_and_does_not_reboot) ... ok
+test_legacy_caps_rejection_produces_no_invented_telemetry (test_control_session.SessionTests.test_legacy_caps_rejection_produces_no_invented_telemetry) ... ok
+test_manual_without_previously_captured_serial_does_not_write (test_control_session.SessionTests.test_manual_without_previously_captured_serial_does_not_write) ... ok
+test_missing_drive_fails_once_and_does_not_flash_preexisting_drive (test_control_session.SessionTests.test_missing_drive_fails_once_and_does_not_flash_preexisting_drive) ... ok
+test_multiple_candidates_require_selection_and_unknown_port_is_rejected (test_control_session.SessionTests.test_multiple_candidates_require_selection_and_unknown_port_is_rejected) ... ok
+test_polling_is_bounded_and_does_not_queue_snapshots (test_control_session.SessionTests.test_polling_is_bounded_and_does_not_queue_snapshots) ... ok
+test_rejected_batch_keeps_connection_and_refreshes_actual_config (test_control_session.SessionTests.test_rejected_batch_keeps_connection_and_refreshes_actual_config) ... ok
+test_rumble_diagnostic_is_polled_only_when_advertised (test_control_session.SessionTests.test_rumble_diagnostic_is_polled_only_when_advertised) ... ok
+test_save_acknowledgement_is_explicit_and_survives_busy_ui (test_control_session.SessionTests.test_save_acknowledgement_is_explicit_and_survives_busy_ui) ... ok
+test_signal_callback_disconnect_cannot_deliver_stale_snapshot (test_control_session.SessionTests.test_signal_callback_disconnect_cannot_deliver_stale_snapshot) ... ok
+test_stop_preempts_full_test_queue_preserves_config_and_does_not_replay (test_control_session.SessionTests.test_stop_preempts_full_test_queue_preserves_config_and_does_not_replay) ... ok
+test_terminal_upgrade_status_is_not_visible_until_retry_gate_released (test_control_session.SessionTests.test_terminal_upgrade_status_is_not_visible_until_retry_gate_released) ... ok
+test_transport_failure_reconnects_same_serial_only (test_control_session.SessionTests.test_transport_failure_reconnects_same_serial_only) ... ok
+test_upgrade_clears_queue_and_interrupts_remaining_batch (test_control_session.SessionTests.test_upgrade_clears_queue_and_interrupts_remaining_batch) ... ok
+test_upgrade_reconnects_same_serial_after_state_reread_and_no_replay (test_control_session.SessionTests.test_upgrade_reconnects_same_serial_after_state_reread_and_no_replay) ... ok
+test_validation_and_offline_submit_do_not_open_or_replay_commands (test_control_session.SessionTests.test_validation_and_offline_submit_do_not_open_or_replay_commands) ... ok
+test_writer_failure_is_not_retried_and_session_releases_upgrade_gate (test_control_session.SessionTests.test_writer_failure_is_not_retried_and_session_releases_upgrade_gate) ... ok
+test_all_fourteen_physical_buttons (test_control_test_pages.TestPages.test_all_fourteen_physical_buttons) ... ok
+test_complete_press_release_and_clear (test_control_test_pages.TestPages.test_complete_press_release_and_clear) ... ok
+test_demo_and_busy_never_emit_writes (test_control_test_pages.TestPages.test_demo_and_busy_never_emit_writes) ... ok
+test_gap_breaks_pending_release_and_requires_new_press (test_control_test_pages.TestPages.test_gap_breaks_pending_release_and_requires_new_press) ... ok
+test_rumble_start_guards_and_stop_when_stale (test_control_test_pages.TestPages.test_rumble_start_guards_and_stop_when_stale) ... ok
+test_running_rumble_shows_chinese_status_and_stale_details (test_control_test_pages.TestPages.test_running_rumble_shows_chinese_status_and_stale_details) ... ok
+test_upgrade_old_firmware_manual_guidance_and_demo (test_control_test_pages.TestPages.test_upgrade_old_firmware_manual_guidance_and_demo) ... ok
+test_upgrade_progress_and_failure_recovery (test_control_test_pages.TestPages.test_upgrade_progress_and_failure_recovery) ... ok
+test_validated_file_summary_and_invalid_reselection_block_upgrade (test_control_test_pages.TestPages.test_validated_file_summary_and_invalid_reselection_block_upgrade) ... ok
+test_auto_excludes_existing_manual_accepts_unique_and_multiple_refused (test_firmware_update.DriveTests.test_auto_excludes_existing_manual_accepts_unique_and_multiple_refused) ... ok
+test_cancel_and_changed_identity_prevent_any_copy (test_firmware_update.DriveTests.test_cancel_and_changed_identity_prevent_any_copy) ... ok
+test_default_writer_flushes_complete_validated_file_to_fake_volume (test_firmware_update.DriveTests.test_default_writer_flushes_complete_validated_file_to_fake_volume) ... ok
+test_drive_timeout_never_writes (test_firmware_update.DriveTests.test_drive_timeout_never_writes) ... ok
+test_existing_volume_with_changed_drive_letter_is_not_a_new_board (test_firmware_update.DriveTests.test_existing_volume_with_changed_drive_letter_is_not_a_new_board) ... ok
+test_info_requires_exact_rp2350_board_id (test_firmware_update.DriveTests.test_info_requires_exact_rp2350_board_id) ... ok
+test_prepare_reads_file_once_and_transfer_uses_validated_bytes (test_firmware_update.DriveTests.test_prepare_reads_file_once_and_transfer_uses_validated_bytes) ... ok
+test_second_drive_appearing_before_copy_aborts (test_firmware_update.DriveTests.test_second_drive_appearing_before_copy_aborts) ... ok
+test_transfer_writes_once_and_reports_waiting_then_copying (test_firmware_update.DriveTests.test_transfer_writes_once_and_reports_waiting_then_copying) ... ok
+test_writer_refuses_drive_letter_fallback_without_volume_identity (test_firmware_update.DriveTests.test_writer_refuses_drive_letter_fallback_without_volume_identity) ... ok
+test_writer_uses_captured_volume_instead_of_reassigned_drive_letter (test_firmware_update.DriveTests.test_writer_uses_captured_volume_instead_of_reassigned_drive_letter) ... ok
+test_ordered_block_numbers_may_arrive_out_of_order (test_firmware_update.ValidationTests.test_ordered_block_numbers_may_arrive_out_of_order) ... ok
+test_rejects_invalid_structure_family_flags_and_payload (test_firmware_update.ValidationTests.test_rejects_invalid_structure_family_flags_and_payload) ... ok
+test_rejects_overlap_gaps_unaligned_and_configuration_addresses (test_firmware_update.ValidationTests.test_rejects_overlap_gaps_unaligned_and_configuration_addresses) ... ok
+test_valid_image_has_immutable_data_and_summary (test_firmware_update.ValidationTests.test_valid_image_has_immutable_data_and_summary) ... ok
+test_initial_window_fits_content (test_gui.GuiLayoutTests.test_initial_window_fits_content) ... ok
+test_host_logs_allow_get_and_save_without_disconnect (test_gui_worker.GuiWorkerTests.test_host_logs_allow_get_and_save_without_disconnect) ... ok
+test_rejected_calibration_can_retry_without_reconnect (test_gui_worker.GuiWorkerTests.test_rejected_calibration_can_retry_without_reconnect) ... ok
+test_rejected_save_can_retry_without_reconnect (test_gui_worker.GuiWorkerTests.test_rejected_save_can_retry_without_reconnect) ... ok
+test_timeout_still_closes_connection (test_gui_worker.GuiWorkerTests.test_timeout_still_closes_connection) ... ok
+test_device_error (test_pedalctl.ClientTests.test_device_error) ... ok
+test_get (test_pedalctl.ClientTests.test_get) ... ok
+test_host_log_flood_has_bounded_wait (test_pedalctl.ClientTests.test_host_log_flood_has_bounded_wait) ... ok
+test_host_logs_do_not_consume_command_reply (test_pedalctl.ClientTests.test_host_logs_do_not_consume_command_reply) ... ok
+test_late_reply_is_not_accepted_after_deadline (test_pedalctl.ClientTests.test_late_reply_is_not_accepted_after_deadline) ... ok
+test_ok (test_pedalctl.ClientTests.test_ok) ... ok
+test_protocol_version (test_pedalctl.ClientTests.test_protocol_version) ... ok
+test_reject_injection (test_pedalctl.ClientTests.test_reject_injection) ... ok
+test_set_validation (test_pedalctl.ClientTests.test_set_validation) ... ok
+test_synchronize_discards_stale_responses (test_pedalctl.ClientTests.test_synchronize_discards_stale_responses) ... ok
+test_synchronize_handles_inflight_prefix_without_newline (test_pedalctl.ClientTests.test_synchronize_handles_inflight_prefix_without_newline) ... ok
+test_synchronize_timeout (test_pedalctl.ClientTests.test_synchronize_timeout) ... ok
+test_timeout (test_pedalctl.ClientTests.test_timeout) ... ok
+test_truncated_and_bad_response (test_pedalctl.ClientTests.test_truncated_and_bad_response) ... ok
+test_truncated_host_log_is_still_protocol_error (test_pedalctl.ClientTests.test_truncated_host_log_is_still_protocol_error) ... ok
+test_reject_empty_and_configuration_overlap (test_uf2.UF2Tests.test_reject_empty_and_configuration_overlap) ... ok
+test_roundtrip_headers_and_flash_reservation (test_uf2.UF2Tests.test_roundtrip_headers_and_flash_reservation) ... ok
+
+----------------------------------------------------------------------
+Ran 109 tests in 8.285s
+
+OK

@@ -16,6 +16,18 @@ static bool in_busy,key_busy;
 static uint8_t native[20],keys[8];
 static bridge_t host;
 static unsigned saves;
+static bool rumble_enabled;
+static unsigned rumble_received,rumble_stops;
+static uint8_t rumble_report[8];
+static unsigned test_duration;
+bool host_rumble_test(uint8_t left,uint8_t right,uint32_t duration) {
+    if(!rumble_enabled)return false;
+    rumble_report[3]=left;rumble_report[4]=right;test_duration=duration;return true;
+}
+void host_rumble_receive(const uint8_t report[8]) {rumble_received++;memcpy(rumble_report,report,8);}
+void host_rumble_enable(bool enabled) {rumble_enabled=enabled;}
+void host_rumble_stop(void) {rumble_stops++;}
+void host_rumble_status(host_rumble_status_t *status) {memset(status,0,sizeof(*status));status->received=rumble_received;status->enabled=rumble_enabled;}
 
 const bridge_t *host_bridge(void) { return &host; }
 bool tusb_init(uint8_t rhport,const tusb_rhport_init_t *init) {
@@ -171,6 +183,59 @@ static void mapped_release_barriers(void) {
     console_execute(&pedal,"MODE JOYSTICK",save_config,NULL,response);sample(&pedal,500,500);tick();ack();report(&held);tick();CHECK(keys[2]==5);ack();
     now+=(BRIDGE_HOST_TIMEOUT_MS+1u)*1000u;bridge_tick(&host,(uint32_t)(now/1000));tick();neutral();CHECK(!keys[2]);ack();
 }
+static void rumble_path(void) {
+    pedal_t pedal;init(&pedal);tick();ack();CHECK(rumble_enabled);
+    uint8_t command[8]={0,8,0,100,200,0,0,0};xinput_device_output_report(command);
+    CHECK(rumble_received==1 && !memcmp(rumble_report,command,8));
+    pedal_mode(&pedal,PEDAL_KEYBOARD);sample(&pedal,500,500);tick();ack();CHECK(!rumble_enabled);
+    char response[CONSOLE_RESPONSE_SIZE];CHECK(pedal_usb_console("RUMBLE",response));
+    CHECK(strstr(response,"\"received\":1") && strstr(response,"\"enabled\":false"));
+    CHECK(rumble_stops>0);
+}
+static void test_commands(void) {
+    pedal_t pedal;init(&pedal);tick();ack();
+    char response[CONSOLE_RESPONSE_SIZE];
+    CHECK(pedal_usb_console("CAPS",response));CHECK(strstr(response,"\"rumble_test\":1") && strstr(response,"\"bootsel\":1"));
+    CHECK(pedal_usb_console("RUMBLE TEST 64 32 500",response));CHECK(!strcmp(response,"OK\n"));
+    CHECK(test_duration==500 && rumble_report[3]==64 && rumble_report[4]==32);
+    const char *invalid[]={"RUMBLE TEST 256 0 500","RUMBLE TEST -1 0 500","RUMBLE TEST 0 1 99","RUMBLE TEST 0 1 3001","RUMBLE TEST 0 1 500 EXTRA","RUMBLE TEST 0 1 500x","RUMBLE TEST 9999999999999999999999 1 500"};
+    for(unsigned i=0;i<sizeof(invalid)/sizeof(*invalid);i++) {
+        CHECK(pedal_usb_console(invalid[i],response));CHECK(!strncmp(response,"ERR",3));
+    }
+    unsigned stops=rumble_stops;CHECK(pedal_usb_console("RUMBLE STOP",response));CHECK(rumble_stops==stops+1);
+    CHECK(!pedal_usb_console("RUMBLE STOP EXTRA",response));
+}
+bool pedal_usb_boot_pending(void);
+bool pedal_usb_boot_ready(bool response_acked);
+static void bootsel(void) {
+    pedal_t pedal;init(&pedal);char response[CONSOLE_RESPONSE_SIZE];CHECK(!pedal_usb_boot_pending());
+    control_current()->bindings[10]=(control_binding_t){1,4};
+    xinput_pad_t active={.buttons=0x1000,.lx=16384};report(&active);tick();ack();
+    CHECK(!pedal_usb_console("BOOTSEL EXTRA",response));
+    CHECK(pedal_usb_console("BOOTSEL",response));CHECK(strstr(response,"\"bootsel\":true"));
+    CHECK(pedal_usb_boot_pending() && !pedal_usb_boot_ready(true));
+    tick();neutral();CHECK(!keys[2] && !rumble_enabled);ack();
+    console_input_t input={0};const char *command="SET 0 500 200 150 4\n";
+    while(*command)pedal_usb_feed(&input,*command++,&pedal,save_config,NULL,response);
+    CHECK(!strcmp(response,"ERR UPDATING\n") && pedal.config.axis[0].on==300);
+    now+=301000;CHECK(!pedal_usb_boot_ready(false));CHECK(pedal_usb_boot_ready(true));
+}
+static void bootsel_ack_loss(void) {
+    pedal_t pedal;init(&pedal);char response[CONSOLE_RESPONSE_SIZE];
+    CHECK(pedal_usb_console("BOOTSEL",response));tick();ack();
+    now+=1501000;CHECK(!pedal_usb_boot_ready(false));
+    CHECK(!pedal_usb_boot_pending()); /* A lost CDC ACK cancels, rather than leaving inputs blocked forever. */
+    console_input_t input={0};const char *command="CAPS\n";
+    while(*command)pedal_usb_feed(&input,*command++,&pedal,save_config,NULL,response);
+    CHECK(!strncmp(response,"OK {",4));
+}
+static void bootsel_delayed_ack(void) {
+    pedal_t pedal;init(&pedal);char response[CONSOLE_RESPONSE_SIZE];
+    CHECK(pedal_usb_console("BOOTSEL",response));tick();ack();
+    now+=1000000;CHECK(!pedal_usb_boot_ready(true));
+    now+=299000;CHECK(!pedal_usb_boot_ready(true));
+    now+=1001;CHECK(pedal_usb_boot_ready(true));
+}
 bool pedal_usb_console(const char *line,char response[CONSOLE_RESPONSE_SIZE]);
 static void telemetry(void) {
     pedal_t pedal;init(&pedal);char response[CONSOLE_RESPONSE_SIZE];
@@ -201,7 +266,12 @@ int main(int argc,char **argv) {
     else if(!strcmp(argv[1],"mapped"))mapped_controls();
     else if(!strcmp(argv[1],"save_source"))save_disabled_source();
     else if(!strcmp(argv[1],"mapped_release"))mapped_release_barriers();
+    else if(!strcmp(argv[1],"rumble"))rumble_path();
     else if(!strcmp(argv[1],"telemetry"))telemetry();
+    else if(!strcmp(argv[1],"test_commands"))test_commands();
+    else if(!strcmp(argv[1],"bootsel"))bootsel();
+    else if(!strcmp(argv[1],"bootsel_ack_loss"))bootsel_ack_loss();
+    else if(!strcmp(argv[1],"bootsel_delayed_ack"))bootsel_delayed_ack();
     else return 2;
     puts("PASS: real Host bridge USB integration");return 0;
 }

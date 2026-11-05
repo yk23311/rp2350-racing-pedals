@@ -1,0 +1,1 @@
+/* Declarations are provided by tusb.h in the Host mock. */

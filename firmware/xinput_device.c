@@ -3,6 +3,9 @@
 #include "tusb.h"
 #include "device/usbd_pvt.h"
 #include <string.h>
+#ifndef PEDAL_USB_HOST
+#define PEDAL_USB_HOST 0
+#endif
 /* App driver for MS-XUSBI, using the SDK-pinned TinyUSB endpoint API. */
 static bool opened;
 static uint32_t device_serial;
@@ -12,7 +15,8 @@ _Alignas(4) static uint8_t control_buffer[64];
 static uint8_t led_report[3];
 static void consume_output(const uint8_t *data,uint32_t length) {
     if(length==3 && data[0]==1 && data[1]==3 && data[2]<16)led_report[2]=data[2];
-    /* Rumble commands are accepted but there are no physical motors. */
+    if(length==8 && data[0]==0 && data[1]==8 && data[2]==0 &&
+       data[5]==0 && data[6]==0 && data[7]==0) xinput_device_output_report(data);
 }
 static void reset(uint8_t p) {
     (void)p;opened=false;memset(tx,0,sizeof(tx));tx[1]=20;memset(rx,0,sizeof(rx));
@@ -80,6 +84,10 @@ void xinput_device_set_serial(uint32_t serial) { device_serial=serial; }
 bool tud_vendor_control_xfer_cb(uint8_t p,uint8_t stage,const tusb_control_request_t *r) {
     if(stage!=CONTROL_STAGE_SETUP)return true;
     int length=xinput_control_response(r->bmRequestType,r->bRequest,r->wValue,r->wIndex,control_buffer);
+#if PEDAL_USB_HOST
+    if(r->bmRequestType==0xc1 && r->bRequest==1 && r->wValue==0 && r->wIndex==0 && length==8)
+        control_buffer[3]=control_buffer[4]=255;
+#endif
     if(r->bmRequestType==0xc0 && r->bRequest==1 && r->wValue==0 && r->wIndex==0) {
         for(unsigned i=0;i<4;i++)control_buffer[i]=(uint8_t)(device_serial>>(i*8));
         length=4;

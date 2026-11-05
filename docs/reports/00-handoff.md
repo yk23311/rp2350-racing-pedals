@@ -1,5 +1,9 @@
 # 总交接报告
 
+2026-11-05最新阶段：[18 GUI按键/震动测试与一键升级](18-gui-tests-updater.md)。本地0.5.0普通/诊断UF2已构建，58项C与109项Python通过；尚未烧录/实机验收/发布。源代码在`codex/gui-tests-updater`，具体首次安装和之后一键升级见[使用说明](../control-center.md)。以下均为历史记录。
+
+2026-11-05最新本地修复：[17 手柄震动回传](17-rumble-forwarding-fix.md)。0.4.1普通/诊断UF2已构建，52项C与61项Python通过，尚未刷入或发布。以下Release/GUI记录为此前阶段。
+
 最新发布：[v0.4.0 Release上传与交接](16-github-release.md)，7附件已核验并公开发布为预发布版。
 
 公开仓库已推送：[GitHub上传交接](15-github-publication.md)；[仓库地址](https://github.com/yk23311/rp2350-racing-pedals)。

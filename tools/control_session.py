@@ -11,8 +11,10 @@ from PySide6.QtCore import QObject, QTimer, Signal, Slot
 
 try:
     from .pedalctl import Client, CommandRejected, ProtocolError, open_link
+    from .firmware_update import FirmwareUpdater, UpgradeCancelled
 except ImportError:
     from pedalctl import Client, CommandRejected, ProtocolError, open_link
+    from firmware_update import FirmwareUpdater, UpgradeCancelled
 
 
 def discover_ports():
@@ -29,13 +31,24 @@ class Session(QObject):
     snapshot = Signal(dict)
     connected_changed = Signal(bool, str)
     message = Signal(str, bool)
+    upgrade_changed = Signal(dict)
 
     def __init__(self, parent=None, *, link_opener=None, port_provider=None,
-                 client_factory=None, poll_interval=0.05, discovery_interval=0.5):
+                 client_factory=None, poll_interval=0.05, discovery_interval=0.5,
+                 updater=None, reconnect_timeout=30):
         super().__init__(parent)
         self._open = link_opener or open_link
         self._discover = port_provider or discover_ports
         self._client_factory = client_factory or Client
+        self._updater = updater or FirmwareUpdater()
+        self._reconnect_timeout = reconnect_timeout
+        self._upgrade_pending = None
+        self._upgrade_busy = False
+        self._upgrade_copying = False
+        self._upgrade_cancel = False
+        self._upgrade_generation = 0
+        self._upgrade_events = deque(maxlen=64)
+        self._upgrade_terminal = None
         self._poll_interval = max(0.05, poll_interval)
         self._discovery_interval = max(0.025, discovery_interval)
         self._condition = threading.Condition()
@@ -46,6 +59,8 @@ class Session(QObject):
         self._connected = False
         self._target_serial = None
         self._jobs = deque()
+        self._priority_stop = False
+        self._rumble_generation = 0
         self._events = deque(maxlen=64)
         self._latest = None
         self._ports_event = None
@@ -70,7 +85,7 @@ class Session(QObject):
             self.message.emit("请选择已识别的设备串口", True)
             return
         with self._condition:
-            if self._stop:
+            if self._stop or self._upgrade_busy:
                 return
             self._epoch += 1
             self._desired = device
@@ -78,19 +93,21 @@ class Session(QObject):
             self._suppressed = True  # an invalid explicit selection cannot open another board
             self._target_serial = None
             self._jobs.clear()
+            self._priority_stop = False
             self._latest = None
             self._condition.notify_all()
 
     @Slot()
     def disconnect_port(self):
         with self._condition:
-            if self._stop:
+            if self._stop or self._upgrade_busy:
                 return
             self._epoch += 1
             self._desired = None
             self._connected = False
             self._suppressed = True
             self._jobs.clear()
+            self._priority_stop = False
             self._latest = None
             self._events.append((self._epoch, "connected", (False, "已断开")))
             self._condition.notify_all()
@@ -105,32 +122,76 @@ class Session(QObject):
             self.message.emit("命令必须是最多 127 字符的单行 ASCII", True)
             return
         with self._condition:
-            if self._stop or not self._connected:
+            if self._upgrade_busy:
+                problem = "固件升级中；命令未排队"
+            elif self._stop or not self._connected:
                 problem = "设备未连接；命令未排队"
+            elif commands == ['RUMBLE STOP']:
+                self._priority_stop = True
+                self._rumble_generation += 1
+                kept = deque()
+                for epoch, queued, generation in self._jobs:
+                    queued = tuple(c for c in queued if not self._is_rumble_test(c))
+                    if queued:
+                        kept.append((epoch, queued, generation))
+                self._jobs = kept
+                self._condition.notify_all()
+                return
             elif len(self._jobs) >= 8:
                 problem = "设备操作队列已满，请等待当前操作完成"
             else:
-                self._jobs.append((self._epoch, tuple(commands)))
+                self._jobs.append((self._epoch, tuple(commands), self._rumble_generation))
                 self._condition.notify_all()
                 return
         self.message.emit(problem, True)
 
+    @Slot(str, bool)
+    def upgrade(self, path, manual=False):
+        with self._condition:
+            if self._stop or self._upgrade_busy:
+                return
+            self._upgrade_busy = True
+            self._upgrade_generation += 1
+            self._upgrade_events.clear()
+            self._upgrade_terminal = None
+            self._upgrade_cancel = False
+            self._upgrade_pending = (str(path), bool(manual))
+            self._jobs.clear()
+            self._priority_stop = False
+            self._latest = None
+            self._condition.notify_all()
+        self.upgrade_changed.emit(self._upgrade_state('validating', 0))
+
+    @Slot()
+    def cancel_upgrade(self):
+        with self._condition:
+            if self._upgrade_copying:
+                return False
+            self._upgrade_cancel = True
+            self._condition.notify_all()
+            return True
+
     @Slot()
     def close(self):
-        self._timer.stop()
         with self._condition:
+            if self._upgrade_copying:
+                return False
+            self._timer.stop()
             if not self._stop:
                 self._stop = True
                 self._epoch += 1
                 self._connected = False
                 self._jobs.clear()
+                self._priority_stop = False
                 self._latest = None
                 self._events.clear()
+                self._upgrade_events.clear()
                 self._condition.notify_all()
         # pedalctl bounds each in-flight request at four seconds. The worker
         # checks cancellation between requests and closes its own link.
         if self._thread is not None and self._thread is not threading.current_thread():
             self._thread.join(timeout=6)
+        return True
 
     def _check(self, epoch):
         with self._condition:
@@ -162,6 +223,7 @@ class Session(QObject):
             events, self._events = self._events, deque(maxlen=64)
             latest, self._latest = self._latest, None
             ports, self._ports_event = self._ports_event, None
+            upgrade_events, self._upgrade_events = self._upgrade_events, deque(maxlen=64)
             stopped = self._stop
         if stopped:
             return
@@ -173,6 +235,9 @@ class Session(QObject):
                     self.connected_changed.emit(*payload)
                 else:
                     self.message.emit(*payload)
+        for generation, state in upgrade_events:
+            if not self._stop and generation == self._upgrade_generation:
+                self.upgrade_changed.emit(state)
         if latest is not None and latest[0] == self._epoch and not self._stop:
             self.snapshot.emit(latest[1])
 
@@ -186,9 +251,12 @@ class Session(QObject):
         return sorted(records, key=lambda p: p["device"])
 
     def _read(self, client, epoch, caps, profile, refresh, saved=False):
-        self._check(epoch)
+        def check():
+            self._check(epoch)
+            self._service_stop(client, epoch)
+        check()
         pedal = client.get()
-        self._check(epoch)
+        check()
         if refresh and caps.get("profile"):
             try:
                 profile = client.request("PROFILE")
@@ -198,7 +266,7 @@ class Session(QObject):
                 caps.pop("profile", None)
                 profile = None
                 self._event(epoch, "message", "固件不支持 PROFILE：" + str(exc), True)
-        self._check(epoch)
+        check()
         telemetry = None
         if caps.get("telemetry"):
             try:
@@ -208,9 +276,163 @@ class Session(QObject):
             except CommandRejected as exc:
                 caps.pop("telemetry", None)
                 self._event(epoch, "message", "固件不支持 TELEMETRY：" + str(exc), True)
-        self._check(epoch)
+        check()
+        rumble = None
+        if caps.get('rumble'):
+            try:
+                rumble = client.request('RUMBLE')
+                if not isinstance(rumble, dict):
+                    raise ProtocolError('Invalid RUMBLE reply')
+            except CommandRejected as exc:
+                caps.pop('rumble', None)
+                self._event(epoch, 'message', '固件不支持 RUMBLE：' + str(exc), True)
+        check()
         return {"pedal": pedal, "telemetry": telemetry, "profile": profile,
+                "rumble": rumble,
                 "capabilities": dict(caps), "refresh_config": refresh, "saved": saved}
+
+    @staticmethod
+    def _is_rumble_test(command):
+        return command.split()[:2] == ['RUMBLE', 'TEST']
+
+    def _service_stop(self, client, epoch):
+        self._check(epoch)
+        with self._condition:
+            pending = self._priority_stop
+            self._priority_stop = False
+        if pending:
+            try:
+                client.request('RUMBLE STOP')
+            except CommandRejected as exc:
+                self._event(epoch, 'message', '设备拒绝 RUMBLE STOP：' + str(exc), True)
+        return pending
+
+    def _upgrade_state(self, stage, progress, error='', detail=''):
+        return {'stage': stage, 'progress': int(progress),
+                'busy': stage not in ('complete', 'failed', 'cancelled'),
+                'error': error, 'detail': detail}
+
+    def _upgrade_event(self, epoch, stage, progress=0, error='', detail=''):
+        with self._condition:
+            self._upgrade_copying = stage == 'copying'
+            # Upgrade lifecycle belongs to the job, not the serial connection.
+            # A disconnect can advance the transport epoch before Qt drains a
+            # terminal status; losing that status would leave the GUI busy.
+            if not self._stop:
+                event = (self._upgrade_generation,
+                         self._upgrade_state(stage, progress, error, detail))
+                if event[1]['busy']:
+                    self._upgrade_events.append(event)
+                else:
+                    # Publish the terminal status only when finally releases
+                    # the retry gate, atomically under the same condition.
+                    self._upgrade_terminal = event
+
+    def _upgrade_cancelled(self, epoch):
+        with self._condition:
+            return self._stop or self._epoch != epoch or self._upgrade_cancel
+
+    def _perform_upgrade(self, epoch, request, link, client, caps, profile):
+        """Run serial transition, transfer, and identity-bound reconnect on owner thread."""
+        released = False
+        try:
+            path, manual = request
+            image = self._updater.prepare(path)
+            if self._upgrade_cancelled(epoch):
+                raise UpgradeCancelled()
+            target_serial = self._target_serial
+            if not target_serial:
+                raise ValueError('请先连接目标板卡并读取设备序列号，再手动进入 BOOT 下载模式')
+            if not manual and (link is None or not caps.get('bootsel')):
+                raise ValueError('此固件不支持自动 BOOTSEL；请手动进入 BOOT 下载模式后使用手动升级')
+            # Snapshot existing ROM volumes before sending BOOTSEL. Automatic
+            # upgrades must never pick an unrelated, already-present boot drive.
+            before = self._updater.discover()
+            if not manual:
+                self._upgrade_event(epoch, 'entering_bootsel', 5)
+                answer = client.request('BOOTSEL')
+                if not isinstance(answer, dict) or answer.get('bootsel') is not True:
+                    raise ProtocolError('BOOTSEL acknowledgement missing')
+            if link is not None:
+                link.close()
+            link = client = None
+            released = True
+            with self._condition:
+                self._connected = False
+                self._latest = None
+            self._event(epoch, 'connected', False, '固件升级中')
+            self._updater.transfer(image, before, manual=manual,
+                cancelled=lambda: self._upgrade_cancelled(epoch),
+                changed=lambda stage, progress: self._upgrade_event(epoch, stage, progress))
+            self._upgrade_event(epoch, 'waiting_reconnect', 100,
+                                detail='传输完成；等待相同序列号设备启动，尚未确认升级成功')
+            deadline = time.monotonic() + self._reconnect_timeout
+            last_error = ''
+            while time.monotonic() < deadline:
+                if self._upgrade_cancelled(epoch):
+                    raise UpgradeCancelled()
+                matching = [p for p in self._scan() if p['serial_number'] == target_serial]
+                if len(matching) == 1:
+                    candidate = matching[0]
+                    try:
+                        link = self._open(candidate['device'])
+                        self._check(epoch)
+                        client = self._client_factory(link)
+                        self._upgrade_event(epoch, 'restoring', 100)
+                        try:
+                            caps = client.request('CAPS')
+                            if not isinstance(caps, dict):
+                                raise ProtocolError('Invalid CAPS reply')
+                        except CommandRejected:
+                            caps = {}
+                        state = self._read(client, epoch, caps, None, True)
+                        if self._upgrade_cancelled(epoch):
+                            raise UpgradeCancelled()
+                        profile = state['profile']
+                        with self._condition:
+                            self._check(epoch)
+                            self._connected = True
+                            self._suppressed = False
+                        self._event(epoch, 'connected', True, candidate['device'])
+                        self._publish(epoch, state)
+                        self._upgrade_event(epoch, 'complete', 100,
+                            detail='UF2 传输完成，已重读目标设备状态；设备报告版本：' +
+                                   str(caps.get('version') or '未知') + '；未做 Flash 逐字节回读')
+                        return link, client, caps, profile
+                    except _Cancelled:
+                        raise UpgradeCancelled()
+                    except UpgradeCancelled:
+                        if link is not None:
+                            link.close()
+                        link = client = None
+                        raise
+                    except Exception as exc:
+                        last_error = str(exc)
+                        if link is not None:
+                            link.close()
+                        link = client = None
+                with self._condition:
+                    self._condition.wait(timeout=0.05)
+            raise TimeoutError('UF2 已传输，但目标设备未重新连接并读取状态：' + last_error)
+        except UpgradeCancelled:
+            self._upgrade_event(epoch, 'cancelled', detail='已取消；若设备停留在 BOOT 模式，可手动重试')
+        except Exception as exc:
+            self._upgrade_event(epoch, 'failed', error=str(exc),
+                                detail='请检查 UF2/连接；可按住 BOOT 重新接入并手动重试。不会自动再次写入')
+        finally:
+            with self._condition:
+                self._upgrade_busy = False
+                self._upgrade_copying = False
+                self._upgrade_pending = None
+                self._jobs.clear()
+                # Allow only the captured board to reconnect after a failed or
+                # cancelled transfer. No settings, SAVE or test commands replay.
+                if released:
+                    self._suppressed = not bool(self._target_serial)
+                if self._upgrade_terminal is not None and not self._stop:
+                    self._upgrade_events.append(self._upgrade_terminal)
+                self._upgrade_terminal = None
+        return link, client, caps if link is not None else {}, profile if link is not None else None
 
     def _failed(self, epoch, error):
         with self._condition:
@@ -220,6 +442,7 @@ class Session(QObject):
             self._connected = False
             self._desired = None
             self._jobs.clear()
+            self._priority_stop = False
             self._latest = None
             self._suppressed = not bool(self._target_serial)
             self._events.append((self._epoch, "connected", (False, "连接已关闭")))
@@ -244,6 +467,14 @@ class Session(QObject):
                     link = client = None
                     caps, profile = {}, None
                     local_epoch = epoch
+                with self._condition:
+                    upgrade_request = self._upgrade_pending
+                if upgrade_request is not None:
+                    link, client, caps, profile = self._perform_upgrade(
+                        epoch, upgrade_request, link, client, caps, profile)
+                    next_scan = 0
+                    next_poll = time.monotonic() + self._poll_interval
+                    continue
                 now = time.monotonic()
                 if now >= next_scan or desired is not None:
                     try:
@@ -302,15 +533,24 @@ class Session(QObject):
                 if link is not None:
                     try:
                         self._check(epoch)
+                        self._service_stop(client, epoch)
                         with self._condition:
                             batch = self._jobs.popleft() if self._jobs else None
                         if batch is not None:
-                            batch_epoch, commands = batch
+                            batch_epoch, commands, rumble_generation = batch
                             self._check(batch_epoch)
                             saved = False
                             rejected = False
                             for command in commands:
                                 self._check(epoch)
+                                self._service_stop(client, epoch)
+                                with self._condition:
+                                    if self._upgrade_busy:
+                                        break
+                                    stale_test = (rumble_generation != self._rumble_generation and
+                                                  self._is_rumble_test(command))
+                                if stale_test:
+                                    continue
                                 try:
                                     client.request(command)
                                     saved |= command == "SAVE"
@@ -318,6 +558,10 @@ class Session(QObject):
                                     rejected = True
                                     self._event(epoch, "message", "设备拒绝 " + command + "：" + str(exc) + "；连接保持", True)
                                     break
+                            with self._condition:
+                                if self._upgrade_busy:
+                                    continue
+                            self._service_stop(client, epoch)
                             state = self._read(client, epoch, caps, profile, True, saved)
                             profile = state["profile"]
                             self._publish(epoch, state)
@@ -334,7 +578,8 @@ class Session(QObject):
                         self._failed(epoch, exc)
                         continue
                 with self._condition:
-                    if self._stop or epoch != self._epoch or self._jobs or self._desired is not None:
+                    if (self._stop or epoch != self._epoch or self._jobs or self._desired is not None or
+                            self._upgrade_pending or self._priority_stop):
                         continue
                     deadline = min(next_scan, next_poll) if link is not None else next_scan
                     self._condition.wait(timeout=max(0, deadline - time.monotonic()))
