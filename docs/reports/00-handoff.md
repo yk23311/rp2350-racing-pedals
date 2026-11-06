@@ -1,5 +1,7 @@
 # 总交接报告
 
+2026-11-06硬件扩展：[19 可扩展接线底板V0.1](19-expandable-carrier-pcb.md)已绘制并通过原生ERC/DRC及网表一致性，Python118项通过，样板Gerber/钻孔已导出。用户暂定MiGE90ST-M02430，驱动器未选，首版只预留低压接口子板槽。尚未制造或上电，验证边界与下一阶段见阶段19。
+
 2026-11-05最新阶段：[18 GUI按键/震动测试与一键升级](18-gui-tests-updater.md)。本地0.5.0普通/诊断UF2已构建，58项C与109项Python通过；尚未烧录/实机验收/发布。源代码在`codex/gui-tests-updater`，具体首次安装和之后一键升级见[使用说明](../control-center.md)。以下均为历史记录。
 
 2026-11-05最新本地修复：[17 手柄震动回传](17-rumble-forwarding-fix.md)。0.4.1普通/诊断UF2已构建，52项C与61项Python通过，尚未刷入或发布。以下Release/GUI记录为此前阶段。

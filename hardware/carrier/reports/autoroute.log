@@ -1,0 +1,153 @@
+2026-11-06 19:59:03.827 INFO   Freerouting v2.1.0 (build-date: 2025-04-12)
+2026-11-06 19:59:05.076 ERROR  java.io.IOException: Unable to establish loopback connection
+java.io.UncheckedIOException: java.io.IOException: Unable to establish loopback connection
+	at jdk.internal.net.http.HttpClientImpl.<init>(HttpClientImpl.java:508) ~[java.net.http:?]
+	at jdk.internal.net.http.HttpClientImpl.create(HttpClientImpl.java:436) ~[java.net.http:?]
+	at jdk.internal.net.http.HttpClientBuilderImpl.build(HttpClientBuilderImpl.java:143) ~[java.net.http:?]
+	at java.net.http.HttpClient.newHttpClient(HttpClient.java:195) ~[java.net.http:?]
+	at app.freerouting.management.VersionChecker.run(VersionChecker.java:29) ~[freerouting-2.1.0.jar:unspecified]
+	at java.lang.Thread.run(Thread.java:1583) [?:?]
+Caused by: java.io.IOException: Unable to establish loopback connection
+	at sun.nio.ch.PipeImpl$Initializer.run(PipeImpl.java:103) ~[?:?]
+	at sun.nio.ch.PipeImpl$Initializer.run(PipeImpl.java:67) ~[?:?]
+	at java.security.AccessController.doPrivileged(AccessController.java:571) ~[?:?]
+	at sun.nio.ch.PipeImpl.<init>(PipeImpl.java:197) ~[?:?]
+	at sun.nio.ch.WEPollSelectorImpl.<init>(WEPollSelectorImpl.java:79) ~[?:?]
+	at sun.nio.ch.WEPollSelectorProvider.openSelector(WEPollSelectorProvider.java:33) ~[?:?]
+	at java.nio.channels.Selector.open(Selector.java:295) ~[?:?]
+	at jdk.internal.net.http.HttpClientImpl$SelectorManager.<init>(HttpClientImpl.java:1132) ~[java.net.http:?]
+	at jdk.internal.net.http.HttpClientImpl.<init>(HttpClientImpl.java:505) ~[java.net.http:?]
+	... 5 more
+Caused by: java.net.SocketException: Permission denied: connect
+	at sun.nio.ch.Net.connect0(Native Method) ~[?:?]
+	at sun.nio.ch.Net.connect(Net.java:601) ~[?:?]
+	at sun.nio.ch.Net.connect(Net.java:608) ~[?:?]
+	at sun.nio.ch.SocketChannelImpl.connect(SocketChannelImpl.java:880) ~[?:?]
+	at java.nio.channels.SocketChannel.open(SocketChannel.java:285) ~[?:?]
+	at sun.nio.ch.PipeImpl$Initializer$LoopbackConnector.run(PipeImpl.java:132) ~[?:?]
+	at sun.nio.ch.PipeImpl$Initializer.run(PipeImpl.java:85) ~[?:?]
+	at sun.nio.ch.PipeImpl$Initializer.run(PipeImpl.java:67) ~[?:?]
+	at java.security.AccessController.doPrivileged(AccessController.java:571) ~[?:?]
+	at sun.nio.ch.PipeImpl.<init>(PipeImpl.java:197) ~[?:?]
+	at sun.nio.ch.WEPollSelectorImpl.<init>(WEPollSelectorImpl.java:79) ~[?:?]
+	at sun.nio.ch.WEPollSelectorProvider.openSelector(WEPollSelectorProvider.java:33) ~[?:?]
+	at java.nio.channels.Selector.open(Selector.java:295) ~[?:?]
+	at jdk.internal.net.http.HttpClientImpl$SelectorManager.<init>(HttpClientImpl.java:1132) ~[java.net.http:?]
+	at jdk.internal.net.http.HttpClientImpl.<init>(HttpClientImpl.java:505) ~[java.net.http:?]
+	... 5 more
+2026-11-06 19:59:05.076 ERROR  java.io.IOException: Unable to establish loopback connection
+java.io.UncheckedIOException: java.io.IOException: Unable to establish loopback connection
+	at jdk.internal.net.http.HttpClientImpl.<init>(HttpClientImpl.java:508) ~[java.net.http:?]
+	at jdk.internal.net.http.HttpClientImpl.create(HttpClientImpl.java:436) ~[java.net.http:?]
+	at jdk.internal.net.http.HttpClientBuilderImpl.build(HttpClientBuilderImpl.java:143) ~[java.net.http:?]
+	at java.net.http.HttpClient.newHttpClient(HttpClient.java:195) ~[java.net.http:?]
+	at app.freerouting.management.VersionChecker.run(VersionChecker.java:29) ~[freerouting-2.1.0.jar:unspecified]
+	at java.lang.Thread.run(Thread.java:1583) [?:?]
+Caused by: java.io.IOException: Unable to establish loopback connection
+	at sun.nio.ch.PipeImpl$Initializer.run(PipeImpl.java:103) ~[?:?]
+	at sun.nio.ch.PipeImpl$Initializer.run(PipeImpl.java:67) ~[?:?]
+	at java.security.AccessController.doPrivileged(AccessController.java:571) ~[?:?]
+	at sun.nio.ch.PipeImpl.<init>(PipeImpl.java:197) ~[?:?]
+	at sun.nio.ch.WEPollSelectorImpl.<init>(WEPollSelectorImpl.java:79) ~[?:?]
+	at sun.nio.ch.WEPollSelectorProvider.openSelector(WEPollSelectorProvider.java:33) ~[?:?]
+	at java.nio.channels.Selector.open(Selector.java:295) ~[?:?]
+	at jdk.internal.net.http.HttpClientImpl$SelectorManager.<init>(HttpClientImpl.java:1132) ~[java.net.http:?]
+	at jdk.internal.net.http.HttpClientImpl.<init>(HttpClientImpl.java:505) ~[java.net.http:?]
+	... 5 more
+Caused by: java.net.SocketException: Permission denied: connect
+	at sun.nio.ch.Net.connect0(Native Method) ~[?:?]
+	at sun.nio.ch.Net.connect(Net.java:601) ~[?:?]
+	at sun.nio.ch.Net.connect(Net.java:608) ~[?:?]
+	at sun.nio.ch.SocketChannelImpl.connect(SocketChannelImpl.java:880) ~[?:?]
+	at java.nio.channels.SocketChannel.open(SocketChannel.java:285) ~[?:?]
+	at sun.nio.ch.PipeImpl$Initializer$LoopbackConnector.run(PipeImpl.java:132) ~[?:?]
+	at sun.nio.ch.PipeImpl$Initializer.run(PipeImpl.java:85) ~[?:?]
+	at sun.nio.ch.PipeImpl$Initializer.run(PipeImpl.java:67) ~[?:?]
+	at java.security.AccessController.doPrivileged(AccessController.java:571) ~[?:?]
+	at sun.nio.ch.PipeImpl.<init>(PipeImpl.java:197) ~[?:?]
+	at sun.nio.ch.WEPollSelectorImpl.<init>(WEPollSelectorImpl.java:79) ~[?:?]
+	at sun.nio.ch.WEPollSelectorProvider.openSelector(WEPollSelectorProvider.java:33) ~[?:?]
+	at java.nio.channels.Selector.open(Selector.java:295) ~[?:?]
+	at jdk.internal.net.http.HttpClientImpl$SelectorManager.<init>(HttpClientImpl.java:1132) ~[java.net.http:?]
+	at jdk.internal.net.http.HttpClientImpl.<init>(HttpClientImpl.java:505) ~[java.net.http:?]
+	... 5 more
+
+Exception: java.awt.HeadlessException thrown from the UncaughtExceptionHandler in thread "Thread-0"
+2026-11-06 19:59:05.424 INFO   [E450A8\52088F] Job 'E450A8\52088F' started at 2026-11-06T11:59:05.423594500Z
+2026-11-06 19:59:08.927 INFO   [E450A8\52088F] Auto-router pass #1 on board 'ff3a5f6821fffb8e7ee98e4f92361b96' was completed in 3.38 seconds with the score of 910.71 (30 unrouted), using 5.77 CPU seconds and 2707 MB memory.
+2026-11-06 19:59:09.983 INFO   [E450A8\52088F] Auto-router pass #2 on board 'e592dc9ea0e5ef07f2a4882f8dc219f6' was completed in 1.04 seconds with the score of 952.17 (15 unrouted), using 9.64 CPU seconds and 3923 MB memory.
+2026-11-06 19:59:10.608 INFO   [E450A8\52088F] Auto-router pass #3 on board 'c8327341a3433a5303a32bdc9c3c8592' was completed in 0.60 seconds with the score of 972.58 (6 unrouted), using 14.44 CPU seconds and 5148 MB memory.
+2026-11-06 19:59:11.504 INFO   [E450A8\52088F] Auto-router pass #4 on board 'fed240b08ae5610b12ab8ca8f3654443' was completed in 0.88 seconds with the score of 982.46 (1 unrouted), using 20.20 CPU seconds and 5980 MB memory.
+2026-11-06 19:59:11.591 INFO   [E450A8\52088F] Auto-router pass #5 on board 'b2412e278e7ad08c18fb406fe63f59e4' was completed in 0.07 seconds with the score of 984.61, using 20.20 CPU seconds and 5980 MB memory.
+2026-11-06 19:59:11.608 INFO   [E450A8\52088F] Auto-router pass #6 on board '5ca1fa2aba2d10419289215322e4677e' was completed in 0.00 seconds with the score of 984.61, using 20.20 CPU seconds and 5980 MB memory.
+{
+  "host": "KiCad's Pcbnew,10.0.8",
+  "unit": "mm",
+  "board": {
+    "bounding_box": {
+      "x": 1001.0,
+      "y": 1.0,
+      "width": -1.0,
+      "height": -801.0
+    },
+    "size": {
+      "x": 0.0,
+      "y": 0.0,
+      "width": 1002.0,
+      "height": 802.0
+    }
+  },
+  "layers": {
+    "total_count": 2,
+    "signal_count": 2
+  },
+  "items": {
+    "total_count": 1070,
+    "trace_count": 283,
+    "via_count": 27,
+    "conduction_area_count": 0,
+    "drill_item_count": 234,
+    "pin_count": 0,
+    "component_count": 509,
+    "other_count": 17
+  },
+  "components": {
+    "total_count": 72
+  },
+  "pads": {
+    "total_count": 234
+  },
+  "nets": {
+    "total_count": 60,
+    "class_count": 3
+  },
+  "connections": {
+    "maximum_count": 484,
+    "incomplete_count": 0
+  },
+  "traces": {
+    "total_count": 283,
+    "total_segment_count": 602,
+    "total_length": 25245.848,
+    "total_weighted_length": 8.927875E7,
+    "average_length": 89.20795,
+    "total_vertical_length": 6128.97,
+    "total_horizontal_length": 9981.381,
+    "total_angled_length": 6101.168
+  },
+  "bends": {
+    "total_count": 319,
+    "90_degree_count": 3,
+    "45_degree_count": 316,
+    "other_angle_count": 0
+  },
+  "vias": {
+    "total_count": 27,
+    "through_hole_count": 27,
+    "blind_count": 0,
+    "buried_count": 0
+  },
+  "clearance_violations": {
+    "total_count": 0
+  }
+}

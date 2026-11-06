@@ -5,3 +5,6 @@ __pycache__/
 /captures/
 /.venv/
 /dist/
+*.kicad_prl
+*.lck
+/hardware/carrier/carrier-backups/

@@ -1,5 +1,7 @@
 # 基于 RP2350 的赛车模拟器油门与刹车
 
+**可扩展接线底板V0.1**已绘制：四路模拟端子、16键、I²C屏幕、面板编码器、震动控制与直驱接口子板槽；可编辑KiCad工程、BOM、Gerber/钻孔见[底板说明](hardware/carrier/README.md)，检查及交接见[阶段19](docs/reports/19-expandable-carrier-pcb.md)。暂定电机MiGE90ST-M02430，驱动器未选；底板无电机功率级，新扩展需后续固件。工程样板未制造/上电验证，公共Release不含该硬件。
+
 **下载：[v0.4.0 预发布版](https://github.com/yk23311/rp2350-racing-pedals/releases/tag/v0.4.0)**，包含普通/诊断UF2、含GUI的源码包、快速说明与SHA256。软件测试通过，仍待实机验收；GUI源码包需Python环境。
 
 **本地开发版0.5.0**新增十四键检查、板端限时双马达震动测试及一键UF2升级，含0.4.1震动转发修复。58项C与109项Python测试通过；尚未发布/烧录/实机验收，详见[阶段18步骤及交接](docs/reports/18-gui-tests-updater.md)。公共v0.4.0附件不包含这些新增功能。

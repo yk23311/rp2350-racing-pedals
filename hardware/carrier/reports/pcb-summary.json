@@ -1,0 +1,32 @@
+{
+  "pcb_tool": "KiCad 10.0.8",
+  "board_mm": [
+    100,
+    80,
+    1.6
+  ],
+  "copper_layers": 2,
+  "footprints": 72,
+  "pads": 238,
+  "track_segments": 581,
+  "vias": 27,
+  "zones": 11,
+  "real_screw_copper_keepouts": 8,
+  "receiver_component_keepout": 1,
+  "ground_pours": 2,
+  "router": {
+    "version": "Freerouting 2.1.0",
+    "java": "Microsoft OpenJDK 21.0.12+8",
+    "jar_sha256": "2c07d58f75dac03782664081e7a58b41c25400d871a9fcf166a2ea6fe60d5def",
+    "jar_size_bytes": 66978394,
+    "source": "https://github.com/freerouting/freerouting/releases/download/v2.1.0/freerouting-2.1.0.jar",
+    "published_digest_available": false,
+    "gui": false,
+    "api": false,
+    "analytics": false,
+    "note": "Background version check failed in offline sandbox; local routing completed with exit 0. See autoroute.log."
+  },
+  "native_drc_evidence": "drc.json",
+  "regenerate": "tools/hardware/export_carrier.ps1 -Rebuild",
+  "reroute": "tools/hardware/export_carrier.ps1 -Route"
+}

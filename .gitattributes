@@ -1,0 +1,6 @@
+# Preserve the exact CAD/manufacturing bytes covered by the delivery hashes.
+hardware/carrier/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+hardware/reference/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+# Native CAD/router exports retain their generator's intentional formatting.
+hardware/carrier/previews/*.svg -whitespace
+hardware/carrier/reports/*.ses -whitespace

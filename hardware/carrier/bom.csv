@@ -1,0 +1,73 @@
+﻿Reference,Value,Footprint,Manufacturer,MPN,Purpose,Assembly
+U1,Waveshare RP2350-USB-A,Carrier:Waveshare_RP2350_USB_A,,Waveshare RP2350-USB-A,Plug-in USB controller module,"Two 1x09 2.54mm female sockets, 15.24mm row spacing; then plug module into sockets"
+U2,PCA9555D,Package_SO:SOIC-24W_7.5x15.4mm_P1.27mm,NXP,"PCA9555D,118",16 active-low buttons; poll over I2C,Fit
+U3,PCA9685PW,Package_SO:TSSOP-28_4.4x9.7mm_P0.65mm,NXP,"PCA9685PW,118",Two haptic PWM signals; two spare,Fit
+J1,THROTTLE 5V/GND/OUT,"TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-3-5.08_1x03_P5.08mm_Horizontal",,Phoenix Contact 1715734,0..5V analog sensor only,Fit
+R1,10k 1%,Resistor_SMD:R_0805_2012Metric,,,Divider upper arm; no bypass,Fit
+R2,10k 1%,Resistor_SMD:R_0805_2012Metric,,,Divider lower arm,Fit
+C1,100nF 16V X7R,Capacitor_SMD:C_0805_2012Metric,,,ADC low-pass 318 Hz nominal,Fit
+D1,PESD5V0S1BA,Diode_SMD:D_SOD-323,Nexperia,"PESD5V0S1BA,115",Connector ESD shunt; not DC overvoltage protection,Fit
+J2,BRAKE 5V/GND/OUT,"TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-3-5.08_1x03_P5.08mm_Horizontal",,Phoenix Contact 1715734,0..5V analog sensor only,Fit
+R3,10k 1%,Resistor_SMD:R_0805_2012Metric,,,Divider upper arm; no bypass,Fit
+R4,10k 1%,Resistor_SMD:R_0805_2012Metric,,,Divider lower arm,Fit
+C2,100nF 16V X7R,Capacitor_SMD:C_0805_2012Metric,,,ADC low-pass 318 Hz nominal,Fit
+D2,PESD5V0S1BA,Diode_SMD:D_SOD-323,Nexperia,"PESD5V0S1BA,115",Connector ESD shunt; not DC overvoltage protection,Fit
+J3,CLUTCH 5V/GND/OUT,"TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-3-5.08_1x03_P5.08mm_Horizontal",,Phoenix Contact 1715734,0..5V analog sensor only,Fit
+R5,10k 1%,Resistor_SMD:R_0805_2012Metric,,,Divider upper arm; no bypass,Fit
+R6,10k 1%,Resistor_SMD:R_0805_2012Metric,,,Divider lower arm,Fit
+C3,100nF 16V X7R,Capacitor_SMD:C_0805_2012Metric,,,ADC low-pass 318 Hz nominal,Fit
+D3,PESD5V0S1BA,Diode_SMD:D_SOD-323,Nexperia,"PESD5V0S1BA,115",Connector ESD shunt; not DC overvoltage protection,Fit
+J4,AUX 5V/GND/OUT,"TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-3-5.08_1x03_P5.08mm_Horizontal",,Phoenix Contact 1715734,0..5V analog sensor only,Fit
+R7,10k 1%,Resistor_SMD:R_0805_2012Metric,,,Divider upper arm; no bypass,Fit
+R8,10k 1%,Resistor_SMD:R_0805_2012Metric,,,Divider lower arm,Fit
+C4,100nF 16V X7R,Capacitor_SMD:C_0805_2012Metric,,,ADC low-pass 318 Hz nominal,Fit
+D4,PESD5V0S1BA,Diode_SMD:D_SOD-323,Nexperia,"PESD5V0S1BA,115",Connector ESD shunt; not DC overvoltage protection,Fit
+J5,BUTTONS 01-08/GND,Connector_PinHeader_2.54mm:PinHeader_1x09_P2.54mm_Vertical,,,,Fit
+J6,BUTTONS 09-16/GND,Connector_PinHeader_2.54mm:PinHeader_1x09_P2.54mm_Vertical,,,,Fit
+R9,10k 1%,Resistor_SMD:R_0805_2012Metric,,,External pull-up; switch to GND,Fit
+R10,10k 1%,Resistor_SMD:R_0805_2012Metric,,,External pull-up; switch to GND,Fit
+R11,10k 1%,Resistor_SMD:R_0805_2012Metric,,,External pull-up; switch to GND,Fit
+R12,10k 1%,Resistor_SMD:R_0805_2012Metric,,,External pull-up; switch to GND,Fit
+R13,10k 1%,Resistor_SMD:R_0805_2012Metric,,,External pull-up; switch to GND,Fit
+R14,10k 1%,Resistor_SMD:R_0805_2012Metric,,,External pull-up; switch to GND,Fit
+R15,10k 1%,Resistor_SMD:R_0805_2012Metric,,,External pull-up; switch to GND,Fit
+R16,10k 1%,Resistor_SMD:R_0805_2012Metric,,,External pull-up; switch to GND,Fit
+R17,10k 1%,Resistor_SMD:R_0805_2012Metric,,,External pull-up; switch to GND,Fit
+R18,10k 1%,Resistor_SMD:R_0805_2012Metric,,,External pull-up; switch to GND,Fit
+R19,10k 1%,Resistor_SMD:R_0805_2012Metric,,,External pull-up; switch to GND,Fit
+R20,10k 1%,Resistor_SMD:R_0805_2012Metric,,,External pull-up; switch to GND,Fit
+R21,10k 1%,Resistor_SMD:R_0805_2012Metric,,,External pull-up; switch to GND,Fit
+R22,10k 1%,Resistor_SMD:R_0805_2012Metric,,,External pull-up; switch to GND,Fit
+R23,10k 1%,Resistor_SMD:R_0805_2012Metric,,,External pull-up; switch to GND,Fit
+R24,10k 1%,Resistor_SMD:R_0805_2012Metric,,,External pull-up; switch to GND,Fit
+J7,ENCODER 3V3/GND/A/B,Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical,,,,Fit
+J8,I2C 3V3/GND/SDA/SCL,Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical,,,,Fit
+J9,HAPTIC1 3V3/GND/PWM,Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical,,,,Fit
+J10,HAPTIC2 3V3/GND/PWM,Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical,,,,Fit
+J11,SPI DAUGHTERCARD 3V3 ONLY,Connector_PinHeader_2.54mm:PinHeader_2x05_P2.54mm_Vertical,,,,Fit
+J12,MODE switch/GND,Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical,,,,Fit
+J13,PWM SPARE 3V3/GND/2/3,Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical,,,,Fit
+JP1,PWM ENABLE: OPEN=OFF,Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical,,,,Fit header; leave shunt REMOVED by default
+R25,4.7k 1%,Resistor_SMD:R_0805_2012Metric,,,I2C pull-up to 3.3V only,Fit
+R26,4.7k 1%,Resistor_SMD:R_0805_2012Metric,,,I2C pull-up to 3.3V only,Fit
+R27,10k 1%,Resistor_SMD:R_0805_2012Metric,,,Encoder pull-up; mechanical contact or 3.3V/open drain,Fit
+R28,10k 1%,Resistor_SMD:R_0805_2012Metric,,,Encoder pull-up,Fit
+R29,10k 1%,Resistor_SMD:R_0805_2012Metric,,,Open-drain 3.3V fault/IRQ pull-up,Fit
+R30,330R 1%,Resistor_SMD:R_0805_2012Metric,,,Non-safety EN series damping/current limiting,Fit
+R31,10k 1%,Resistor_SMD:R_0805_2012Metric,,,EN default low; not STO,Fit
+R32,330R 1%,Resistor_SMD:R_0805_2012Metric,,,PWM control output series damping,Fit
+R33,10k 1%,Resistor_SMD:R_0805_2012Metric,,,Haptic1 default low when unpowered/high-Z,Fit
+R34,330R 1%,Resistor_SMD:R_0805_2012Metric,,,PWM control output series damping,Fit
+R35,10k 1%,Resistor_SMD:R_0805_2012Metric,,,Haptic2 default low when unpowered/high-Z,Fit
+R36,10k 1%,Resistor_SMD:R_0805_2012Metric,,,OE high disables outputs with default MODE2,Fit
+R37,10k 1%,Resistor_SMD:R_0805_2012Metric,,,Future GP10 mode input; current firmware uses unexposed GP14,Fit
+C5,100nF 16V X7R,Capacitor_SMD:C_0805_2012Metric,,,U2 local decoupling,Fit
+C6,100nF 16V X7R,Capacitor_SMD:C_0805_2012Metric,,,U3 local decoupling,Fit
+C7,4.7uF 10V X7R,Capacitor_SMD:C_0805_2012Metric,,,Logic rail bulk decoupling,Fit
+C8,4.7uF 10V X7R,Capacitor_SMD:C_0805_2012Metric,,,Sensor branch bulk decoupling,Fit
+C9,100nF 16V X7R,Capacitor_SMD:C_0805_2012Metric,,,Sensor branch HF decoupling,Fit
+F1,PTC 0.25A hold,Fuse:Fuse_1206_3216Metric,Bourns,MF-NSMF025X-2,"Sensor branch short-circuit mitigation, not accurate current limiting",Fit
+H1,M3 NPTH,MountingHole:MountingHole_3.2mm_M3,,,Mechanical mounting hole,Fit
+H2,M3 NPTH,MountingHole:MountingHole_3.2mm_M3,,,Mechanical mounting hole,Fit
+H3,M3 NPTH,MountingHole:MountingHole_3.2mm_M3,,,Mechanical mounting hole,Fit
+H4,M3 NPTH,MountingHole:MountingHole_3.2mm_M3,,,Mechanical mounting hole,Fit

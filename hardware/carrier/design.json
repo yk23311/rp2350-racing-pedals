@@ -1,0 +1,979 @@
+{
+  "schema_version": 1,
+  "title": "RP2350-USB-A expandable carrier V0.1",
+  "components": {
+    "U1": {
+      "value": "Waveshare RP2350-USB-A",
+      "symbol": "Carrier:Waveshare_RP2350_USB_A",
+      "footprint": "Carrier:Waveshare_RP2350_USB_A",
+      "pins": {
+        "1": "I2C_SDA",
+        "2": "I2C_SCL",
+        "3": "ENC_A",
+        "4": "ENC_B",
+        "5": "SPI_MISO",
+        "6": "SPI_CS",
+        "7": "SPI_SCK",
+        "8": "SPI_MOSI",
+        "9": "FFB_EN_MCU",
+        "10": "FFB_IRQ_N",
+        "11": "MODE_N",
+        "12": "ADC_THROTTLE",
+        "13": "ADC_BRAKE",
+        "14": "ADC_CLUTCH",
+        "15": "ADC_AUX",
+        "16": "+3V3",
+        "17": "GND",
+        "18": "+5V_USB"
+      },
+      "uuid": "7a35d57f-55fa-5611-81d5-ba3f4e029dc7",
+      "mpn": "Waveshare RP2350-USB-A",
+      "purpose": "Plug-in USB controller module",
+      "assembly": "Two 1x09 2.54mm female sockets, 15.24mm row spacing; then plug module into sockets"
+    },
+    "U2": {
+      "value": "PCA9555D",
+      "symbol": "Interface_Expansion:PCA9555D",
+      "footprint": "Package_SO:SOIC-24W_7.5x15.4mm_P1.27mm",
+      "pins": {
+        "1": null,
+        "2": "GND",
+        "3": "GND",
+        "12": "GND",
+        "21": "GND",
+        "22": "I2C_SCL",
+        "23": "I2C_SDA",
+        "24": "+3V3",
+        "4": "BTN01",
+        "5": "BTN02",
+        "6": "BTN03",
+        "7": "BTN04",
+        "8": "BTN05",
+        "9": "BTN06",
+        "10": "BTN07",
+        "11": "BTN08",
+        "13": "BTN09",
+        "14": "BTN10",
+        "15": "BTN11",
+        "16": "BTN12",
+        "17": "BTN13",
+        "18": "BTN14",
+        "19": "BTN15",
+        "20": "BTN16"
+      },
+      "uuid": "cd1375b7-36c0-501a-98c4-ccaf60d2d837",
+      "mpn": "PCA9555D,118",
+      "manufacturer": "NXP",
+      "purpose": "16 active-low buttons; poll over I2C",
+      "datasheet": "https://www.nxp.com/docs/en/data-sheet/PCA9555.pdf",
+      "unused_pins": {
+        "1": "Interrupt unused: firmware polls all 16 inputs"
+      }
+    },
+    "U3": {
+      "value": "PCA9685PW",
+      "symbol": "Driver_LED:PCA9685PW",
+      "footprint": "Package_SO:TSSOP-28_4.4x9.7mm_P0.65mm",
+      "pins": {
+        "1": "GND",
+        "2": "GND",
+        "3": "GND",
+        "4": "GND",
+        "5": "GND",
+        "6": "PWM0_RAW",
+        "7": "PWM1_RAW",
+        "8": "PWM2",
+        "9": "PWM3",
+        "10": null,
+        "11": null,
+        "12": null,
+        "13": null,
+        "14": "GND",
+        "15": null,
+        "16": null,
+        "17": null,
+        "18": null,
+        "19": null,
+        "20": null,
+        "21": null,
+        "22": null,
+        "23": "PWM_OE_N",
+        "24": "GND",
+        "25": "GND",
+        "26": "I2C_SCL",
+        "27": "I2C_SDA",
+        "28": "+3V3"
+      },
+      "uuid": "3d99a276-9960-5ba9-afe7-0b9fcb6b7afb",
+      "mpn": "PCA9685PW,118",
+      "manufacturer": "NXP",
+      "purpose": "Two haptic PWM signals; two spare",
+      "datasheet": "https://www.nxp.com/docs/en/data-sheet/PCA9685.pdf",
+      "unused_pins": {
+        "10": "Unused PWM output",
+        "11": "Unused PWM output",
+        "12": "Unused PWM output",
+        "13": "Unused PWM output",
+        "15": "Unused PWM output",
+        "16": "Unused PWM output",
+        "17": "Unused PWM output",
+        "18": "Unused PWM output",
+        "19": "Unused PWM output",
+        "20": "Unused PWM output",
+        "21": "Unused PWM output",
+        "22": "Unused PWM output"
+      }
+    },
+    "J1": {
+      "value": "THROTTLE 5V/GND/OUT",
+      "symbol": "Connector_Generic:Conn_01x03",
+      "footprint": "TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-3-5.08_1x03_P5.08mm_Horizontal",
+      "pins": {
+        "1": "+5V_SENSOR",
+        "2": "GND",
+        "3": "ANALOG_THROTTLE"
+      },
+      "uuid": "06efd50d-0925-54ef-b1da-407f980c8d52",
+      "mpn": "Phoenix Contact 1715734",
+      "purpose": "0..5V analog sensor only"
+    },
+    "R1": {
+      "value": "10k 1%",
+      "symbol": "Device:R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "pins": {
+        "1": "ANALOG_THROTTLE",
+        "2": "ADC_THROTTLE"
+      },
+      "uuid": "c360ce75-2d18-519b-92cc-9ebc3b3ff480",
+      "purpose": "Divider upper arm; no bypass"
+    },
+    "R2": {
+      "value": "10k 1%",
+      "symbol": "Device:R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "pins": {
+        "1": "ADC_THROTTLE",
+        "2": "GND"
+      },
+      "uuid": "f2cae486-7668-55d5-bee0-0e536611c7f6",
+      "purpose": "Divider lower arm"
+    },
+    "C1": {
+      "value": "100nF 16V X7R",
+      "symbol": "Device:C",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "pins": {
+        "1": "ADC_THROTTLE",
+        "2": "GND"
+      },
+      "uuid": "8c72aa4f-d102-5a3d-918c-7d0854778005",
+      "purpose": "ADC low-pass 318 Hz nominal"
+    },
+    "D1": {
+      "value": "PESD5V0S1BA",
+      "symbol": "Device:D_TVS",
+      "footprint": "Diode_SMD:D_SOD-323",
+      "pins": {
+        "1": "ANALOG_THROTTLE",
+        "2": "GND"
+      },
+      "uuid": "d7c26eaa-eaed-5c98-bc60-4ca454d8dbf3",
+      "mpn": "PESD5V0S1BA,115",
+      "manufacturer": "Nexperia",
+      "purpose": "Connector ESD shunt; not DC overvoltage protection",
+      "datasheet": "https://assets.nexperia.com/documents/data-sheet/PESD5V0S1BA.pdf"
+    },
+    "J2": {
+      "value": "BRAKE 5V/GND/OUT",
+      "symbol": "Connector_Generic:Conn_01x03",
+      "footprint": "TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-3-5.08_1x03_P5.08mm_Horizontal",
+      "pins": {
+        "1": "+5V_SENSOR",
+        "2": "GND",
+        "3": "ANALOG_BRAKE"
+      },
+      "uuid": "552bd60a-e78f-5d7d-a273-65ba8cf21c90",
+      "mpn": "Phoenix Contact 1715734",
+      "purpose": "0..5V analog sensor only"
+    },
+    "R3": {
+      "value": "10k 1%",
+      "symbol": "Device:R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "pins": {
+        "1": "ANALOG_BRAKE",
+        "2": "ADC_BRAKE"
+      },
+      "uuid": "c43827d3-1707-5c4b-8355-b913448814f7",
+      "purpose": "Divider upper arm; no bypass"
+    },
+    "R4": {
+      "value": "10k 1%",
+      "symbol": "Device:R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "pins": {
+        "1": "ADC_BRAKE",
+        "2": "GND"
+      },
+      "uuid": "9d7705b5-6b0b-540d-a287-45dd2f09501d",
+      "purpose": "Divider lower arm"
+    },
+    "C2": {
+      "value": "100nF 16V X7R",
+      "symbol": "Device:C",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "pins": {
+        "1": "ADC_BRAKE",
+        "2": "GND"
+      },
+      "uuid": "86d296c8-6aed-5d5f-bfdc-7e00e012f0b7",
+      "purpose": "ADC low-pass 318 Hz nominal"
+    },
+    "D2": {
+      "value": "PESD5V0S1BA",
+      "symbol": "Device:D_TVS",
+      "footprint": "Diode_SMD:D_SOD-323",
+      "pins": {
+        "1": "ANALOG_BRAKE",
+        "2": "GND"
+      },
+      "uuid": "72db922a-0ba0-5b33-bc8d-fc0012dfe494",
+      "mpn": "PESD5V0S1BA,115",
+      "manufacturer": "Nexperia",
+      "purpose": "Connector ESD shunt; not DC overvoltage protection",
+      "datasheet": "https://assets.nexperia.com/documents/data-sheet/PESD5V0S1BA.pdf"
+    },
+    "J3": {
+      "value": "CLUTCH 5V/GND/OUT",
+      "symbol": "Connector_Generic:Conn_01x03",
+      "footprint": "TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-3-5.08_1x03_P5.08mm_Horizontal",
+      "pins": {
+        "1": "+5V_SENSOR",
+        "2": "GND",
+        "3": "ANALOG_CLUTCH"
+      },
+      "uuid": "f2186568-d9f0-5a73-84a8-00b3d42b70bf",
+      "mpn": "Phoenix Contact 1715734",
+      "purpose": "0..5V analog sensor only"
+    },
+    "R5": {
+      "value": "10k 1%",
+      "symbol": "Device:R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "pins": {
+        "1": "ANALOG_CLUTCH",
+        "2": "ADC_CLUTCH"
+      },
+      "uuid": "c1ee11e1-0e9f-53c2-aa8d-03ba3d533008",
+      "purpose": "Divider upper arm; no bypass"
+    },
+    "R6": {
+      "value": "10k 1%",
+      "symbol": "Device:R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "pins": {
+        "1": "ADC_CLUTCH",
+        "2": "GND"
+      },
+      "uuid": "e9389648-e213-50e7-ac2b-ff18801e7b77",
+      "purpose": "Divider lower arm"
+    },
+    "C3": {
+      "value": "100nF 16V X7R",
+      "symbol": "Device:C",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "pins": {
+        "1": "ADC_CLUTCH",
+        "2": "GND"
+      },
+      "uuid": "c6fbeecd-ffb9-5696-b62a-55b919915dd6",
+      "purpose": "ADC low-pass 318 Hz nominal"
+    },
+    "D3": {
+      "value": "PESD5V0S1BA",
+      "symbol": "Device:D_TVS",
+      "footprint": "Diode_SMD:D_SOD-323",
+      "pins": {
+        "1": "ANALOG_CLUTCH",
+        "2": "GND"
+      },
+      "uuid": "9385d936-7baa-505a-a20f-151083cecf3c",
+      "mpn": "PESD5V0S1BA,115",
+      "manufacturer": "Nexperia",
+      "purpose": "Connector ESD shunt; not DC overvoltage protection",
+      "datasheet": "https://assets.nexperia.com/documents/data-sheet/PESD5V0S1BA.pdf"
+    },
+    "J4": {
+      "value": "AUX 5V/GND/OUT",
+      "symbol": "Connector_Generic:Conn_01x03",
+      "footprint": "TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-3-5.08_1x03_P5.08mm_Horizontal",
+      "pins": {
+        "1": "+5V_SENSOR",
+        "2": "GND",
+        "3": "ANALOG_AUX"
+      },
+      "uuid": "bbdaa0d1-6af3-5dac-a739-97c1f15f2631",
+      "mpn": "Phoenix Contact 1715734",
+      "purpose": "0..5V analog sensor only"
+    },
+    "R7": {
+      "value": "10k 1%",
+      "symbol": "Device:R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "pins": {
+        "1": "ANALOG_AUX",
+        "2": "ADC_AUX"
+      },
+      "uuid": "899af09f-5fe7-54a6-bbb4-964881422754",
+      "purpose": "Divider upper arm; no bypass"
+    },
+    "R8": {
+      "value": "10k 1%",
+      "symbol": "Device:R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "pins": {
+        "1": "ADC_AUX",
+        "2": "GND"
+      },
+      "uuid": "462b0550-294a-5ced-88c5-5d972dfcaf56",
+      "purpose": "Divider lower arm"
+    },
+    "C4": {
+      "value": "100nF 16V X7R",
+      "symbol": "Device:C",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "pins": {
+        "1": "ADC_AUX",
+        "2": "GND"
+      },
+      "uuid": "d007030b-9a66-5ead-983f-6e4ec4ebdca6",
+      "purpose": "ADC low-pass 318 Hz nominal"
+    },
+    "D4": {
+      "value": "PESD5V0S1BA",
+      "symbol": "Device:D_TVS",
+      "footprint": "Diode_SMD:D_SOD-323",
+      "pins": {
+        "1": "ANALOG_AUX",
+        "2": "GND"
+      },
+      "uuid": "ae0dcad8-5c70-5930-9238-fb4df4ff7a9a",
+      "mpn": "PESD5V0S1BA,115",
+      "manufacturer": "Nexperia",
+      "purpose": "Connector ESD shunt; not DC overvoltage protection",
+      "datasheet": "https://assets.nexperia.com/documents/data-sheet/PESD5V0S1BA.pdf"
+    },
+    "J5": {
+      "value": "BUTTONS 01-08/GND",
+      "symbol": "Connector_Generic:Conn_01x09",
+      "footprint": "Connector_PinHeader_2.54mm:PinHeader_1x09_P2.54mm_Vertical",
+      "pins": {
+        "1": "BTN01",
+        "2": "BTN02",
+        "3": "BTN03",
+        "4": "BTN04",
+        "5": "BTN05",
+        "6": "BTN06",
+        "7": "BTN07",
+        "8": "BTN08",
+        "9": "GND"
+      },
+      "uuid": "b2b40d10-ec13-58e1-944c-56a496513c2d"
+    },
+    "J6": {
+      "value": "BUTTONS 09-16/GND",
+      "symbol": "Connector_Generic:Conn_01x09",
+      "footprint": "Connector_PinHeader_2.54mm:PinHeader_1x09_P2.54mm_Vertical",
+      "pins": {
+        "1": "BTN09",
+        "2": "BTN10",
+        "3": "BTN11",
+        "4": "BTN12",
+        "5": "BTN13",
+        "6": "BTN14",
+        "7": "BTN15",
+        "8": "BTN16",
+        "9": "GND"
+      },
+      "uuid": "e7484252-a163-5ee5-aa34-fd25d1bfda63"
+    },
+    "R9": {
+      "value": "10k 1%",
+      "symbol": "Device:R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "pins": {
+        "1": "+3V3",
+        "2": "BTN01"
+      },
+      "uuid": "5b15045e-74c8-57f6-8c0e-47d5bc631ff9",
+      "purpose": "External pull-up; switch to GND"
+    },
+    "R10": {
+      "value": "10k 1%",
+      "symbol": "Device:R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "pins": {
+        "1": "+3V3",
+        "2": "BTN02"
+      },
+      "uuid": "ca8e93f3-79cf-5f70-b1bc-a6668bf6c570",
+      "purpose": "External pull-up; switch to GND"
+    },
+    "R11": {
+      "value": "10k 1%",
+      "symbol": "Device:R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "pins": {
+        "1": "+3V3",
+        "2": "BTN03"
+      },
+      "uuid": "979c04f2-cc73-5fbc-8d50-421097c9506f",
+      "purpose": "External pull-up; switch to GND"
+    },
+    "R12": {
+      "value": "10k 1%",
+      "symbol": "Device:R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "pins": {
+        "1": "+3V3",
+        "2": "BTN04"
+      },
+      "uuid": "906e4907-21d4-5e65-b434-4b1cc81ae309",
+      "purpose": "External pull-up; switch to GND"
+    },
+    "R13": {
+      "value": "10k 1%",
+      "symbol": "Device:R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "pins": {
+        "1": "+3V3",
+        "2": "BTN05"
+      },
+      "uuid": "4627ddd1-31ba-5ea5-93ff-c004ecbe5314",
+      "purpose": "External pull-up; switch to GND"
+    },
+    "R14": {
+      "value": "10k 1%",
+      "symbol": "Device:R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "pins": {
+        "1": "+3V3",
+        "2": "BTN06"
+      },
+      "uuid": "3f1da5d5-25f1-58b5-9ba3-61a250d928ca",
+      "purpose": "External pull-up; switch to GND"
+    },
+    "R15": {
+      "value": "10k 1%",
+      "symbol": "Device:R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "pins": {
+        "1": "+3V3",
+        "2": "BTN07"
+      },
+      "uuid": "8e1416ab-2d67-597d-b8cc-73f273541f53",
+      "purpose": "External pull-up; switch to GND"
+    },
+    "R16": {
+      "value": "10k 1%",
+      "symbol": "Device:R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "pins": {
+        "1": "+3V3",
+        "2": "BTN08"
+      },
+      "uuid": "c49fb5b8-a335-52ea-aa3c-ffb3fda4cb73",
+      "purpose": "External pull-up; switch to GND"
+    },
+    "R17": {
+      "value": "10k 1%",
+      "symbol": "Device:R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "pins": {
+        "1": "+3V3",
+        "2": "BTN09"
+      },
+      "uuid": "f4440343-63f5-577f-ac46-76b339379d3d",
+      "purpose": "External pull-up; switch to GND"
+    },
+    "R18": {
+      "value": "10k 1%",
+      "symbol": "Device:R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "pins": {
+        "1": "+3V3",
+        "2": "BTN10"
+      },
+      "uuid": "7f03dea9-3175-596c-bb3c-de8055776ae0",
+      "purpose": "External pull-up; switch to GND"
+    },
+    "R19": {
+      "value": "10k 1%",
+      "symbol": "Device:R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "pins": {
+        "1": "+3V3",
+        "2": "BTN11"
+      },
+      "uuid": "e11d7966-d109-5b38-b776-23cc843586be",
+      "purpose": "External pull-up; switch to GND"
+    },
+    "R20": {
+      "value": "10k 1%",
+      "symbol": "Device:R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "pins": {
+        "1": "+3V3",
+        "2": "BTN12"
+      },
+      "uuid": "81b4b1b4-cc75-55e8-8d0d-95b79c86127f",
+      "purpose": "External pull-up; switch to GND"
+    },
+    "R21": {
+      "value": "10k 1%",
+      "symbol": "Device:R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "pins": {
+        "1": "+3V3",
+        "2": "BTN13"
+      },
+      "uuid": "1cdc8d43-a690-54ae-be23-3c9a41a20f2f",
+      "purpose": "External pull-up; switch to GND"
+    },
+    "R22": {
+      "value": "10k 1%",
+      "symbol": "Device:R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "pins": {
+        "1": "+3V3",
+        "2": "BTN14"
+      },
+      "uuid": "d6a48601-25ad-5fdb-a9b3-a4f7efc8f128",
+      "purpose": "External pull-up; switch to GND"
+    },
+    "R23": {
+      "value": "10k 1%",
+      "symbol": "Device:R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "pins": {
+        "1": "+3V3",
+        "2": "BTN15"
+      },
+      "uuid": "b03dd24e-cf2b-58eb-bb22-2a20c5b40f66",
+      "purpose": "External pull-up; switch to GND"
+    },
+    "R24": {
+      "value": "10k 1%",
+      "symbol": "Device:R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "pins": {
+        "1": "+3V3",
+        "2": "BTN16"
+      },
+      "uuid": "d9a67188-c35f-5f4c-8883-caa1af0c19ed",
+      "purpose": "External pull-up; switch to GND"
+    },
+    "J7": {
+      "value": "ENCODER 3V3/GND/A/B",
+      "symbol": "Connector_Generic:Conn_01x04",
+      "footprint": "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical",
+      "pins": {
+        "1": "+3V3",
+        "2": "GND",
+        "3": "ENC_A",
+        "4": "ENC_B"
+      },
+      "uuid": "1c648160-14d9-5312-9feb-575afb46e200"
+    },
+    "J8": {
+      "value": "I2C 3V3/GND/SDA/SCL",
+      "symbol": "Connector_Generic:Conn_01x04",
+      "footprint": "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical",
+      "pins": {
+        "1": "+3V3",
+        "2": "GND",
+        "3": "I2C_SDA",
+        "4": "I2C_SCL"
+      },
+      "uuid": "1e0bd06f-e322-5a91-bdaf-a9ad06ed5b0b"
+    },
+    "J9": {
+      "value": "HAPTIC1 3V3/GND/PWM",
+      "symbol": "Connector_Generic:Conn_01x03",
+      "footprint": "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical",
+      "pins": {
+        "1": "+3V3",
+        "2": "GND",
+        "3": "HAPTIC1"
+      },
+      "uuid": "45259b1d-0dda-5a92-b5f3-9f9ff29ee064"
+    },
+    "J10": {
+      "value": "HAPTIC2 3V3/GND/PWM",
+      "symbol": "Connector_Generic:Conn_01x03",
+      "footprint": "Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical",
+      "pins": {
+        "1": "+3V3",
+        "2": "GND",
+        "3": "HAPTIC2"
+      },
+      "uuid": "134f4985-c637-55d8-914c-afc8bdf5667f"
+    },
+    "J11": {
+      "value": "SPI DAUGHTERCARD 3V3 ONLY",
+      "symbol": "Connector_Generic:Conn_02x05_Odd_Even",
+      "footprint": "Connector_PinHeader_2.54mm:PinHeader_2x05_P2.54mm_Vertical",
+      "pins": {
+        "1": "+3V3",
+        "2": "GND",
+        "3": "SPI_SCK",
+        "4": "GND",
+        "5": "SPI_MOSI",
+        "6": "SPI_MISO",
+        "7": "SPI_CS",
+        "8": "FFB_EN",
+        "9": "FFB_IRQ_N",
+        "10": "GND"
+      },
+      "uuid": "c6b247bf-dbc6-52b8-9532-de7d844f5228"
+    },
+    "J12": {
+      "value": "MODE switch/GND",
+      "symbol": "Connector_Generic:Conn_01x02",
+      "footprint": "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical",
+      "pins": {
+        "1": "MODE_N",
+        "2": "GND"
+      },
+      "uuid": "e08426c2-bb5c-56b4-8a89-d45ea61f9375"
+    },
+    "J13": {
+      "value": "PWM SPARE 3V3/GND/2/3",
+      "symbol": "Connector_Generic:Conn_01x04",
+      "footprint": "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical",
+      "pins": {
+        "1": "+3V3",
+        "2": "GND",
+        "3": "PWM2",
+        "4": "PWM3"
+      },
+      "uuid": "23e9de60-19cf-5785-9395-b352f493dfed"
+    },
+    "JP1": {
+      "value": "PWM ENABLE: OPEN=OFF",
+      "symbol": "Connector_Generic:Conn_01x02",
+      "footprint": "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical",
+      "pins": {
+        "1": "PWM_OE_N",
+        "2": "GND"
+      },
+      "uuid": "6560f863-173c-5c21-8e27-7ca3deb0fd4c",
+      "assembly": "Fit header; leave shunt REMOVED by default"
+    },
+    "R25": {
+      "value": "4.7k 1%",
+      "symbol": "Device:R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "pins": {
+        "1": "+3V3",
+        "2": "I2C_SDA"
+      },
+      "uuid": "89095a94-fa30-5e8c-a589-1997cd553621",
+      "purpose": "I2C pull-up to 3.3V only"
+    },
+    "R26": {
+      "value": "4.7k 1%",
+      "symbol": "Device:R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "pins": {
+        "1": "+3V3",
+        "2": "I2C_SCL"
+      },
+      "uuid": "475d5521-0da7-521e-adc9-7c7297fc88df",
+      "purpose": "I2C pull-up to 3.3V only"
+    },
+    "R27": {
+      "value": "10k 1%",
+      "symbol": "Device:R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "pins": {
+        "1": "+3V3",
+        "2": "ENC_A"
+      },
+      "uuid": "3623c813-8bfe-50de-bfcc-4a7e1986edb6",
+      "purpose": "Encoder pull-up; mechanical contact or 3.3V/open drain"
+    },
+    "R28": {
+      "value": "10k 1%",
+      "symbol": "Device:R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "pins": {
+        "1": "+3V3",
+        "2": "ENC_B"
+      },
+      "uuid": "c9e3f6de-8716-5e6b-9387-cf142f5ea268",
+      "purpose": "Encoder pull-up"
+    },
+    "R29": {
+      "value": "10k 1%",
+      "symbol": "Device:R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "pins": {
+        "1": "+3V3",
+        "2": "FFB_IRQ_N"
+      },
+      "uuid": "b652ae24-837c-55d8-9430-b728125c579f",
+      "purpose": "Open-drain 3.3V fault/IRQ pull-up"
+    },
+    "R30": {
+      "value": "330R 1%",
+      "symbol": "Device:R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "pins": {
+        "1": "FFB_EN_MCU",
+        "2": "FFB_EN"
+      },
+      "uuid": "e0e933ca-6602-55f2-8a57-77c719328c1c",
+      "purpose": "Non-safety EN series damping/current limiting"
+    },
+    "R31": {
+      "value": "10k 1%",
+      "symbol": "Device:R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "pins": {
+        "1": "FFB_EN",
+        "2": "GND"
+      },
+      "uuid": "aefda127-8238-5f53-907f-024d864246ee",
+      "purpose": "EN default low; not STO"
+    },
+    "R32": {
+      "value": "330R 1%",
+      "symbol": "Device:R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "pins": {
+        "1": "PWM0_RAW",
+        "2": "HAPTIC1"
+      },
+      "uuid": "d59da46c-a310-5655-b3ea-61b9ab663f42",
+      "purpose": "PWM control output series damping"
+    },
+    "R33": {
+      "value": "10k 1%",
+      "symbol": "Device:R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "pins": {
+        "1": "HAPTIC1",
+        "2": "GND"
+      },
+      "uuid": "04f2c11e-44d6-5aa7-af14-eb9ab46217f1",
+      "purpose": "Haptic1 default low when unpowered/high-Z"
+    },
+    "R34": {
+      "value": "330R 1%",
+      "symbol": "Device:R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "pins": {
+        "1": "PWM1_RAW",
+        "2": "HAPTIC2"
+      },
+      "uuid": "3ffa5181-bfd7-5368-a4b7-e371c8686580",
+      "purpose": "PWM control output series damping"
+    },
+    "R35": {
+      "value": "10k 1%",
+      "symbol": "Device:R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "pins": {
+        "1": "HAPTIC2",
+        "2": "GND"
+      },
+      "uuid": "87ca9a30-cfaa-5960-9da6-00a2ea542391",
+      "purpose": "Haptic2 default low when unpowered/high-Z"
+    },
+    "R36": {
+      "value": "10k 1%",
+      "symbol": "Device:R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "pins": {
+        "1": "+3V3",
+        "2": "PWM_OE_N"
+      },
+      "uuid": "6af6f8f8-5f4c-5ef7-8330-d5750f650be6",
+      "purpose": "OE high disables outputs with default MODE2"
+    },
+    "R37": {
+      "value": "10k 1%",
+      "symbol": "Device:R",
+      "footprint": "Resistor_SMD:R_0805_2012Metric",
+      "pins": {
+        "1": "+3V3",
+        "2": "MODE_N"
+      },
+      "uuid": "7928d92c-827e-547c-be98-53e568474515",
+      "purpose": "Future GP10 mode input; current firmware uses unexposed GP14"
+    },
+    "C5": {
+      "value": "100nF 16V X7R",
+      "symbol": "Device:C",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "pins": {
+        "1": "+3V3",
+        "2": "GND"
+      },
+      "uuid": "21aca0fa-f023-5e14-9712-f45defdf4713",
+      "purpose": "U2 local decoupling"
+    },
+    "C6": {
+      "value": "100nF 16V X7R",
+      "symbol": "Device:C",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "pins": {
+        "1": "+3V3",
+        "2": "GND"
+      },
+      "uuid": "80f0f1bd-27b8-5e06-9767-39bf5e04dd05",
+      "purpose": "U3 local decoupling"
+    },
+    "C7": {
+      "value": "4.7uF 10V X7R",
+      "symbol": "Device:C",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "pins": {
+        "1": "+3V3",
+        "2": "GND"
+      },
+      "uuid": "a31a7ed8-6170-5823-927f-bd2172e771c2",
+      "purpose": "Logic rail bulk decoupling"
+    },
+    "C8": {
+      "value": "4.7uF 10V X7R",
+      "symbol": "Device:C",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "pins": {
+        "1": "+5V_SENSOR",
+        "2": "GND"
+      },
+      "uuid": "57eafb68-5683-5d3c-92b2-b912d7b75e33",
+      "purpose": "Sensor branch bulk decoupling"
+    },
+    "C9": {
+      "value": "100nF 16V X7R",
+      "symbol": "Device:C",
+      "footprint": "Capacitor_SMD:C_0805_2012Metric",
+      "pins": {
+        "1": "+5V_SENSOR",
+        "2": "GND"
+      },
+      "uuid": "558ae022-f311-5988-9267-ecbfbd992e9a",
+      "purpose": "Sensor branch HF decoupling"
+    },
+    "F1": {
+      "value": "PTC 0.25A hold",
+      "symbol": "Device:Polyfuse",
+      "footprint": "Fuse:Fuse_1206_3216Metric",
+      "pins": {
+        "1": "+5V_USB",
+        "2": "+5V_SENSOR"
+      },
+      "uuid": "5ab94954-d00c-5da3-9094-0ef4c0a55f4f",
+      "mpn": "MF-NSMF025X-2",
+      "purpose": "Sensor branch short-circuit mitigation, not accurate current limiting",
+      "manufacturer": "Bourns",
+      "datasheet": "https://www.bourns.com/docs/product-datasheets/mf-nsmf.pdf"
+    },
+    "H1": {
+      "value": "M3 NPTH",
+      "symbol": "Mechanical:MountingHole",
+      "footprint": "MountingHole:MountingHole_3.2mm_M3",
+      "pins": {},
+      "uuid": "61c58adf-4897-5a78-8308-fc2406a050ae",
+      "purpose": "Mechanical mounting hole"
+    },
+    "H2": {
+      "value": "M3 NPTH",
+      "symbol": "Mechanical:MountingHole",
+      "footprint": "MountingHole:MountingHole_3.2mm_M3",
+      "pins": {},
+      "uuid": "bc01bb8c-69c3-5155-b06e-753859269a15",
+      "purpose": "Mechanical mounting hole"
+    },
+    "H3": {
+      "value": "M3 NPTH",
+      "symbol": "Mechanical:MountingHole",
+      "footprint": "MountingHole:MountingHole_3.2mm_M3",
+      "pins": {},
+      "uuid": "d5c52374-3400-54c5-afd5-5998a1254627",
+      "purpose": "Mechanical mounting hole"
+    },
+    "H4": {
+      "value": "M3 NPTH",
+      "symbol": "Mechanical:MountingHole",
+      "footprint": "MountingHole:MountingHole_3.2mm_M3",
+      "pins": {},
+      "uuid": "aac388c3-5b64-5166-bbbe-45e185d4af68",
+      "purpose": "Mechanical mounting hole"
+    }
+  },
+  "nets": [
+    "+3V3",
+    "+5V_SENSOR",
+    "+5V_USB",
+    "ADC_AUX",
+    "ADC_BRAKE",
+    "ADC_CLUTCH",
+    "ADC_THROTTLE",
+    "ANALOG_AUX",
+    "ANALOG_BRAKE",
+    "ANALOG_CLUTCH",
+    "ANALOG_THROTTLE",
+    "BTN01",
+    "BTN02",
+    "BTN03",
+    "BTN04",
+    "BTN05",
+    "BTN06",
+    "BTN07",
+    "BTN08",
+    "BTN09",
+    "BTN10",
+    "BTN11",
+    "BTN12",
+    "BTN13",
+    "BTN14",
+    "BTN15",
+    "BTN16",
+    "ENC_A",
+    "ENC_B",
+    "FFB_EN",
+    "FFB_EN_MCU",
+    "FFB_IRQ_N",
+    "GND",
+    "HAPTIC1",
+    "HAPTIC2",
+    "I2C_SCL",
+    "I2C_SDA",
+    "MODE_N",
+    "PWM0_RAW",
+    "PWM1_RAW",
+    "PWM2",
+    "PWM3",
+    "PWM_OE_N",
+    "SPI_CS",
+    "SPI_MISO",
+    "SPI_MOSI",
+    "SPI_SCK"
+  ],
+  "i2c_addresses": {
+    "U2": "0x20",
+    "U3": "0x40",
+    "U3_allcall": "0x70"
+  },
+  "schematic_uuid": "2f033c66-d765-52bb-a937-9caa211dea04",
+  "board": {
+    "width_mm": 100,
+    "height_mm": 80,
+    "layers": 2
+  }
+}

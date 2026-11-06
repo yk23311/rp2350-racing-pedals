@@ -1,6 +1,6 @@
 # 可扩展接线底板 V0.1 实施计划
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** 交付既有 RP2350-USB-A 的可编辑底板原理图、已检查的 PCB 工程及样板制造资料，方便踏板接线并预留直驱伺服接口子板。
 
@@ -22,9 +22,9 @@
 
 **Files:** deps/kicad/（忽略的本地工具）；hardware/reference/ 资料与来源记录。
 
-- [ ] 从KiCad官网指向的发布下载Windows安装包，验证官方数字签名，仅提取到项目deps目录，不更改系统安装或默认应用。
-- [ ] 执行 `deps/kicad/bin/kicad-cli.exe version`，记录实际路径/版本；确认Python pcbnew、标准symbols/footprints可加载。若压缩包目录不同则统一到该路径。
-- [ ] 官方模块图建立坐标表；验证两排18孔的信号/电源映射，USB外形和接收器插拔净空。
+- [x] 从KiCad官网指向的发布下载Windows安装包，验证官方数字签名，仅提取到项目deps目录，不更改系统安装或默认应用。
+- [x] 执行 `deps/kicad/bin/kicad-cli.exe version`，记录实际路径/版本；确认Python pcbnew、标准symbols/footprints可加载。若压缩包目录不同则统一到该路径。
+- [x] 官方模块图建立坐标表；验证两排18孔的信号/电源映射，USB外形和接收器插拔净空。
 
 ### Task 2: 电路、模型和原理图
 
@@ -32,7 +32,7 @@
 
 **Interfaces:** hardware/carrier/design.json 为BOM/连接规范：components 按ref索引，含symbol/footprint/value/pins；pins 为引脚号→网络；placement 给PCB的X/Y/rotation。模块符号和封装本地库，所有低压扩展口有显式针序。生成器导出 carrier.kicad_sch、carrier.net 和bom.csv。
 
-- [ ] 先验证关键连接：模块坐标映射、四路分压及RC无直通5V、按键和PWM芯片地址不同、FFB EN默认关断、全部连接器不含电机电源。
+- [x] 先验证关键连接：模块坐标映射、四路分压及RC无直通5V、按键和PWM芯片地址不同、FFB EN默认关断、全部连接器不含电机电源。
 
 ```python
 self.assertEqual(model['components']['U1']['pins']['12'], 'ADC_THROTTLE')
@@ -40,31 +40,33 @@ self.assertEqual(model['components']['U1']['pins']['13'], 'ADC_BRAKE')
 self.assertNotIn('MOTOR_VBUS', set(model['nets']))
 ```
 
-- [ ] 对扩展器核对官方数据手册、复位/输出级/去耦/上拉和引脚封装；选能采购的具体型号，不用猜测库引脚。
-- [ ] 生成真实可编辑KiCad原理图，再运行 `kicad-cli sch erc --exit-code-violations -o hardware/carrier/reports/erc.rpt hardware/carrier/carrier.kicad_sch`，逐项修复电气错误；所有未连接引脚有明确理由。
-- [ ] 导出PDF/SVG和KiCad网表，核对模型与导出网表；记录原理图及电路审查。
+- [x] 对扩展器核对官方数据手册、复位/输出级/去耦/上拉和引脚封装；选能采购的具体型号，不用猜测库引脚。
+- [x] 生成真实可编辑KiCad原理图，再运行 `kicad-cli sch erc --exit-code-violations -o hardware/carrier/reports/erc.rpt hardware/carrier/carrier.kicad_sch`，逐项修复电气错误；所有未连接引脚有明确理由。
+- [x] 导出PDF/SVG和KiCad网表，核对模型与导出网表；记录原理图及电路审查。
 
 ### Task 3: PCB 布局布线
 
 **Files:** hardware/carrier/carrier.kicad_pcb、板级规则/输出；tools/hardware/build_pcb.py。
 
-- [ ] 先测试自定义模块脚位坐标、四个孔均在板内、端子与模块不重叠、USB和接收器方向有净空。
+- [x] 先测试自定义模块脚位坐标、四个孔均在板内、端子与模块不重叠、USB和接收器方向有净空。
 
 ```python
 self.assertAlmostEqual(module_right_x-module_left_x, 15.24)
 self.assertEqual(len(module_pads), 18)
 ```
 
-- [ ] 放置模拟端子和滤波，滤波电容靠近对应ADC；GPIO/PWM和SPI区与模拟回路分区，接收器不被连接器遮挡。
-- [ ] 双层布线、地平面、明确5V/3V3与低压丝印、控制引脚默认下拉；最小线宽/间距、孔铜和电源宽度写入项目规则。
-- [ ] 如用Freerouting，保留DSN/SES输入和版本，导回KiCad铺铜再检查，不把自动布线成功当作电气验证。
-- [ ] 执行 `kicad-cli pcb drc --exit-code-violations --schematic-parity -o hardware/carrier/reports/drc.rpt hardware/carrier/carrier.kicad_pcb`，清除未连线及确定违规，导出板图与3D预览检查。
+- [x] 放置模拟端子和滤波，滤波电容靠近对应ADC；GPIO/PWM和SPI区与模拟回路分区，接收器不被连接器遮挡。
+- [x] 双层布线、地平面、明确5V/3V3与低压丝印、控制引脚默认下拉；最小线宽/间距、孔铜和电源宽度写入项目规则。
+- [x] 如用Freerouting，保留DSN/SES输入和版本，导回KiCad铺铜再检查，不把自动布线成功当作电气验证。
+- [x] 执行 `kicad-cli pcb drc --exit-code-violations --schematic-parity -o hardware/carrier/reports/drc.rpt hardware/carrier/carrier.kicad_pcb`，清除未连线及确定违规，导出板图与3D预览检查。
 
 ### Task 4: 交付与交接
 
 **Files:** hardware/carrier/fabrication/、hardware/carrier/README.md、docs/reports/19-expandable-carrier-pcb.md、HANDOFF.md。
 
-- [ ] 原理图/PCB复核通过后导出Gerber和钻孔，校验层数、外形、钻孔和网表一致性；为文件生成SHA256清单。
-- [ ] 独立审查：ADC调理/供电、I²C/复位、FFB EN/接口边界、封装孔位、装配方向和3.3V/5V丝印；修复确定问题后重跑相应检查。
-- [ ] 更新接线表、BOM、装配顺序、首次上电和验收步骤、固件适配清单；引用实际ERC/DRC证据。明确直驱尚未选型、本次无电机驱动子板且未投板/上电测试。
-- [ ] 保留既有0.5.0源码/产物；本地功能分支保存工程，不推送或制造下单。
+- [x] 原理图/PCB复核通过后导出Gerber和钻孔，校验层数、外形、钻孔和网表一致性；为文件生成SHA256清单。
+- [x] 独立审查：ADC调理/供电、I²C/复位、FFB EN/接口边界、封装孔位、装配方向和3.3V/5V丝印；修复确定问题后重跑相应检查。
+- [x] 更新接线表、BOM、装配顺序、首次上电和验收步骤、固件适配清单；引用实际ERC/DRC证据。明确直驱尚未选型、本次无电机驱动子板且未投板/上电测试。
+- [x] 保留既有0.5.0源码/产物；本地功能分支保存工程，不推送或制造下单。
+
+完成记录：2026-11-06。原生KiCad10.0.8 ERC/DRC和原理图一致性通过，9项硬件测试及118项Python回归通过；见阶段19。未制造/上电，MiGE电机暂定而驱动器未选，未生成驱动功率/安全子板。
