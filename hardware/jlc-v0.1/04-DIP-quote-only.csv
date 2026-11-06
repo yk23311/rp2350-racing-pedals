@@ -1,0 +1,16 @@
+﻿Reference,Quantity,Value,Footprint,MPN,Assembly note
+J1,1,THROTTLE 5V/GND/OUT,"TerminalBlock_Phoenix_MKDS-1,5-3-5.08_1x03_P5.08mm_Horizontal",Phoenix Contact 1715734,Through-hole; separate factory quote/approval
+J2,1,BRAKE 5V/GND/OUT,"TerminalBlock_Phoenix_MKDS-1,5-3-5.08_1x03_P5.08mm_Horizontal",Phoenix Contact 1715734,Through-hole; separate factory quote/approval
+J3,1,CLUTCH 5V/GND/OUT,"TerminalBlock_Phoenix_MKDS-1,5-3-5.08_1x03_P5.08mm_Horizontal",Phoenix Contact 1715734,Through-hole; separate factory quote/approval
+J4,1,AUX 5V/GND/OUT,"TerminalBlock_Phoenix_MKDS-1,5-3-5.08_1x03_P5.08mm_Horizontal",Phoenix Contact 1715734,Through-hole; separate factory quote/approval
+J5,1,BUTTONS 01-08/GND,PinHeader_1x09_P2.54mm_Vertical,,Through-hole; separate factory quote/approval
+J6,1,BUTTONS 09-16/GND,PinHeader_1x09_P2.54mm_Vertical,,Through-hole; separate factory quote/approval
+J7,1,ENCODER 3V3/GND/A/B,PinHeader_1x04_P2.54mm_Vertical,,Through-hole; separate factory quote/approval
+J8,1,I2C 3V3/GND/SDA/SCL,PinHeader_1x04_P2.54mm_Vertical,,Through-hole; separate factory quote/approval
+J9,1,HAPTIC1 3V3/GND/PWM,PinHeader_1x03_P2.54mm_Vertical,,Through-hole; separate factory quote/approval
+J10,1,HAPTIC2 3V3/GND/PWM,PinHeader_1x03_P2.54mm_Vertical,,Through-hole; separate factory quote/approval
+J11,1,SPI DAUGHTERCARD 3V3 ONLY,PinHeader_2x05_P2.54mm_Vertical,,Through-hole; separate factory quote/approval
+J12,1,MODE switch/GND,PinHeader_1x02_P2.54mm_Vertical,,Through-hole; separate factory quote/approval
+J13,1,PWM SPARE 3V3/GND/2/3,PinHeader_1x04_P2.54mm_Vertical,,Through-hole; separate factory quote/approval
+JP1,1,PWM ENABLE: OPEN=OFF,PinHeader_1x02_P2.54mm_Vertical,,Fit header only; NO SHUNT
+"U1 SOCKETS (two rows, not module)",2,1x9 female socket; 2.54mm pitch; straight; module mating height to verify,See U1 socket assembly drawing,,Two female sockets only; user inserts existing RP2350 module last

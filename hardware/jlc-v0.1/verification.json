@@ -1,0 +1,69 @@
+{
+  "revision": "V0.1 JLC quote/upload set",
+  "kicad": "10.0.8",
+  "source_board_sha256": "7a26c276be4c0d38d06bfc2cb30d0c1f29a668c93aec1d83145f61a9a9dd9345",
+  "source_manifest_sha256": "76d04eb893140a7a738d2071807b9d021aeafda355a925d9f5515c49600977ee",
+  "erc_violations": 0,
+  "drc_violations": 0,
+  "unconnected": 0,
+  "schematic_mismatch": 0,
+  "smt_placements": 53,
+  "smt_bom_groups": 9,
+  "dip_items_per_board": 16,
+  "drills_copied_without_changes": true,
+  "gerber_geometry_equivalent": {
+    "carrier-F_Cu.gtl": {
+      "drawing_sha256": "9f4bc99b1900ac864c39302a9842d2e2096590b1499b58d750f956a2806a748e",
+      "rs274x_sha256": "ca648d9f369219f87442754b4b19212b7b33c262d3f36f7552232089085a617b",
+      "source_x2_sha256": "06585add3f751e677302dd7be55a44a46f1c58d9d59475321cd0db2059f4b53a"
+    },
+    "carrier-B_Cu.gbl": {
+      "drawing_sha256": "23d8f5763d4f32564c832d3cf01381e853b823462e9546d34e0f36fdeae19be0",
+      "rs274x_sha256": "49045e9bb52b088fcbc660ead120d7d5fccb54888f8be13c59c9dbe67b7fd4d3",
+      "source_x2_sha256": "d0af81618c31771d30b35e91f14e89512d9af00709f50e8fffffcb2125f84860"
+    },
+    "carrier-F_Paste.gtp": {
+      "drawing_sha256": "d8c0b5e9ad9b54904d418c035cb8330188a19eae6207560a6fdcebe4821e8c73",
+      "rs274x_sha256": "0286e2b596617cb862f207e3644359ba8d672a5544862eec7d0a41c2cf8a80f8",
+      "source_x2_sha256": "a33f604c00850fd2cd38c4389f9d866991626fc0edba176471a06e72a734204a"
+    },
+    "carrier-B_Paste.gbp": {
+      "drawing_sha256": "46274665180192f7e44155a0002e3bb7534d6623e03e8ddfe62aeb13a9ba25e5",
+      "rs274x_sha256": "75a5d4a6dec78e58dcc668816862994695fc52898427c30c6825aaf47b31cc85",
+      "source_x2_sha256": "a4d3d346739c8f4bd35ecc4cde7159fb745114433568ac2047c6c1e2bc098f6b"
+    },
+    "carrier-F_Silkscreen.gto": {
+      "drawing_sha256": "a336bbedeb2dd2c06940561389df4b5e1781b4d1ed821ae18723ed6896e76e19",
+      "rs274x_sha256": "7c6bedf07b1b7c8ec6da0060336f4f47947a02235d89c3938b4fdcc68a86da9b",
+      "source_x2_sha256": "2ef252a1526f41cf44c44a0d8ea772b0418856bda4c2feca16a64b57177d4346"
+    },
+    "carrier-B_Silkscreen.gbo": {
+      "drawing_sha256": "46274665180192f7e44155a0002e3bb7534d6623e03e8ddfe62aeb13a9ba25e5",
+      "rs274x_sha256": "2bfe2fd2c34bf1af547b4ae856d1dd9e11df4e17f87b4d9bf7c33be64dfac290",
+      "source_x2_sha256": "66edb989dd6dcbf987f7a1ce63ff275f1161ca74e68467ccd5f84a50caeca0c4"
+    },
+    "carrier-F_Mask.gts": {
+      "drawing_sha256": "b59d3dedde63c164095897a983291ed0f1d91e4c12130b50d22516c4bb67cd6b",
+      "rs274x_sha256": "26d89d1f227738e6f4b0ccd053fadd5e9b9d5d12daf8da8e9f697a112bee0d95",
+      "source_x2_sha256": "14ddd1feb91919e19ba120e5a286ebb40eb0a90347da0ca1fafcf40341fb67de"
+    },
+    "carrier-B_Mask.gbs": {
+      "drawing_sha256": "910d7a54c7213ff041b625605e15d8142c24612bf06b28174561bd26c9f893c0",
+      "rs274x_sha256": "550f9334e8aebe6101cb2c6afe3d1862df1649a0955b1f23f1b584338f4c3170",
+      "source_x2_sha256": "13904dfd97dd5b5bb568185a767ac1fd6bf2e3c08383d85553c5a27ea6f9a6c9"
+    },
+    "carrier-Edge_Cuts.gm1": {
+      "drawing_sha256": "7f8fd7c26be0a789a5f455fd093e4cd1fcc617600805c23e4b4c6542187dd136",
+      "rs274x_sha256": "ad19f0eadeffd0e96d3762ef9848cc2ad80b1769f4f6821d8d02eae7325ff95d",
+      "source_x2_sha256": "086f5921e00c4603e93acacf1f263e2dc18ba2baff5bda52bb11480d92ece62d"
+    }
+  },
+  "coordinates": "mm, native KiCad X/Y with Y negative; rotation normalized 0..360",
+  "factory_stock_matched": false,
+  "factory_rotation_reviewed": false,
+  "factory_dfm_approved": false,
+  "dip_assembly_quoted": false,
+  "order_submitted": false,
+  "manufactured": false,
+  "powered_tested": false
+}

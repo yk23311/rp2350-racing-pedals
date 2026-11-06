@@ -1,5 +1,7 @@
 # 基于 RP2350 的赛车模拟器油门与刹车
 
+**嘉立创PCB＋贴片装配资料**：见[上传文件与填写步骤](hardware/jlc-v0.1/README.md)和[阶段20交接](docs/reports/20-jlc-assembly-package.md)。本地下载包位于`dist/carrier-jlc-v0.1/`；包含RS-274-X PCB包、53件SMT BOM/坐标和插件询价说明，尚未在工厂匹配库存或下单。
+
 **可扩展接线底板V0.1**已绘制：四路模拟端子、16键、I²C屏幕、面板编码器、震动控制与直驱接口子板槽；可编辑KiCad工程、BOM、Gerber/钻孔见[底板说明](hardware/carrier/README.md)，检查及交接见[阶段19](docs/reports/19-expandable-carrier-pcb.md)。暂定电机MiGE90ST-M02430，驱动器未选；底板无电机功率级，新扩展需后续固件。工程样板未制造/上电验证，公共Release不含该硬件。
 
 **下载：[v0.4.0 预发布版](https://github.com/yk23311/rp2350-racing-pedals/releases/tag/v0.4.0)**，包含普通/诊断UF2、含GUI的源码包、快速说明与SHA256。软件测试通过，仍待实机验收；GUI源码包需Python环境。
