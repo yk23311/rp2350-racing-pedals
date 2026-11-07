@@ -1,0 +1,7 @@
+#VRML V2.0 utf8
+# APPROXIMATE module/socket/USB envelopes; NOT enclosure-fit authority.
+Transform { translation 6.496062992125984 -3.4448818897637796 3.661417322834646 children [ Shape { appearance Appearance { material Material { diffuseColor 0.05 0.15 0.1 } } geometry Box { size 12.992125984251969 6.889763779527559 0.6299212598425197 } } ] }
+Transform { translation 5.094488188976378 -0.44488188976377946 1.6732283464566928 children [ Shape { appearance Appearance { material Material { diffuseColor 0.08 0.08 0.08 } } geometry Box { size 9.0 1.0 3.3464566929133857 } } ] }
+Transform { translation 5.094488188976378 -6.44488188976378 1.6732283464566928 children [ Shape { appearance Appearance { material Material { diffuseColor 0.08 0.08 0.08 } } geometry Box { size 9.0 1.0 3.3464566929133857 } } ] }
+Transform { translation 0.19685039370078738 -3.4448818897637796 4.566929133858268 children [ Shape { appearance Appearance { material Material { diffuseColor 0.65 0.65 0.65 } } geometry Box { size 2.559055118110236 3.543307086614173 1.2598425196850394 } } ] }
+Transform { translation 11.417322834645669 -3.4448818897637796 4.763779527559055 children [ Shape { appearance Appearance { material Material { diffuseColor 0.65 0.65 0.65 } } geometry Box { size 3.543307086614173 5.118110236220472 2.1653543307086616 } } ] }

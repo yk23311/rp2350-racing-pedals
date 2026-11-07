@@ -1,5 +1,7 @@
 # RP2350 驾驶控制中心：接手入口
 
+2026-11-07 EDA兼容：[阶段22](docs/reports/22-lceda-import-compatibility.md)。用户手动导入Pro4.1.97后报告221个引脚网络全部未指定、49个GND被PWR_FLAG命名、15个实例值不一致。已准备`dist/carrier-eda-view/carrier-net-compat.zip`独立候选：索引网络/fp_text、ERC声明修正；原生ERC/DRC/parity0，72元件/238焊盘/581线/27过孔及9层Gerber/钻孔与原版等价，Python130项通过。**仍待用户实际EDA导入及重铺铜验证，不能称已完成EDA转换验收或保证优惠券。** 原CAD/固件/已审核Gerber未改，用户要求不做电脑自动操作。
+
 2026-11-07下单前复核：[阶段21](docs/reports/21-preorder-review.md)。用户确认直接上传原始01 Gerber ZIP。重新ERC/DRC/原理图一致性0问题，124测试通过；54原CAD摘要、9层绘图流/2钻孔、两份ZIP及53件BOM/CPL核验通过，原生72元件234规范焊盘网络0差异。未发现阻碍少量工程样板的确定性缺陷；实际订单的库存/贴装DFM/16插件与排母高度仍待厂方确认，未下单付款或实物验收。原设计与制造包未变。
 
 2026-11-06嘉立创：用户确认PCB＋贴片装配，已准备[嘉立创专用资料及下单步骤](hardware/jlc-v0.1/README.md)，见[阶段20步骤与交接](docs/reports/20-jlc-assembly-package.md)。同一V0.1原板另导出RS-274-X，9层图形流等价/钻孔未变，原生ERC/DRC清洁，Python124项通过；9组53件SMT的BOM/CPL另附16个插件询价说明。下载`dist/carrier-jlc-v0.1/`，LCSC编号/库存、厂家旋转/DFM及插件代焊尚未确认，没有制造订单或付款。CAD/固件保持不变。

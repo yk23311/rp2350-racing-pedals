@@ -1,0 +1,10 @@
+{
+  "carrier-PTH.drl": {
+    "drill_commands_identical": true,
+    "commands_sha256": "43503208f07b6b9a3b0c054bcc0caf6fa507809d2b67fff4315a483303330416"
+  },
+  "carrier-NPTH.drl": {
+    "drill_commands_identical": true,
+    "commands_sha256": "549d1253d0e5637b058d3d44ab32efee07bc01268fec12511a2dc9bd0bd95883"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "footprints": 72,
+  "all_pads_including_mechanical": 238,
+  "segments": 581,
+  "vias": 27,
+  "source_target_native_signatures_equal": true,
+  "schematic_netlist_matches_original_model": true
+}
