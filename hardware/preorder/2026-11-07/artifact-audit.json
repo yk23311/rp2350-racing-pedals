@@ -1,0 +1,23 @@
+{
+  "original_reviewed_hashes": 54,
+  "delivery_hashes": "all match",
+  "PCB_ZIP": "9 Gerber layers equivalent;2 drill files identical;CRC clean",
+  "assembly_ZIP": "CRC and all current source payloads match",
+  "SMT_BOM_CPL": {
+    "BOM_groups": 9,
+    "placements": 53,
+    "layers": [
+      "Top"
+    ]
+  },
+  "loose_upload_CSVs": "byte-identical to verified ZIP/source tables",
+  "EDA_import_ZIP": "Original KiCad PCB only; NOT manufacturing Gerber ZIP",
+  "unconfirmed": [
+    "factory_stock_matched",
+    "factory_rotation_reviewed",
+    "factory_dfm_approved",
+    "dip_assembly_quoted",
+    "manufactured",
+    "powered_tested"
+  ]
+}

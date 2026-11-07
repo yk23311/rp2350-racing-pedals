@@ -1,5 +1,7 @@
 # RP2350 驾驶控制中心：接手入口
 
+2026-11-07下单前复核：[阶段21](docs/reports/21-preorder-review.md)。用户确认直接上传原始01 Gerber ZIP。重新ERC/DRC/原理图一致性0问题，124测试通过；54原CAD摘要、9层绘图流/2钻孔、两份ZIP及53件BOM/CPL核验通过，原生72元件234规范焊盘网络0差异。未发现阻碍少量工程样板的确定性缺陷；实际订单的库存/贴装DFM/16插件与排母高度仍待厂方确认，未下单付款或实物验收。原设计与制造包未变。
+
 2026-11-06嘉立创：用户确认PCB＋贴片装配，已准备[嘉立创专用资料及下单步骤](hardware/jlc-v0.1/README.md)，见[阶段20步骤与交接](docs/reports/20-jlc-assembly-package.md)。同一V0.1原板另导出RS-274-X，9层图形流等价/钻孔未变，原生ERC/DRC清洁，Python124项通过；9组53件SMT的BOM/CPL另附16个插件询价说明。下载`dist/carrier-jlc-v0.1/`，LCSC编号/库存、厂家旋转/DFM及插件代焊尚未确认，没有制造订单或付款。CAD/固件保持不变。
 
 2026-11-06最新硬件：**可扩展底板V0.1工程样板已绘制**，见[阶段19](docs/reports/19-expandable-carrier-pcb.md)、[底板工程/接线表](hardware/carrier/README.md)。72器件、100×80mm双层，原生ERC0/0、DRC0违规/0未连接/0一致性错误，Python118项通过；Gerber/钻孔和可编辑工程已交付`dist/carrier-v0.1/`。用户暂定MiGE90ST-M02430，驱动器未选，J11只预留低压接口子板；未制作/上电/电机验证。分支`codex/expandable-carrier`，未推送；既有0.5.0固件未改，新扩展需要后续适配。
