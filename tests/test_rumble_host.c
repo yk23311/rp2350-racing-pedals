@@ -35,6 +35,7 @@ bool usbh_edpt_xfer(uint8_t addr,uint8_t ep,uint8_t *buffer,uint16_t size) {
 }
 void usbh_driver_set_config_complete(uint8_t addr,uint8_t itf) {CHECK(addr==1 && itf==0);}
 bool tud_cdc_connected(void) {return false;}
+bool tud_inited(void) {return true;}
 uint32_t tud_cdc_write(const void *data,uint32_t size) {(void)data;return size;}
 void tud_cdc_write_flush(void) {}
 static void tick(void){now++;host_task();}

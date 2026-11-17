@@ -9,6 +9,8 @@ import time
 
 from PySide6.QtCore import QObject, QTimer, Signal, Slot
 
+USB_MODE_PIDS = {"USBMODE XINPUT": 0x4012, "USBMODE WHEEL": 0x4013}
+
 try:
     from .pedalctl import Client, CommandRejected, ProtocolError, open_link
     from .firmware_update import FirmwareUpdater, UpgradeCancelled
@@ -120,6 +122,9 @@ class Session(QObject):
         if any(not isinstance(c, str) or not c or len(c) > 127 or
                any(ord(ch) < 32 or ord(ch) > 126 for ch in c) for c in commands):
             self.message.emit("命令必须是最多 127 字符的单行 ASCII", True)
+            return
+        if len(commands) > 1 and any(c in USB_MODE_PIDS for c in commands):
+            self.message.emit("USB 模式切换需要单独提交", True)
             return
         with self._condition:
             if self._upgrade_busy:
@@ -244,9 +249,10 @@ class Session(QObject):
     def _scan(self):
         records = []
         for info in self._discover():
-            if info.vid == 0xCAFE and info.pid in (0x4011, 0x4012):
+            if info.vid == 0xCAFE and info.pid in (0x4011, 0x4012, 0x4013):
                 records.append({"device": info.device,
                                 "description": info.description or "RP2350",
+                                "pid": info.pid,
                                 "serial_number": info.serial_number or None})
         return sorted(records, key=lambda p: p["device"])
 
@@ -435,6 +441,9 @@ class Session(QObject):
         return link, client, caps if link is not None else {}, profile if link is not None else None
 
     def _failed(self, epoch, error):
+        self._end_connection(epoch, "连接已关闭", "串口连接失败：" + str(error), True)
+
+    def _end_connection(self, epoch, description, message, error=False):
         with self._condition:
             if self._stop or epoch != self._epoch:
                 return
@@ -445,8 +454,9 @@ class Session(QObject):
             self._priority_stop = False
             self._latest = None
             self._suppressed = not bool(self._target_serial)
-            self._events.append((self._epoch, "connected", (False, "连接已关闭")))
-            self._events.append((self._epoch, "message", ("串口连接失败：" + str(error), True)))
+            self._events.append((self._epoch, "connected", (False, description)))
+            self._events.append((self._epoch, "message", (message, error)))
+            return self._epoch
 
     def _run(self):
         link = client = None
@@ -454,6 +464,7 @@ class Session(QObject):
         caps, profile, records = {}, None, []
         next_scan = next_poll = 0.0
         previous_ports = None
+        usb_switch = None
         try:
             while True:
                 with self._condition:
@@ -476,6 +487,13 @@ class Session(QObject):
                     next_poll = time.monotonic() + self._poll_interval
                     continue
                 now = time.monotonic()
+                if usb_switch:
+                    switch_epoch, expected_pid, deadline = usb_switch
+                    if switch_epoch != epoch:
+                        usb_switch = None
+                    elif now >= deadline:
+                        usb_switch = None
+                        self._event(epoch, "message", "等待新 USB 模式超时，正在重新识别设备", True)
                 if now >= next_scan or desired is not None:
                     try:
                         records = self._scan()
@@ -501,6 +519,8 @@ class Session(QObject):
                         elif not self._suppressed:
                             matching = ([p for p in records if p["serial_number"] == self._target_serial]
                                         if self._target_serial else records)
+                            if usb_switch:
+                                matching = [p for p in matching if p["pid"] == expected_pid]
                             if len(matching) == 1:
                                 candidate = matching[0]
                     if candidate is not None:
@@ -524,6 +544,9 @@ class Session(QObject):
                                 self._suppressed = False
                             self._event(epoch, "connected", True, candidate["device"])
                             self._publish(epoch, state)
+                            if usb_switch:
+                                usb_switch = None
+                                self._event(epoch, "message", "USB 模式已切换。回零后可保存到 Flash", False)
                             next_poll = time.monotonic() + self._poll_interval
                         except _Cancelled:
                             continue
@@ -541,6 +564,7 @@ class Session(QObject):
                             self._check(batch_epoch)
                             saved = False
                             rejected = False
+                            switching = False
                             for command in commands:
                                 self._check(epoch)
                                 self._service_stop(client, epoch)
@@ -552,12 +576,26 @@ class Session(QObject):
                                 if stale_test:
                                     continue
                                 try:
-                                    client.request(command)
+                                    answer = client.request(command)
+                                    if command in USB_MODE_PIDS:
+                                        if not isinstance(answer, dict) or type(answer.get("usb_switch")) is not bool:
+                                            raise ProtocolError("USB mode acknowledgement missing")
+                                        if answer["usb_switch"]:
+                                            new_epoch = self._end_connection(
+                                                epoch, "正在切换 USB 模式", "等待同一开发板重新连接")
+                                            if new_epoch is not None:
+                                                usb_switch = (new_epoch, USB_MODE_PIDS[command],
+                                                              time.monotonic() + self._reconnect_timeout)
+                                                next_scan = 0
+                                            switching = True
+                                            break
                                     saved |= command == "SAVE"
                                 except CommandRejected as exc:
                                     rejected = True
                                     self._event(epoch, "message", "设备拒绝 " + command + "：" + str(exc) + "；连接保持", True)
                                     break
+                            if switching:
+                                continue
                             with self._condition:
                                 if self._upgrade_busy:
                                     continue

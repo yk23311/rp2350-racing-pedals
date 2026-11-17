@@ -16,6 +16,7 @@ typedef enum { HID_REPORT_TYPE_INPUT=1,HID_REPORT_TYPE_OUTPUT=2 } hid_report_typ
 enum { TUSB_ROLE_DEVICE=1, TUSB_SPEED_FULL=2 };
 typedef struct { uint8_t role,speed; } tusb_rhport_init_t;
 bool tusb_init(uint8_t rhport,const tusb_rhport_init_t *init);
+bool tud_deinit(uint8_t rhport);
 #else
 bool tusb_init(void);
 #endif

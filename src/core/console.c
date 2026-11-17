@@ -20,7 +20,7 @@ static void status(const pedal_t *p,char *out) {
         "\"raw\":[%u,%u],\"filtered\":[%u,%u],\"output\":[%u,%u],\"axes\":["
         "{\"released\":%u,\"pressed\":%u,\"on\":%u,\"off\":%u,\"gamma\":%u,\"window\":%u,\"calibrated\":%s},"
         "{\"released\":%u,\"pressed\":%u,\"on\":%u,\"off\":%u,\"gamma\":%u,\"window\":%u,\"calibrated\":%s}]}\n",
-        PEDAL_USB_XINPUT?"XINPUT":"HID",
+        PEDAL_USB_XINPUT?(control_current()->wheel_mode?"WHEEL":"XINPUT"):"HID",
         p->mode==PEDAL_KEYBOARD?"KEYBOARD":"JOYSTICK",p->armed?"true":"false",p->calibration_axis,
         p->raw[0],p->raw[1],p->filtered[0],p->filtered[1],p->output[0],p->output[1],
         a->released,a->pressed,a->on,a->off,a->gamma,a->window,a->calibrated?"true":"false",

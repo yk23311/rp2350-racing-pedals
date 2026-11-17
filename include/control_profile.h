@@ -15,6 +15,8 @@ typedef struct {
     control_stick_t sticks[2];
     control_trigger_t triggers[2];
     control_binding_t bindings[CONTROL_BUTTONS];
+    uint8_t throttle_axis;
+    uint8_t wheel_mode;
 } control_profile_t;
 void control_defaults(control_profile_t *profile);
 bool control_profile_valid(const control_profile_t *profile);

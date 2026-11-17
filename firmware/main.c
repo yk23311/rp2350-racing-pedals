@@ -15,17 +15,18 @@ static console_input_t input;
 static char response[CONSOLE_RESPONSE_SIZE];
 static size_t tx_pos,tx_len;
 #if PEDAL_USB_HOST
-static bool boot_reply_queued,boot_reply_acked;
+static bool transition_reply_queued,transition_reply_acked;
 void tud_cdc_tx_complete_cb(uint8_t instance) {
-    if(instance==0 && pedal_usb_boot_pending() && boot_reply_queued && tud_cdc_write_available()==CFG_TUD_CDC_TX_BUFSIZE)
-        boot_reply_acked=true;
+    if(instance==0 && (pedal_usb_boot_pending() || pedal_usb_switch_pending()) &&
+       transition_reply_queued && tud_cdc_write_available()==CFG_TUD_CDC_TX_BUFSIZE)
+        transition_reply_acked=true;
 }
 #endif
 void tud_cdc_line_state_cb(uint8_t instance,bool dtr,bool rts) {
     (void)rts;
     if(instance==0 && !dtr) {
 #if PEDAL_USB_HOST
-        if(!boot_reply_acked)boot_reply_queued=false;
+        if(!transition_reply_acked)transition_reply_queued=false;
 #endif
         tx_pos=tx_len=0; memset(&input,0,sizeof(input));
         tud_cdc_write_clear(); tud_cdc_read_flush();
@@ -59,19 +60,19 @@ int main(void) {
             if(pedal_button_update(&button,pedal_hal_button(),to_ms_since_boot(get_absolute_time())))
                 pedal_mode(&pedal,pedal.mode==PEDAL_JOYSTICK?PEDAL_KEYBOARD:PEDAL_JOYSTICK);
         }
-        if(!tud_cdc_connected()) {
+        if(!tud_inited() || !tud_cdc_connected()) {
 #if PEDAL_USB_HOST
-            if(!boot_reply_acked)boot_reply_queued=false;
+            if(!transition_reply_acked)transition_reply_queued=false;
 #endif
             tx_pos=tx_len=0; memset(&input,0,sizeof(input));
-            tud_cdc_write_clear(); tud_cdc_read_flush();
+            if(tud_inited()) { tud_cdc_write_clear(); tud_cdc_read_flush(); }
         }
         else {
             if(tx_pos<tx_len) {
                 tx_pos+=tud_cdc_write(response+tx_pos,(uint32_t)(tx_len-tx_pos));
 #if PEDAL_USB_HOST
-                if(pedal_usb_boot_pending() && tx_pos==tx_len &&
-                   !strcmp(response,"OK {\"bootsel\":true}\n"))boot_reply_queued=true;
+                if(tx_pos==tx_len && ((pedal_usb_boot_pending() && !strcmp(response,"OK {\"bootsel\":true}\n")) ||
+                   (pedal_usb_switch_pending() && !strcmp(response,USB_SWITCH_REPLY))))transition_reply_queued=true;
 #endif
             }
             tud_cdc_write_flush();
@@ -85,8 +86,10 @@ int main(void) {
             }
         }
 #if PEDAL_USB_HOST
-        if(pedal_usb_boot_ready(boot_reply_acked))rom_reset_usb_boot(0,0);
-        if(!pedal_usb_boot_pending())boot_reply_queued=boot_reply_acked=false;
+        if(pedal_usb_boot_ready(transition_reply_acked))rom_reset_usb_boot(0,0);
+        pedal_usb_switch_task(transition_reply_acked);
+        if(!pedal_usb_boot_pending() && !pedal_usb_switch_pending())
+            transition_reply_queued=transition_reply_acked=false;
 #endif
         tight_loop_contents();
     }

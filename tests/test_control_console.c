@@ -13,13 +13,21 @@ int main(void) {
     CHECK(control_current()->sticks[0].gamma==200);
     console_execute(&p,"TRIGGER 1 500 300",NULL,NULL,out); CHECK(strcmp(out,"OK\n")==0 && control_current()->triggers[1].gamma==300);
     console_execute(&p,"BIND 13 1 225",NULL,NULL,out); CHECK(strcmp(out,"OK\n")==0 && control_current()->bindings[13].target==225);
-    const char *bad[]={"STICK 2 0 100 0","STICK 0 9501 100 0","STICK 0 0 99 0","STICK 0 0 401 0","STICK 0 0 100 4","TRIGGER 0 -1 100","BIND 14 0 0","BIND 0 0 14","BIND 0 1 0","BIND 0 2 1","BIND 0 257 4","BIND 0 1 999999999999999999999999999","PROFILE extra"};
+    generation=p.generation;
+    console_execute(&p,"PEDALMAP 1",NULL,NULL,out);
+    CHECK(strcmp(out,"OK\n")==0 && control_current()->throttle_axis==1 && p.generation==generation+1);
+    CHECK(p.config.axis[0].gamma==c.axis[0].gamma && p.config.axis[1].gamma==c.axis[1].gamma);
+    console_execute(&p,"PROFILE",NULL,NULL,out);
+    CHECK(strstr(out,"\"throttle_axis\":1"));
+    const char *bad[]={"STICK 2 0 100 0","STICK 0 9501 100 0","STICK 0 0 99 0","STICK 0 0 401 0","STICK 0 0 100 4","TRIGGER 0 -1 100","BIND 14 0 0","BIND 0 0 14","BIND 0 1 0","BIND 0 2 1","BIND 0 257 4","BIND 0 1 999999999999999999999999999","PROFILE extra","PEDALMAP 2","PEDALMAP 0 1"};
     for(unsigned i=0;i<sizeof(bad)/sizeof(bad[0]);i++) {
-        control_profile_t before=*control_current(); generation=p.generation;
+        control_profile_t before; memcpy(&before,control_current(),sizeof(before)); generation=p.generation;
         console_execute(&p,bad[i],NULL,NULL,out); CHECK(strncmp(out,"ERR",3)==0);
         CHECK(memcmp(&before,control_current(),sizeof(before))==0 && generation==p.generation);
     }
-    CHECK(pedal_cal_begin(&p,0)); control_profile_t before=*control_current();
+    CHECK(pedal_cal_begin(&p,0)); control_profile_t before; memcpy(&before,control_current(),sizeof(before));
     console_execute(&p,"BIND 0 2 0",NULL,NULL,out); CHECK(strncmp(out,"ERR",3)==0 && memcmp(&before,control_current(),sizeof(before))==0);
+    console_execute(&p,"PEDALMAP 0",NULL,NULL,out);
+    CHECK(strncmp(out,"ERR",3)==0 && control_current()->throttle_axis==1 && p.calibration_axis==0);
     puts("PASS: bounded control protocol, atomic validation and mutation reset"); return 0;
 }

@@ -30,15 +30,23 @@ int main(void) {
     CHECK(erases==0); /* migration is RAM only until explicit SAVE */
     CHECK(storage_save(&d)); CHECK(erases==1 && memcmp(fake_flash+sizeof(fake_flash)-4096,"PDL2",4)==0);
     CHECK(storage_save(&d)); CHECK(erases==1);
+    CHECK(fake_flash[sizeof(fake_flash)-4096+84]==0xff &&
+          fake_flash[sizeof(fake_flash)-4096+85]==0xff);
     control_profile_t custom=*control_current(); custom.sticks[0]=(control_stick_t){1250,250,3};
     custom.triggers[1]=(control_trigger_t){500,300}; custom.bindings[10]=(control_binding_t){1,0xe1};
+    custom.throttle_axis=1; custom.wheel_mode=1;
     for(size_t cut=0;cut<CONTROL_RECORD_SIZE;cut++) {
         *control_current()=custom; program_limit=cut; CHECK(!storage_save(&d));
         storage_load(&d); CHECK(d.axis[0].calibrated && d.axis[0].released==300 && control_current()->sticks[0].gamma==100);
+        CHECK(control_current()->throttle_axis==0 && control_current()->wheel_mode==0);
     }
     *control_current()=custom; program_limit=256; CHECK(storage_save(&d));
     control_defaults(control_current()); storage_load(&c);
-    CHECK(c.axis[0].calibrated && c.axis[0].pressed==3800 && memcmp(control_current(),&custom,sizeof(custom))==0);
+    CHECK(c.axis[0].calibrated && c.axis[0].pressed==3800);
+    uint8_t actual[CONTROL_RECORD_SIZE],expected[CONTROL_RECORD_SIZE];
+    CHECK(control_record_encode(&c,control_current(),0,actual));
+    CHECK(control_record_encode(&d,&custom,0,expected));
+    CHECK(memcmp(actual,expected,sizeof(actual))==0);
     unsigned before=erases; CHECK(storage_save(&c) && before==erases);
     safe_failure=true; control_current()->triggers[0].gamma=400; CHECK(!storage_save(&c));
     safe_failure=false; storage_load(&d); CHECK(control_current()->triggers[0].gamma==100);

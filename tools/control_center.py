@@ -113,6 +113,8 @@ class ControlCenter(QMainWindow):
         self._loading, self._revision, self._pending_revision = False, 0, None
         self._pending_save, self._saved, self._applied_changed = False, False, False
         self._baseline, self._latest, self._has_profile = None, {}, False
+        self._throttle_axis = 0
+        self.pedal_titles = []
         self._persistent_config = None
         self._last_snapshot = None
         self._upgrade_busy, self._upgrade_stage = False, ""
@@ -213,16 +215,25 @@ class ControlCenter(QMainWindow):
         return spin
 
     def _pedals_page(self):
-        page=QWidget(); box=QVBoxLayout(page); box.setContentsMargins(0,0,0,10)
+        page=QWidget(); box=QVBoxLayout(page); box.setContentsMargins(0,0,0,6)
         row=QHBoxLayout(); row.addWidget(label("输出模式", "muted")); self.mode_combo=QComboBox()
-        self.mode_combo.addItem("原生 XInput 手柄", "JOYSTICK"); self.mode_combo.addItem("键盘 W / S", "KEYBOARD")
-        self.mode_combo.setToolTip("输出模式仅在当前 RAM 会话生效；重启恢复 JOYSTICK。保存到 Flash 保存调校参数，不保存输出模式。")
+        self.mode_combo.addItem("模拟轴", "JOYSTICK"); self.mode_combo.addItem("键盘 W / S", "KEYBOARD")
+        self.mode_combo.setToolTip("踏板输出选择仅在当前 RAM 会话生效，重启恢复模拟轴（JOYSTICK）。")
         self.mode_combo.currentIndexChanged.connect(self._edited); row.addWidget(self.mode_combo); row.addStretch()
         row.addWidget(label("本地预览 → 应用到 RAM → 保存到 Flash", "muted")); box.addLayout(row)
+        routing=QHBoxLayout(); box.addLayout(routing)
+        self.usb_mode_label=label("USB 设备 —","muted"); routing.addWidget(self.usb_mode_label)
+        self.usb_mode_button=QPushButton("切换为 USB 方向盘")
+        self.usb_mode_button.clicked.connect(self.switch_usb_mode); routing.addWidget(self.usb_mode_button)
+        routing.addStretch()
+        self.swap_pedals_button=QPushButton("互换 J1 / J2 油门与刹车")
+        self.swap_pedals_button.clicked.connect(self.swap_pedals); routing.addWidget(self.swap_pedals_button)
         cards=QHBoxLayout(); cards.setSpacing(16); box.addLayout(cards)
-        for i,(title,color) in enumerate((("油门 · GP26 / RT","#43ddbd"),("刹车 · GP27 / LT","#9f91ff"))):
-            frame,layout=card(title,"校准行程、释放迟滞与响应曲线")
-            plot=CurvePlot(color); plot.setMinimumHeight(145); self.pedal_plots.append(plot); layout.addWidget(plot)
+        for i,color in enumerate(("#43ddbd","#9f91ff")):
+            frame,layout=card()
+            heading=label(f"J{i+1} / GP{26+i}","sectionTitle")
+            layout.addWidget(heading); self.pedal_titles.append(heading)
+            plot=CurvePlot(color); plot.setMinimumHeight(140); self.pedal_plots.append(plot); layout.addWidget(plot)
             form=QGridLayout(); form.setSpacing(8)
             edits={"on":self._spin(.01,50,3," %"),"off":self._spin(0,49.99,1," %"),
                    "gamma":self._spin(1,4,1 if i==0 else 2," γ"),"window":self._spin(1,8,4," 点",True)}
@@ -313,6 +324,8 @@ class ControlCenter(QMainWindow):
                 for edits in editors:
                     result["profile"][name].append({key:widget.currentData() if key=="invert" else int(round(widget.value()*100)) for key,widget in edits.items()})
             result["profile"]["bindings"]=[[kind.currentData(),target.currentData() or 0] for kind,target in self.binding_editors]
+            if "throttle_axis" in (self._latest.get("profile") or {}):
+                result["profile"]["throttle_axis"]=self._throttle_axis
         return result
 
     def _config_from_snapshot(self,data):
@@ -327,6 +340,7 @@ class ControlCenter(QMainWindow):
         for edits,values in zip(self.pedal_editors,config["axes"]):
             for key,widget in edits.items():widget.setValue(values[key]/(1 if key=="window" else 100))
         profile=config.get("profile")
+        self._throttle_axis=(profile or {}).get("throttle_axis",0)
         if profile:
             for name,editors in (("sticks",self.stick_editors),("triggers",self.trigger_editors)):
                 for edits,values in zip(editors,profile[name]):
@@ -445,9 +459,17 @@ class ControlCenter(QMainWindow):
         pedal=self._latest.get("pedal",{}); telemetry=self._latest.get("telemetry")
         stale=(self.connected or self.demo) and self._last_snapshot is not None and not self._data_fresh()
         live=(self.connected or self.demo) and bool(pedal) and self._data_fresh()
-        for i,gauge in enumerate(self.gauges):gauge.set_value((pedal.get("output",[0,0])[i]/65535)*100,live)
+        throttle=(self._latest.get("profile") or {}).get("throttle_axis",0)
+        if throttle not in (0,1):throttle=0
+        wheel=(telemetry or {}).get("wheel")
+        wheel_live=bool(live and wheel and len(wheel)==4)
+        axes=[throttle,1-throttle]
+        for i,gauge in enumerate(self.gauges):
+            gauge.title=(("油门 · 加速轴","刹车 · 制动轴") if wheel_live else ("油门 · RT","刹车 · LT"))[i]
+            value=wheel[i+1] if wheel_live else pedal.get("output",[0,0])[axes[i]]
+            gauge.set_value(value/65535*100,live)
         if live:
-            self.pedal_summary.setText("油门  原始 {} / 滤波 {}      刹车  原始 {} / 滤波 {}".format(*[pedal.get(k,[0,0])[i] for i in (0,1) for k in ("raw","filtered")]))
+            self.pedal_summary.setText("J1 原始 {} / 滤波 {}      J2 原始 {} / 滤波 {}".format(*[pedal.get(k,[0,0])[i] for i in (0,1) for k in ("raw","filtered")]))
             cal=pedal.get("calibration_axis",-1)
             blocked=bool(telemetry and telemetry.get("blocked"))
             self.device_state.setText("模拟设备 · 演示输入" if self.demo else "校准进行中" if cal>=0 else "等待手柄回零 · 输出已阻止" if blocked else "输出已使能" if pedal.get("armed") else "等待回零使能")
@@ -491,6 +513,8 @@ class ControlCenter(QMainWindow):
             states=("未接入","枚举中","握手中","输入活动","输入超时")
             st=telemetry.get("state",0); state=states[st] if 0<=st<len(states) else str(st)
             self.host_status.setText(f"{'模拟 Host' if self.demo else 'USB Host'} · {state} · 报告年龄 {host_age} ms\n报告 {telemetry.get('reports',0)} · 超时 {telemetry.get('timeouts',0)}"+(" · Host 读数无效" if not fresh else ""))
+            if wheel_live:
+                self.host_status.setText(self.host_status.text()+f"\n方向盘转向 {wheel[0]/32768:+.1%}")
             keys=telemetry.get("keys",[0]*8)
             self.keyboard_status.setText("键盘 HID  "+" ".join(f"{v:02X}" for v in keys)+(" · 按键过多" if telemetry.get("keyboard_rollover") else "")+(" · 输出已阻止" if telemetry.get("blocked") else ""))
         else:
@@ -517,6 +541,16 @@ class ControlCenter(QMainWindow):
             kind.setEnabled(self._has_profile and not self._upgrade_busy)
             target.setEnabled(self._has_profile and kind.currentData()!=2 and not self._upgrade_busy)
         caps=self._latest.get("capabilities") or {}
+        usb_mode=caps.get("usb_mode") or self._latest.get("pedal",{}).get("usb_transport")
+        self.usb_mode_label.setText("USB 设备 · "+{"WHEEL":"原生方向盘","XINPUT":"Xbox 手柄","HID":"HID 摇杆"}.get(usb_mode,"—"))
+        self.usb_mode_button.setText("切换为 Xbox 手柄" if usb_mode=="WHEEL" else "切换为 USB 方向盘")
+        self.usb_mode_button.setEnabled(ready and not pending and not self.dirty and
+            bool(caps.get("wheel")) and caps.get("usb_mode") in ("XINPUT","WHEEL") and
+            self._latest.get("pedal",{}).get("calibration_axis",-1)<0)
+        self.swap_pedals_button.setEnabled(ready and not pending and bool(caps.get("pedal_map")) and
+            (self._latest.get("profile") or {}).get("throttle_axis") in (0,1))
+        for i,title in enumerate(self.pedal_titles):
+            title.setText(f"J{i+1} / GP{26+i} · {'油门' if i==self._throttle_axis else '刹车'}")
         self.test_page.set_context(self.connected,self._data_fresh(),caps,self._latest.get("rumble"),self._upgrade_busy)
         version=caps.get("version") or self._latest.get("version")
         self.upgrade_page.set_context(self.connected,self._data_fresh(),caps,version)
@@ -536,6 +570,9 @@ class ControlCenter(QMainWindow):
             if axis!=self._baseline["axes"][i]:commands.append("SET {} {} {} {} {}".format(i,axis["on"],axis["off"],axis["gamma"],axis["window"]))
         if current["mode"]!=self._baseline["mode"]:commands.append("MODE "+current["mode"])
         if "profile" in current:
+            throttle=current["profile"].get("throttle_axis")
+            if throttle is not None and throttle!=self._baseline["profile"].get("throttle_axis"):
+                commands.append(f"PEDALMAP {throttle}")
             for name,command,keys in (("sticks","STICK",("deadzone","gamma","invert")),("triggers","TRIGGER",("deadzone","gamma"))):
                 for i,values in enumerate(current["profile"][name]):
                     if values!=self._baseline.get("profile",{}).get(name,[None,None])[i]:commands.append(f"{command} {i} "+" ".join(str(values[k]) for k in keys))
@@ -543,6 +580,19 @@ class ControlCenter(QMainWindow):
                 if binding!=self._baseline["profile"]["bindings"][i]:commands.append(f"BIND {i} {binding[0]} {binding[1]}")
         if commands:
             self._saved=False;self._pending_revision=self._revision; self._update_state(); self.session.submit(commands)
+
+    def swap_pedals(self):
+        if self.swap_pedals_button.isEnabled():
+            self._throttle_axis=1-self._throttle_axis
+            self._edited()
+
+    def switch_usb_mode(self):
+        if self.usb_mode_button.isEnabled():
+            current=self._latest["capabilities"]["usb_mode"]
+            target="XINPUT" if current=="WHEEL" else "WHEEL"
+            self._pending_revision=self._revision
+            self._update_state()
+            self.session.submit([f"USBMODE {target}"])
 
     def revert_changes(self):
         if self._upgrade_busy:return

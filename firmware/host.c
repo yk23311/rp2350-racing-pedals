@@ -149,7 +149,7 @@ static void host_log(const char *format, ...) {
     (void)format;
     return;
 #endif
-    if (!tud_cdc_connected()) return;
+    if (!tud_inited() || !tud_cdc_connected()) return;
     char line[HOST_LOG_SIZE];
     va_list args;
     va_start(args, format);
@@ -442,7 +442,7 @@ void host_task(void) {
     uint32_t now = host_now_ms();
     bridge_tick(&host_state, now);
     host_rumble_task();
-    if (!host_banner_logged && tud_cdc_connected()) {
+    if (!host_banner_logged && tud_inited() && tud_cdc_connected()) {
         host_banner_logged = true;
         host_log("[HOST] bridge boot init=%d pin=12", host_init_ok ? 1 : 0);
     }

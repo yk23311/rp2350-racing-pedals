@@ -5,6 +5,9 @@
 extern const uint8_t usb_device_descriptor[18];
 extern const uint8_t usb_configuration_descriptor[125];
 extern const uint8_t usb_joystick_descriptor[];
+extern const uint8_t usb_wheel_device_descriptor[18];
+extern const uint8_t usb_wheel_configuration_descriptor[125];
+extern const uint8_t usb_wheel_descriptor[];
 extern const uint8_t usb_keyboard_descriptor[];
 extern const size_t usb_joystick_descriptor_size,usb_keyboard_descriptor_size;
 #endif

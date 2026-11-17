@@ -1,16 +1,16 @@
 # 基于 RP2350 的赛车模拟器油门与刹车
 
-**嘉立创PCB＋贴片装配资料**：见[上传文件与填写步骤](hardware/jlc-v0.1/README.md)和[阶段20交接](docs/reports/20-jlc-assembly-package.md)。本地下载包位于`dist/carrier-jlc-v0.1/`；包含RS-274-X PCB包、53件SMT BOM/坐标和插件询价说明，尚未在工厂匹配库存或下单。
+**嘉立创打样资料**包括 [Gerber ZIP](hardware/jlc-v0.1/01-PCB-Gerber-RS274X.zip)、[SMT BOM](hardware/jlc-v0.1/02-BOM-SMT.csv)、[贴装坐标](hardware/jlc-v0.1/03-CPL-SMT.csv)和[下单说明](hardware/jlc-v0.1/README.md)。
 
-**可扩展接线底板V0.1**已绘制：四路模拟端子、16键、I²C屏幕、面板编码器、震动控制与直驱接口子板槽；可编辑KiCad工程、BOM、Gerber/钻孔见[底板说明](hardware/carrier/README.md)，检查及交接见[阶段19](docs/reports/19-expandable-carrier-pcb.md)。暂定电机MiGE90ST-M02430，驱动器未选；底板无电机功率级，新扩展需后续固件。工程样板未制造/上电验证，公共Release不含该硬件。
+**可扩展接线底板 V0.1**预留四路模拟端子、16 键、I²C 屏幕、面板编码器、震动控制和直驱接口子板槽。源码与针脚说明见 [KiCad 工程](hardware/carrier/README.md)，手焊见[材料清单、焊接手册和分区图](hardware/carrier-assembly-v0.1/README.md)。实板已用于双踏板测试，扩展接口仍需固件适配和上板验收。
 
 **下载：[v0.4.0 预发布版](https://github.com/yk23311/rp2350-racing-pedals/releases/tag/v0.4.0)**，包含普通/诊断UF2、含GUI的源码包、快速说明与SHA256。软件测试通过，仍待实机验收；GUI源码包需Python环境。
 
-**本地开发版0.5.0**新增十四键检查、板端限时双马达震动测试及一键UF2升级，含0.4.1震动转发修复。58项C与109项Python测试通过；尚未发布/烧录/实机验收，详见[阶段18步骤及交接](docs/reports/18-gui-tests-updater.md)。公共v0.4.0附件不包含这些新增功能。
+**当前源码 0.6.0**支持 J1/J2 油门刹车互换、Xbox 桥接与原生 HID 方向盘切换，以及按键测试、震动测试和一键升级。Windows 已验证实板的三个独立方向盘轴，《地平线 6》的自定义方向盘布局保存仍待验证。 [操作与验证记录](docs/reports/25-simulator-wheel-handoff.md)
 
 **新版驾驶控制中心已实现**：自动识别串口，实时踏板百分比、手柄按键/摇杆/扳机监视，踏板和手柄曲线预览与调参，手柄按钮→手柄/键盘映射。双击根目录 **启动调参GUI.bat**，详见[一步步使用说明](docs/control-center.md)。
 
-完整功能需要新版`dist/host/pedals-host.uf2`（0.5.0-device-tests-updater）；本地交付副本为`dist/gui-upgrade/pedals-bridge-v0.5.0.uf2`。Type-C接电脑，2.4G接收器插板卡USB-A，GP26/27踏板保持原接线；曲线和映射在板端执行，关闭GUI仍有效，不依赖Steam或电脑虚拟手柄。新版已构建，**尚未烧录或实机验收**。
+按下文构建桥接固件，产物为 `dist/host/pedals-host.uf2`。Type-C 接电脑，2.4G 接收器插板卡 USB-A，踏板接底板 J1/J2。曲线和映射由板端执行，关闭 GUI 后仍有效。
 
 旧固件可继续调踏板；手柄遥测和配置会明确显示不支持。新固件能迁移读取旧PDL1校准；显式保存后使用PDL2，旧固件不能读取新格式，降级前请备份校准。下文旧HID/Tk内容作为历史与兼容路线保留，最新入口为[HANDOFF.md](HANDOFF.md)。
 
@@ -108,4 +108,4 @@ python tools/pedalctl.py --port COM5 monitor --seconds 3600 --interval 0.1 --out
 - 当前为开发验证版本；实机验收记录见交接总表。标准HID不等于XInput，按目标游戏验证兼容性。
 - 开发 VID/PID 为 `CAFE:4011`，不作为正式分配的产品身份；发布硬件前需获得合适的USB身份并复验描述符。
 - 固件声明最大100mA USB总电流，连接传感器前确认整板与传感器总需求；不在此供电预算内接电机。
-- 屏幕菜单、方向盘、触觉反馈和复杂宏未实现，属于后续扩展。
+- 方向盘模式支持输入。屏幕菜单、底板外置震动马达和伺服力反馈仍需适配。

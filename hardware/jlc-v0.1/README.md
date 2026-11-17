@@ -4,7 +4,7 @@
 
 ## 你现在做的第一步
 
-下载 `dist/carrier-jlc-v0.1/carrier-jlc-v0.1-order-files.zip` 并解压。完整资料包不要整体上传到PCB识别框：PCB步骤只上传内含的 `01-PCB-Gerber-RS274X.zip`。
+下载 [01-PCB-Gerber-RS274X.zip](01-PCB-Gerber-RS274X.zip)。此 ZIP 可直接上传到 PCB 识别框。需要贴片装配时，再在 SMT 页面上传 [BOM](02-BOM-SMT.csv)和[坐标](03-CPL-SMT.csv)。
 
 在嘉立创网页的 PCB在线下单入口上传该01文件，不必把KiCad工程转换为立创EDA工程。
 
@@ -34,7 +34,7 @@
 3. CSV为UTF-8带BOM、英文逗号分隔。字段映射：Comment=型号/描述，Designator=位号，Footprint=封装，Quantity=单板数量；Manufacturer Part为准确原厂型号。**LCSC Part #为空，需在嘉立创订单内逐组匹配，不能把空编号理解为已选料。**
 4. 封装和参数逐项核对，尤其U2是宽体SOIC-24，不是TSSOP-24；U3是TSSOP-28，不是QFN。电容必须保留容量、耐压、X7R和0805；电阻为0805、1%。F1、D1-D4保持原厂型号，替料须另核对。
 5. 坐标单位mm，全部Top；Y为负数来自KiCad原点在板左上，已保留原生坐标，不要自行取绝对值或镜像。角度归一化为0≤角度<360，尚未验证工厂选定物料的零度约定，须检查工厂贴装预览。
-6. 对照 `reference/carrier-assembly-top.svg` 确认U2/U3的1脚、芯片型号、焊盘对齐。选择或向工程申请确认生产稿/DFM后再放行生产，以实际订单支持流程为准。
+6. 对照[顶层装配图](../carrier/previews/carrier-assembly-top.svg)确认 U2/U3 的 1 脚、芯片型号和焊盘对齐。选择或向工程申请确认生产稿/DFM后再放行生产，以实际订单支持流程为准。
 7. **如果你希望收到后完全不焊接，还必须同时安排下一节插件焊接；仅完成这两份CSV的订单会缺端子和排母。**
 
 ## 插件也需要焊：另行交给工程确认

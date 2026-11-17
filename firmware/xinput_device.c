@@ -6,6 +6,9 @@
 #ifndef PEDAL_USB_HOST
 #define PEDAL_USB_HOST 0
 #endif
+#if PEDAL_USB_HOST
+#include "usb.h"
+#endif
 /* App driver for MS-XUSBI, using the SDK-pinned TinyUSB endpoint API. */
 static bool opened;
 static uint32_t device_serial;
@@ -82,6 +85,9 @@ void xinput_device_task(void) {
 }
 void xinput_device_set_serial(uint32_t serial) { device_serial=serial; }
 bool tud_vendor_control_xfer_cb(uint8_t p,uint8_t stage,const tusb_control_request_t *r) {
+#if PEDAL_USB_HOST
+    if(pedal_usb_wheel_mode())return false;
+#endif
     if(stage!=CONTROL_STAGE_SETUP)return true;
     int length=xinput_control_response(r->bmRequestType,r->bRequest,r->wValue,r->wIndex,control_buffer);
 #if PEDAL_USB_HOST

@@ -11,9 +11,17 @@
 
 #define CHECK(x) do { if(!(x)) { fprintf(stderr,"%s:%d: %s\n",__FILE__,__LINE__,#x);exit(1); } } while(0)
 void tud_hid_report_complete_cb(uint8_t instance,const uint8_t *report,uint16_t length);
+const uint8_t *tud_descriptor_device_cb(void);
+const uint8_t *tud_descriptor_configuration_cb(uint8_t index);
+const uint8_t *tud_hid_descriptor_report_cb(uint8_t instance);
+const uint16_t *tud_descriptor_string_cb(uint8_t index,uint16_t langid);
 static uint64_t now;
 static bool in_busy,key_busy;
+static bool wheel_busy;
+static bool usb_attached=true;
+static unsigned detach_count;
 static uint8_t native[20],keys[8];
+static uint8_t wheel_report[8];
 static bridge_t host;
 static unsigned saves;
 static bool rumble_enabled;
@@ -31,11 +39,13 @@ void host_rumble_status(host_rumble_status_t *status) {memset(status,0,sizeof(*s
 
 const bridge_t *host_bridge(void) { return &host; }
 bool tusb_init(uint8_t rhport,const tusb_rhport_init_t *init) {
-    CHECK(rhport==0 && init->role==TUSB_ROLE_DEVICE && init->speed==TUSB_SPEED_FULL);return true;
+    CHECK(rhport==0 && init->role==TUSB_ROLE_DEVICE && init->speed==TUSB_SPEED_FULL);
+    usb_attached=true;return true;
 }
+bool tud_deinit(uint8_t rhport) { CHECK(rhport==0); usb_attached=false; detach_count++; return true; }
 void tud_task(void) {}
 bool tud_ready(void) { return true; }
-bool tud_mounted(void) { return true; }
+bool tud_mounted(void) { return usb_attached; }
 bool tud_suspended(void) { return false; }
 uint64_t time_us_64(void) { return now; }
 void pico_get_unique_board_id(pico_unique_board_id_t *id) { memset(id->id,7,8); }
@@ -46,14 +56,21 @@ bool xinput_device_send(const uint8_t report[20]) {
 }
 void xinput_device_task(void) {}
 void xinput_device_set_serial(uint32_t serial) { CHECK(serial==0x07070707u); }
-bool tud_hid_n_ready(uint8_t instance) { CHECK(instance==0);return !key_busy; }
+bool tud_hid_n_ready(uint8_t instance) {
+    CHECK(instance<=(pedal_usb_wheel_mode()?1:0));
+    return pedal_usb_wheel_mode() && instance==0 ? !wheel_busy : !key_busy;
+}
 bool tud_hid_n_report(uint8_t instance,uint8_t id,const void *report,uint16_t length) {
-    CHECK(instance==0 && id==0 && length==8 && !key_busy);
+    CHECK(id==0 && length==8 && tud_hid_n_ready(instance));
+    if(pedal_usb_wheel_mode() && instance==0) {
+        memcpy(wheel_report,report,8);wheel_busy=true;return true;
+    }
     memcpy(keys,report,8);key_busy=true;return true;
 }
 static void tick(void) { now+=1000;pedal_usb_task(); }
 static void ack_native(void) { CHECK(in_busy);in_busy=false;xinput_device_report_complete(true); }
-static void ack_keys(void) { CHECK(key_busy);key_busy=false;tud_hid_report_complete_cb(0,keys,8); }
+static void ack_keys(void) { CHECK(key_busy);key_busy=false;tud_hid_report_complete_cb(pedal_usb_wheel_mode()?1:0,keys,8); }
+static void ack_wheel(void) { CHECK(wheel_busy);wheel_busy=false;tud_hid_report_complete_cb(0,wheel_report,8); }
 static void ack(void) { ack_native();ack_keys(); }
 static void sample(pedal_t *pedal,uint16_t throttle,uint16_t brake) {
     uint16_t raw[2]={throttle,brake};pedal_sample(pedal,raw);
@@ -237,6 +254,45 @@ static void bootsel_delayed_ack(void) {
     now+=1001;CHECK(pedal_usb_boot_ready(true));
 }
 bool pedal_usb_console(const char *line,char response[CONSOLE_RESPONSE_SIZE]);
+static void switch_wheel(void) {
+    pedal_t pedal;init(&pedal);char response[CONSOLE_RESPONSE_SIZE];
+    CHECK(pedal_usb_console("USBMODE WHEEL",response));
+    CHECK(strcmp(response,USB_SWITCH_REPLY)==0 && pedal_usb_switch_pending());
+    tick();neutral();ack();
+    now+=200000;pedal_usb_switch_task(false);
+    CHECK(usb_attached && !pedal_usb_wheel_mode());
+    pedal_usb_switch_task(true);
+    now+=60000;pedal_usb_switch_task(true);
+    CHECK(!usb_attached && detach_count==1);
+    now+=400000;pedal_usb_switch_task(false);
+    CHECK(usb_attached && pedal_usb_wheel_mode() && !pedal_usb_switch_pending());
+    CHECK(tud_descriptor_device_cb()[10]==0x13);
+    CHECK(tud_descriptor_configuration_cb(0)[31]==8);
+    const uint8_t *descriptor=tud_hid_descriptor_report_cb(0);
+    CHECK(memcmp(descriptor,(uint8_t[]){0x05,0x01,0x09,0x04,0xa1,0x01,0x05,0x02,0x09,0xc8},10)==0);
+    CHECK(tud_descriptor_string_cb(0xee,0)==NULL);
+    CHECK(pedal_usb_console("CAPS",response) && strstr(response,"\"usb_mode\":\"WHEEL\""));
+    sample(&pedal,500,500);
+    tick();CHECK(!in_busy);ack_wheel();ack_keys();
+    xinput_pad_t active={.lx=-16384,.buttons=0x8000,.lt=128};
+    report(&active);sample(&pedal,3500,500);
+    tick();
+    const uint8_t expected[]={0,0xc0,0xff,0xff,0x80,0x80,0,0x20};
+    CHECK(!in_busy && memcmp(wheel_report,expected,sizeof(expected))==0);
+    CHECK(pedal_usb_console("TELEMETRY",response) &&
+          strstr(response,"\"wheel\":[-16384,65535,32896,8192]"));
+    ack_wheel();ack_keys();
+    CHECK(pedal_usb_console("USBMODE XINPUT",response));
+    now+=1501000;pedal_usb_switch_task(false);
+    CHECK(usb_attached && pedal_usb_wheel_mode() && !pedal_usb_switch_pending());
+    CHECK(pedal_usb_console("USBMODE XINPUT",response));
+    tick();ack_wheel();ack_keys();
+    pedal_usb_switch_task(true);
+    now+=60000;pedal_usb_switch_task(true);
+    CHECK(!usb_attached && detach_count==2);
+    now+=400000;pedal_usb_switch_task(false);
+    CHECK(usb_attached && !pedal_usb_wheel_mode() && tud_descriptor_device_cb()[10]==0x12);
+}
 static void telemetry(void) {
     pedal_t pedal;init(&pedal);char response[CONSOLE_RESPONSE_SIZE];
     console_input_t input={0};
@@ -272,6 +328,7 @@ int main(int argc,char **argv) {
     else if(!strcmp(argv[1],"bootsel"))bootsel();
     else if(!strcmp(argv[1],"bootsel_ack_loss"))bootsel_ack_loss();
     else if(!strcmp(argv[1],"bootsel_delayed_ack"))bootsel_delayed_ack();
+    else if(!strcmp(argv[1],"switch_wheel"))switch_wheel();
     else return 2;
     puts("PASS: real Host bridge USB integration");return 0;
 }

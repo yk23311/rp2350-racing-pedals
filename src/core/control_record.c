@@ -2,6 +2,8 @@
 #include "config_record.h"
 #include <string.h>
 
+enum { THROTTLE_AXIS_OFFSET=84, WHEEL_MODE_OFFSET=85 };
+
 static uint16_t get16(const uint8_t *p) { return (uint16_t)(p[0]|((uint16_t)p[1]<<8)); }
 static uint32_t get32(const uint8_t *p) { return (uint32_t)get16(p)|((uint32_t)get16(p+2)<<16); }
 static void put16(uint8_t *p,uint16_t v) { p[0]=(uint8_t)v; p[1]=(uint8_t)(v>>8); }
@@ -26,6 +28,9 @@ bool control_record_encode(const pedal_config_t *pedal,const control_profile_t *
         p=out+48+4*i; put16(p,profile->triggers[i].deadzone); put16(p+2,profile->triggers[i].gamma);
     }
     for(unsigned i=0;i<CONTROL_BUTTONS;i++) { out[56+2*i]=profile->bindings[i].kind; out[57+2*i]=profile->bindings[i].target; }
+    /* Preserve the byte representation of older PDL2 records for default values. */
+    if(profile->throttle_axis) out[THROTTLE_AXIS_OFFSET]=profile->throttle_axis;
+    if(profile->wheel_mode) out[WHEEL_MODE_OFFSET]=profile->wheel_mode;
     put32(out+252,crc32(out,252)); return true;
 }
 bool control_record_decode(const uint8_t *data,size_t size,pedal_config_t *pedal,control_profile_t *profile,uint32_t *sequence) {
@@ -45,6 +50,8 @@ bool control_record_decode(const uint8_t *data,size_t size,pedal_config_t *pedal
         p=data+48+4*i; control.triggers[i].deadzone=get16(p); control.triggers[i].gamma=get16(p+2);
     }
     for(unsigned i=0;i<CONTROL_BUTTONS;i++) { control.bindings[i].kind=data[56+2*i]; control.bindings[i].target=data[57+2*i]; }
+    if(data[THROTTLE_AXIS_OFFSET]!=0xff) control.throttle_axis=data[THROTTLE_AXIS_OFFSET];
+    if(data[WHEEL_MODE_OFFSET]!=0xff) control.wheel_mode=data[WHEEL_MODE_OFFSET];
     if(!pedal_config_valid(&candidate) || !control_profile_valid(&control)) return false;
     *pedal=candidate; *profile=control; *sequence=get32(data+8); return true;
 }

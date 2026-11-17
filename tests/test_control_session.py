@@ -64,6 +64,8 @@ class Endpoint:
             return {"profile": 1, "telemetry": 1, "control_center": 1, "bridge": 1, **self.extra_caps}
         if command == "BOOTSEL":
             return {"bootsel": True}
+        if command in ("USBMODE WHEEL", "USBMODE XINPUT"):
+            return {"usb_switch": True}
         if command == "RUMBLE":
             return {"testing": False, "remaining_ms": 0}
         if command == "GET":
@@ -125,7 +127,7 @@ class SessionTests(unittest.TestCase):
         self.connected()
         self.assertEqual([x[0] for x in self.endpoint.links], ["COM_A"])
         self.assertEqual(self.port_events[-1], [{"device": "COM_A",
-            "description": "RP2350 Control Center", "serial_number": "board-a"}])
+            "description": "RP2350 Control Center", "serial_number": "board-a", "pid": 0x4012}])
         self.assertNotEqual(self.endpoint.links[0][2], threading.get_ident())
 
     def test_multiple_candidates_require_selection_and_unknown_port_is_rejected(self):
@@ -220,6 +222,18 @@ class SessionTests(unittest.TestCase):
         self.ports.append(port("COM_NEW", "board-a"))
         self.until(lambda: len(self.endpoint.links) == 2)
         self.assertEqual(self.endpoint.links[-1][0], "COM_NEW")
+
+    def test_usb_mode_switch_waits_for_new_pid_on_same_board(self):
+        session = self.connected()
+        session.submit(["USBMODE WHEEL"])
+        self.until(lambda: self.endpoint.links[0][1].closed)
+        self.ports.append(port("COM_OTHER", "board-b", pid=0x4013))
+        self.until(lambda: len(self.port_events[-1]) == 2)
+        self.assertEqual(len(self.endpoint.links), 1)
+        self.ports.append(port("COM_WHEEL", "board-a", pid=0x4013))
+        self.until(lambda: self.connections[-1] == (True, "COM_WHEEL"))
+        self.assertEqual([link[0] for link in self.endpoint.links], ["COM_A", "COM_WHEEL"])
+        self.assertEqual([c[0] for c in self.endpoint.calls].count("USBMODE WHEEL"), 1)
 
     def test_validation_and_offline_submit_do_not_open_or_replay_commands(self):
         self.ports = []

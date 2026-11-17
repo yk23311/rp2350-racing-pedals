@@ -19,7 +19,7 @@ static void profile(char out[CONSOLE_RESPONSE_SIZE]) {
         p->triggers[0].deadzone,p->triggers[0].gamma,p->triggers[1].deadzone,p->triggers[1].gamma);
     for(unsigned i=0;i<CONTROL_BUTTONS;i++) used+=snprintf(out+used,CONSOLE_RESPONSE_SIZE-(size_t)used,
         "%s[%u,%u]",i?",":"",p->bindings[i].kind,p->bindings[i].target);
-    snprintf(out+used,CONSOLE_RESPONSE_SIZE-(size_t)used,"]}\n");
+    snprintf(out+used,CONSOLE_RESPONSE_SIZE-(size_t)used,"],\"throttle_axis\":%u}\n",p->throttle_axis);
 }
 bool control_console(pedal_t *p,const char *line,char out[CONSOLE_RESPONSE_SIZE]) {
     char buf[CONSOLE_LINE_SIZE],*tokens[6]; size_t length=strlen(line),count=0;
@@ -36,14 +36,18 @@ bool control_console(pedal_t *p,const char *line,char out[CONSOLE_RESPONSE_SIZE]
     if(!count) return false;
     bool query=strcmp(tokens[0],"PROFILE")==0,stick_cmd=strcmp(tokens[0],"STICK")==0;
     bool trigger_cmd=strcmp(tokens[0],"TRIGGER")==0,bind_cmd=strcmp(tokens[0],"BIND")==0;
-    if(!query && !stick_cmd && !trigger_cmd && !bind_cmd) return false;
+    bool map_cmd=strcmp(tokens[0],"PEDALMAP")==0;
+    if(!query && !stick_cmd && !trigger_cmd && !bind_cmd && !map_cmd) return false;
     snprintf(out,CONSOLE_RESPONSE_SIZE,"ERR STATE_OR_VALUE\n");
     if(query) { if(count==1) profile(out); return true; }
-    size_t expected=stick_cmd?5:4;
+    size_t expected=stick_cmd?5:map_cmd?2:4;
     if(count!=expected || p->calibration_axis>=0) return true;
     uint16_t n[4]={0}; for(size_t i=1;i<count;i++) if(!number(tokens[i],&n[i-1])) return true;
     control_profile_t candidate=*control_current();
-    if(stick_cmd) {
+    if(map_cmd) {
+        if(n[0]>=PEDAL_AXES) return true;
+        candidate.throttle_axis=(uint8_t)n[0];
+    } else if(stick_cmd) {
         if(n[0]>=2 || n[3]>3) return true;
         candidate.sticks[n[0]]=(control_stick_t){n[1],n[2],(uint8_t)n[3]};
     } else if(trigger_cmd) {

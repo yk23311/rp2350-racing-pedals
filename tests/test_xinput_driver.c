@@ -1,4 +1,7 @@
 #include "xinput_device.h"
+#if PEDAL_USB_HOST
+bool pedal_usb_wheel_mode(void) { return false; }
+#endif
 #include "xinput_protocol.h"
 #include "device/usbd_pvt.h"
 #include <stdio.h>

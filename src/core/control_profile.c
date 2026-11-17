@@ -9,7 +9,7 @@ void control_defaults(control_profile_t *p) {
     for(unsigned i=0;i<CONTROL_BUTTONS;i++) p->bindings[i].target=(uint8_t)i;
 }
 bool control_profile_valid(const control_profile_t *p) {
-    if(!p) return false;
+    if(!p || p->throttle_axis>=PEDAL_AXES || p->wheel_mode>1) return false;
     for(unsigned i=0;i<2;i++) {
         const control_stick_t *s=&p->sticks[i]; const control_trigger_t *t=&p->triggers[i];
         if(s->deadzone>CONTROL_DEADZONE_MAX || s->gamma<CONTROL_GAMMA_MIN || s->gamma>CONTROL_GAMMA_MAX || s->invert>3 ||

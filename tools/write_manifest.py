@@ -31,11 +31,11 @@ def main():
     dirty = bool(subprocess.check_output(["git", "status", "--porcelain"], cwd=root, text=True).strip())
     manifest = {
         "built_at_utc": datetime.now(timezone.utc).isoformat(),
-        "version": {"host": "0.5.0-device-tests-updater", "xinput": "0.2.0-xinput", "hid": "0.1.0-hid"}[args.mode],
+        "version": {"host": "0.6.0-wheel", "xinput": "0.2.0-xinput", "hid": "0.1.0-hid"}[args.mode],
         "board": "waveshare_rp2350_usb_a",
         "source_revision": revision,
         "source_dirty": dirty,
-        "purpose": "Native XInput bridge, MAX(pedal, pad) triggers" if args.mode == "host" else args.mode,
+        "purpose": "USB Host bridge with XInput, HID wheel and per-port pedal routing" if args.mode == "host" else args.mode,
         "host_diagnostics": args.diagnostics,
         "configuration_format": "PDL2 (256 bytes, migrates PDL1)" if args.mode == "host" else "PDL1 (40 bytes)",
         "flashed": False,

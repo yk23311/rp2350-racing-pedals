@@ -1,4 +1,5 @@
 #include "bridge.h"
+#include "control_profile.h"
 #include "xinput_protocol.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -280,6 +281,29 @@ static void quantize(void) {
     }
 }
 
+static void wheel_and_swap(void) {
+    bridge_t bridge;
+    get_streaming(&bridge, NULL);
+    pedal_t pedal=ready_pedal();
+    pedal.output[0]=0x1212;
+    pedal.output[1]=0xa123;
+    control_current()->throttle_axis=1;
+    xinput_pad_t pad=make_pad(0x8000,-16384,64,8);
+    bridge_host_report(&bridge,&pad,50);
+    uint8_t xbox[20],wheel[WHEEL_REPORT_SIZE];
+    bridge_build_report(&bridge,&pedal,false,xbox);
+    CHECK(xbox[4]==xinput_axis_quantize(pedal.output[0]));
+    CHECK(xbox[5]==xinput_axis_quantize(pedal.output[1]));
+    bridge_build_wheel_report(&bridge,&pedal,false,wheel);
+    const uint8_t expected[]={0,0xc0,0x23,0xa1,0x40,0x40,0,0x20};
+    CHECK(memcmp(wheel,expected,sizeof(wheel))==0);
+    bridge_build_wheel_report(&bridge,&pedal,true,wheel);
+    for(unsigned i=0;i<sizeof(wheel);i++) CHECK(wheel[i]==0);
+    bridge_host_unmounted(&bridge,60);
+    bridge_build_wheel_report(&bridge,&pedal,false,wheel);
+    for(unsigned i=0;i<sizeof(wheel);i++) CHECK(wheel[i]==0);
+}
+
 int main(int argc, char **argv) {
     if (argc != 2) return 2;
     if (!strcmp(argv[1], "pedal_only")) pedal_only();
@@ -290,6 +314,7 @@ int main(int argc, char **argv) {
     else if (!strcmp(argv[1], "unmount")) unmount();
     else if (!strcmp(argv[1], "blocked")) blocked();
     else if (!strcmp(argv[1], "quantize")) quantize();
+    else if (!strcmp(argv[1], "wheel_and_swap")) wheel_and_swap();
     else return 2;
     puts("PASS");
     return 0;

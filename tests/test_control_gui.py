@@ -52,6 +52,21 @@ class ControlGuiTests(unittest.TestCase):
         self.session.connected_changed.emit(True, "COM8")
         self.session.snapshot.emit(snapshot())
     def tearDown(self): self.window.close()
+    def test_port_swap_keeps_calibration_editors_tied_to_physical_ports(self):
+        data = snapshot()
+        data["capabilities"].update(pedal_map=1, wheel=1, usb_mode="XINPUT")
+        data["profile"]["throttle_axis"] = 0
+        data["pedal"]["axes"][1]["gamma"] = 210
+        self.session.snapshot.emit(data)
+        self.window.swap_pedals_button.click()
+        self.assertEqual(self.window.pedal_editors[0]["gamma"].value(), 1.0)
+        self.assertEqual(self.window.pedal_editors[1]["gamma"].value(), 2.1)
+        self.window.apply_changes()
+        self.assertEqual(self.session.commands[-1], ["PEDALMAP 1"])
+        data["profile"]["throttle_axis"] = 1
+        self.session.snapshot.emit(data)
+        self.window.usb_mode_button.click()
+        self.assertEqual(self.session.commands[-1], ["USBMODE WHEEL"])
     def test_polling_preserves_unsent_edits(self):
         self.window.pedal_editors[0]["gamma"].setValue(2.3)
         incoming = snapshot(); incoming["refresh_config"] = False

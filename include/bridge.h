@@ -56,4 +56,7 @@ bool bridge_host_seen(const bridge_t *bridge);
 bool bridge_requires_full_neutral(const bridge_t *bridge);
 void bridge_build_report(const bridge_t *bridge, const pedal_t *pedal, bool blocked,
                          uint8_t report[XINPUT_PAD_REPORT_SIZE]);
+enum { WHEEL_REPORT_SIZE=8 };
+void bridge_build_wheel_report(const bridge_t *bridge, const pedal_t *pedal, bool blocked,
+                               uint8_t report[WHEEL_REPORT_SIZE]);
 #endif

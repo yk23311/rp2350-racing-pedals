@@ -19,5 +19,6 @@ bool tuh_edpt_abort_xfer(uint8_t addr,uint8_t ep);
 bool tuh_control_xfer(tuh_xfer_t *xfer);
 bool tuh_vid_pid_get(uint8_t addr,uint16_t *vid,uint16_t *pid);
 bool tud_cdc_connected(void);
+bool tud_inited(void);
 uint32_t tud_cdc_write(const void *data,uint32_t count);
 void tud_cdc_write_flush(void);

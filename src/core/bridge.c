@@ -118,45 +118,58 @@ bool bridge_requires_full_neutral(const bridge_t *bridge) {
     return bridge->config.full_neutral_on_fault;
 }
 
+static uint16_t merge_pedal(const pedal_t *pedal, unsigned axis, uint8_t trigger, bool merge_max) {
+    uint16_t host_value=(uint16_t)(trigger*257u);
+    if(!pedal->config.axis[axis].calibrated) return host_value;
+    uint16_t value=pedal->output[axis];
+    return merge_max && host_value>value ? host_value : value;
+}
+
+static void build_controls(const bridge_t *bridge, const pedal_t *pedal, bool blocked,
+                           bool wheel, xinput_pad_t *pad, uint16_t *throttle, uint16_t *brake) {
+    *pad=(xinput_pad_t){0};
+    *throttle=*brake=0;
+    if(blocked || pedal==NULL || !pedal->armed || !pedal->sample_valid ||
+       pedal->calibration_axis>=0 || pedal->mode!=PEDAL_JOYSTICK ||
+       bridge_requires_full_neutral(bridge)) return;
+
+    const control_profile_t *profile=control_current();
+    if(bridge_host_ready(bridge)) {
+        uint8_t keyboard[8];
+        control_transform(profile,&bridge->pad,pad,keyboard);
+    }
+    bool merge_max=wheel || (bridge && bridge->config.merge_mode==BRIDGE_MERGE_MAX);
+    *throttle=merge_pedal(pedal,profile->throttle_axis,pad->rt,merge_max);
+    *brake=merge_pedal(pedal,1u-profile->throttle_axis,pad->lt,merge_max);
+}
+
 void bridge_build_report(const bridge_t *bridge, const pedal_t *pedal, bool blocked,
                          uint8_t report[XINPUT_PAD_REPORT_SIZE]) {
-    if (report == NULL) return;
-    memset(report, 0, XINPUT_PAD_REPORT_SIZE);
-    report[1] = XINPUT_PAD_REPORT_SIZE;
-    if (blocked || pedal == NULL) return;
-    if (!pedal->armed || !pedal->sample_valid || pedal->calibration_axis >= 0 ||
-        pedal->mode != PEDAL_JOYSTICK) return;
+    if(report==NULL) return;
+    memset(report,0,XINPUT_PAD_REPORT_SIZE);
+    report[1]=XINPUT_PAD_REPORT_SIZE;
+    xinput_pad_t pad;
+    uint16_t throttle,brake;
+    build_controls(bridge,pedal,blocked,false,&pad,&throttle,&brake);
+    put_u16(report+2,pad.buttons);
+    report[4]=xinput_axis_quantize(brake);
+    report[5]=xinput_axis_quantize(throttle);
+    put_i16(report+6,pad.lx);
+    put_i16(report+8,pad.ly);
+    put_i16(report+10,pad.rx);
+    put_i16(report+12,pad.ry);
+}
 
-    bool host_live = bridge != NULL && bridge->state == BRIDGE_HOST_STREAMING && bridge->pad_valid;
-    if (!host_live && bridge_requires_full_neutral(bridge)) return;
-
-    xinput_pad_t processed={0}; uint8_t keyboard[8];
-    if(host_live) control_transform(control_current(),&bridge->pad,&processed,keyboard);
-
-    if (host_live) {
-        put_u16(report + 2, processed.buttons);
-        put_i16(report + 6, processed.lx);
-        put_i16(report + 8, processed.ly);
-        put_i16(report + 10, processed.rx);
-        put_i16(report + 12, processed.ry);
-    }
-
-    bool throttle_owned = pedal->config.axis[0].calibrated;
-    bool brake_owned = pedal->config.axis[1].calibrated;
-    uint8_t rt = throttle_owned ? xinput_axis_quantize(pedal->output[0]) : 0;
-    uint8_t lt = brake_owned ? xinput_axis_quantize(pedal->output[1]) : 0;
-    if (host_live) {
-        if (!throttle_owned) {
-            rt = processed.rt;
-        } else if (bridge->config.merge_mode == BRIDGE_MERGE_MAX && processed.rt > rt) {
-            rt = processed.rt;
-        }
-        if (!brake_owned) {
-            lt = processed.lt;
-        } else if (bridge->config.merge_mode == BRIDGE_MERGE_MAX && processed.lt > lt) {
-            lt = processed.lt;
-        }
-    }
-    report[4] = lt;
-    report[5] = rt;
+void bridge_build_wheel_report(const bridge_t *bridge, const pedal_t *pedal, bool blocked,
+                               uint8_t report[WHEEL_REPORT_SIZE]) {
+    if(report==NULL) return;
+    xinput_pad_t pad;
+    uint16_t throttle,brake;
+    build_controls(bridge,pedal,blocked,true,&pad,&throttle,&brake);
+    /* XInput reserves two bits between RB and A. HID Button 1..14 is packed. */
+    uint16_t buttons=(uint16_t)((pad.buttons&0x03ffu)|((pad.buttons&0xf000u)>>2));
+    put_i16(report,pad.lx);
+    put_u16(report+2,throttle);
+    put_u16(report+4,brake);
+    put_u16(report+6,buttons);
 }
